@@ -236,11 +236,13 @@ npm run build
 | AppShell + role guard | Selesai |
 | Halaman login | Selesai (username/email + password, redirect per role) |
 | Beranda siswa | Selesai (status PKL, jurnal hari ini, mutaba'ah, jurnal terakhir) |
-| Halaman lain | Belum diisi (bertahap) |
+| Ringkasan admin | Selesai (antrean, statistik, grafik pengajuan, aktivitas) |
+| Halaman modul lain | Belum diisi (bertahap) |
 
-Data demo pengembangan: `npm run seed:demo` membuat akun siswa
-`20240001` beserta penempatan, jurnal, dan mutaba'ah contoh. Jangan
-jalankan pada database produksi.
+Data demo pengembangan: `npm run seed:demo` membuat akun admin `admin`
+dan siswa `20240001` beserta contoh siswa, guru, perusahaan, pengajuan,
+jurnal, mutaba'ah, dan log aktivitas. Jangan jalankan pada database
+produksi.
 
 ### Known advisors
 
@@ -253,9 +255,7 @@ jalankan pada database produksi.
 
 ## 7. Langkah berikutnya
 
-1. Terapkan migration ke Supabase (butuh write access / CLI).
-2. Generate `types/database.ts`.
-3. Buat `AppShell` + `PageHeader`.
-4. Buat halaman login + auth guard.
-5. Buat vertical slice: admin ringkasan, data siswa, siswa jurnal, guru verifikasi.
-6. Jalankan gate `design-taste-frontend` untuk halaman pertama.
+1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, ringkasan admin.
+2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, data siswa, jurnal.
+3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
+4. Jalankan gate `design-taste-frontend` untuk halaman publik; halaman di balik auth diuji dengan Lighthouse dan review visual.
