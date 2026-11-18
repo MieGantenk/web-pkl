@@ -237,6 +237,7 @@ npm run build
 | Halaman login | Selesai (username/email + password, redirect per role) |
 | Beranda siswa | Selesai (status PKL, jurnal hari ini, mutaba'ah, jurnal terakhir) |
 | Ringkasan admin | Selesai (antrean, statistik, grafik pengajuan, aktivitas) |
+| Beranda orang tua | Selesai (pilih anak, status PKL, jurnal, mutaba'ah, surat) |
 | Halaman modul lain | Belum diisi (bertahap) |
 
 Data demo pengembangan: `npm run seed:demo` membuat akun admin `admin`
@@ -255,7 +256,7 @@ produksi.
 
 ## 7. Langkah berikutnya
 
-1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, ringkasan admin.
+1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, ringkasan admin, dan beranda orang tua.
 2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, data siswa, jurnal.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Jalankan gate `design-taste-frontend` untuk halaman publik; halaman di balik auth diuji dengan Lighthouse dan review visual.
