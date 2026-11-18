@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { useReducedMotion, motion } from "motion/react";
-import { LogOut, X } from "lucide-react";
+import { ChevronDown, LogOut, X } from "lucide-react";
 
 import { logoutAction } from "@/lib/actions/auth";
 import { isNavActive } from "@/lib/nav-utils";
@@ -31,6 +32,12 @@ export function SidebarContent({
 }) {
   const pathname = usePathname();
   const reduce = useReducedMotion();
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const activeGroup =
+    navigation[role].find((item) =>
+      item.children?.some((child) => isNavActive(pathname, child.href, role)),
+    )?.href ?? null;
+  const visibleGroup = openGroup ?? activeGroup;
   const initial =
     profile.nama_lengkap.trim().charAt(0).toUpperCase() || "S";
 
@@ -75,7 +82,97 @@ export function SidebarContent({
 
         <ul className="space-y-1">
           {navigation[role].map((item) => {
-            const active = isNavActive(pathname, item.href, role);
+            const hasChildren = Boolean(item.children?.length);
+            const hasActiveChild =
+              item.children?.some((child) =>
+                isNavActive(pathname, child.href, role),
+              ) ?? false;
+            const active =
+              !hasChildren && isNavActive(pathname, item.href, role);
+            const groupOpen = hasChildren && visibleGroup === item.href;
+            const groupId = `nav-group-${item.href.replaceAll("/", "-")}`;
+
+            if (hasChildren) {
+              return (
+                <li key={item.href}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenGroup((current) =>
+                        current === item.href ? null : item.href,
+                      )
+                    }
+                    aria-expanded={groupOpen}
+                    aria-controls={groupId}
+                    className={cn(
+                      "flex h-11 w-full items-center gap-3 rounded-sm px-3 text-sm font-medium transition-colors duration-[var(--m-fast)]",
+                      hasActiveChild
+                        ? "text-sidebar-text"
+                        : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-text",
+                    )}
+                  >
+                    <item.icon
+                      className="size-5"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
+                    <span>{item.label}</span>
+                    <ChevronDown
+                      className={cn(
+                        "ml-auto size-4 transition-transform duration-[var(--m-fast)]",
+                        groupOpen && "rotate-180",
+                      )}
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
+                  </button>
+
+                  <ul
+                    id={groupId}
+                    hidden={!groupOpen}
+                    className="ml-5 mt-1 space-y-1 border-l border-sidebar-line pl-3"
+                  >
+                    {item.children?.map((child) => {
+                        const childActive = isNavActive(
+                          pathname,
+                          child.href,
+                          role,
+                        );
+
+                        return (
+                          <li key={child.href}>
+                            <Link
+                              href={child.href}
+                              prefetch={false}
+                              onClick={onNavigate}
+                              aria-current={childActive ? "page" : undefined}
+                              className={cn(
+                                "relative flex h-10 items-center gap-2.5 rounded-sm px-3 text-[13px] font-medium transition-colors duration-[var(--m-fast)]",
+                                childActive
+                                  ? "bg-sidebar-active text-white"
+                                  : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-text",
+                              )}
+                            >
+                              {childActive ? (
+                                <span
+                                  className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-gold-400"
+                                  aria-hidden
+                                />
+                              ) : null}
+                              <child.icon
+                                className="size-4"
+                                strokeWidth={1.75}
+                                aria-hidden
+                              />
+                              <span>{child.label}</span>
+                            </Link>
+                          </li>
+                        );
+                    })}
+                  </ul>
+                </li>
+              );
+            }
 
             return (
               <li key={item.href}>
@@ -118,42 +215,6 @@ export function SidebarContent({
                   />
                   <span className="relative z-10">{item.label}</span>
                 </Link>
-
-                {item.children?.length ? (
-                  <ul className="ml-5 mt-1 space-y-1 border-l border-sidebar-line pl-3">
-                    {item.children.map((child) => {
-                      const childActive = isNavActive(
-                        pathname,
-                        child.href,
-                        role,
-                      );
-
-                      return (
-                        <li key={child.href}>
-                          <Link
-                            href={child.href}
-                            prefetch={false}
-                            onClick={onNavigate}
-                            aria-current={childActive ? "page" : undefined}
-                            className={cn(
-                              "relative flex h-10 items-center gap-2.5 rounded-sm px-3 text-[13px] font-medium transition-colors duration-[var(--m-fast)]",
-                              childActive
-                                ? "bg-sidebar-active text-white"
-                                : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-text",
-                            )}
-                          >
-                            <child.icon
-                              className="size-4"
-                              strokeWidth={1.75}
-                              aria-hidden
-                            />
-                            <span>{child.label}</span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : null}
               </li>
             );
           })}

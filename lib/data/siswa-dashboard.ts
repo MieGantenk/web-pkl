@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { connection } from "next/server";
 
+import { jakartaToday } from "@/lib/date";
 import type { StatusJurnal, StatusPengajuan } from "@/lib/status";
 import { createClient } from "@/lib/supabase/server";
 
@@ -39,20 +40,6 @@ export type SiswaDashboardData = {
     hariIniTerisi: boolean;
   };
 };
-
-function jakartaToday() {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Jakarta",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-
-  const value = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((part) => part.type === type)?.value ?? "";
-
-  return `${value("year")}-${value("month")}-${value("day")}`;
-}
 
 function startOfWeek(isoDate: string) {
   const date = new Date(`${isoDate}T00:00:00Z`);
