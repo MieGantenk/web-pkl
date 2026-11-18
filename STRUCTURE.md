@@ -1,0 +1,261 @@
+# STRUCTURE.md — Struktur Folder Proyek
+
+> Struktur ini mengikuti [`LAYOUT.md`](./LAYOUT.md) dan [`ROUTES.md`](./ROUTES.md).
+> Folder route sudah dibuat; isi halaman diisi bertahap.
+
+Versi 1.0 · 17 November 2026
+Stack: Next.js 16 App Router · TypeScript · Tailwind CSS 4 · Supabase
+
+---
+
+## 1. Pohon folder
+
+```
+pkl-web/
+├── app/
+│   ├── (auth)/
+│   │   └── login/                    # /login
+│   ├── (app)/
+│   │   ├── admin/
+│   │   │   ├── page.tsx              # /admin (belum diisi)
+│   │   │   ├── siswa/
+│   │   │   │   ├── page.tsx          # /admin/siswa
+│   │   │   │   └── [id]/page.tsx     # /admin/siswa/[id]
+│   │   │   ├── guru/
+│   │   │   ├── jurusan/
+│   │   │   ├── perusahaan/
+│   │   │   ├── periode/
+│   │   │   ├── instruktur/
+│   │   │   ├── orang-tua/
+│   │   │   ├── pengajuan/
+│   │   │   ├── penempatan/
+│   │   │   ├── jurnal/
+│   │   │   ├── verifikasi/
+│   │   │   ├── tugas/
+│   │   │   ├── mutabaah/
+│   │   │   │   └── pertanyaan/       # /admin/mutabaah/pertanyaan
+│   │   │   ├── surat/
+│   │   │   ├── laporan/
+│   │   │   ├── pengaturan/
+│   │   │   └── audit/
+│   │   ├── guru/
+│   │   │   ├── page.tsx
+│   │   │   ├── siswa/
+│   │   │   ├── verifikasi/
+│   │   │   ├── tugas/
+│   │   │   ├── mutabaah/
+│   │   │   ├── surat-tugas/
+│   │   │   ├── penarikan/
+│   │   │   └── profil/
+│   │   ├── siswa/
+│   │   │   ├── page.tsx
+│   │   │   ├── pengajuan/
+│   │   │   ├── jurnal/
+│   │   │   │   └── baru/
+│   │   │   ├── mutabaah/
+│   │   │   ├── tugas/
+│   │   │   ├── surat/
+│   │   │   └── profil/
+│   │   ├── instruktur/
+│   │   │   ├── page.tsx
+│   │   │   ├── siswa/
+│   │   │   ├── verifikasi/
+│   │   │   ├── penilaian/            # v1.1
+│   │   │   └── profil/
+│   │   └── ortu/
+│   │       ├── page.tsx
+│   │       ├── jurnal/
+│   │       ├── mutabaah/
+│   │       ├── surat/
+│   │       └── profil/
+│   ├── print/
+│   │   ├── surat/[id]/               # tanpa AppShell
+│   │   └── sertifikat/[id]/          # v1.1
+│   ├── api/
+│   │   ├── health/
+│   │   ├── surat/[id]/pdf/
+│   │   └── verifikasi/surat/[kode]/  # v1.1
+│   ├── auth/
+│   │   └── callback/                 # Supabase code exchange
+│   ├── layout.tsx                    # root layout + font
+│   ├── page.tsx                      # landing/fondasi
+│   ├── globals.css                   # design tokens
+│   └── favicon.ico
+├── components/
+│   ├── ui/                           # shadcn/ui
+│   ├── app/                          # AppShell, Sidebar, Topbar, BottomNav
+│   ├── pkl/                          # StatusBadge, LetterTimeline, VerificationStamp,
+│   │                                 # MutabaahRing, JournalForm, PermissionGate
+│   └── motion/                       # PageEnter, CountUp, Ring
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts                 # browser client (anon)
+│   │   ├── server.ts                 # server client (cookies)
+│   │   └── admin.ts                  # service role — server only
+│   ├── actions/                      # Server Actions per modul
+│   ├── validators/                   # skema Zod
+│   ├── letters/                      # template PDF
+│   ├── navigation.ts                 # menu per role
+│   ├── status.ts                     # label & warna status
+│   └── utils.ts                      # cn()
+├── types/
+│   └── database.ts                   # hasil supabase gen types
+├── supabase/
+│   ├── migrations/
+│   │   ├── 20261117090000_init_schema.sql
+│   │   ├── 20261117090100_rls.sql
+│   │   ├── 20261117090200_storage.sql
+│   │   ├── 20261118090000_rls_perf.sql
+│   │   ├── 20261118090100_lint_fix.sql
+│   │   └── 20261118090200_function_grants.sql
+│   └── seed.sql
+├── public/
+│   └── brand/                        # logo, kop, footer
+├── .env.example
+├── .gitignore
+├── AGENTS.md
+├── ANIMATION.md
+├── DESIGN.md
+├── DESIGN_SYSTEM.md
+├── ERD.dbml
+├── LAYOUT.md
+├── PRD.md
+├── README.md
+├── ROUTES.md
+├── STRUCTURE.md
+├── TECH_STACK.md
+├── eslint.config.mjs
+├── next.config.ts
+├── package.json
+├── package-lock.json
+├── proxy.ts                          # refresh sesi Supabase
+├── tsconfig.json
+└── next-env.d.ts
+```
+
+Folder route yang belum berisi `page.tsx` diberi `.gitkeep`. Isi halaman dibuat bertahap sesuai `ROUTES.md`.
+Catatan: `page.tsx` yang tampil di pohon adalah **target**; saat ini baru folder, layout root, dan beberapa file fondasi yang dibuat.
+
+---
+
+## 2. Peran setiap folder
+
+| Folder | Isi | Aturan |
+|---|---|---|
+| `app/(auth)` | Login, callback auth | Tidak memakai AppShell |
+| `app/(app)` | Semua halaman setelah login | Wajib AppShell + role guard |
+| `app/print` | Surat & sertifikat | Tanpa AppShell; CSS print |
+| `app/api` | Route Handler | Node runtime untuk PDF |
+| `components/ui` | shadcn/ui | Tidak boleh berisi query DB |
+| `components/app` | Shell & navigasi | Client hanya untuk interaksi |
+| `components/pkl` | Komponen domain | Status, surat, jurnal, mutaba'ah |
+| `components/motion` | Animasi | Hanya 5 kasus di `ANIMATION.md` |
+| `lib/supabase` | Client Supabase | `admin.ts` server-only |
+| `lib/actions` | Server Actions | Wajib cek role + kepemilikan |
+| `lib/validators` | Zod | Dipakai client & server |
+| `lib/letters` | Template PDF | Times New Roman, A4 |
+| `supabase/migrations` | Schema, RLS, storage | Urut, jangan diedit setelah deploy |
+| `types` | Tipe database | Generate, jangan tulis manual |
+
+---
+
+## 3. Migration
+
+Urutan:
+
+1. `20261117090000_init_schema.sql` — enum, tabel, index, FK, trigger.
+2. `20261117090100_rls.sql` — helper, RLS, policy.
+3. `20261117090200_storage.sql` — bucket & policy storage.
+4. `20261118090000_rls_perf.sql` — optimasi `auth.uid()` di policy.
+5. `20261118090100_lint_fix.sql` — `search_path` + policy terakhir.
+6. `20261118090200_function_grants.sql` — grant helper/trigger function.
+7. `seed.sql` — profil sekolah.
+
+Jalankan:
+
+```bash
+supabase db push --remote
+supabase gen types typescript --remote --schema public > types/database.ts
+```
+
+Status: **sudah diterapkan** ke project `web-pkl`; `types/database.ts` sudah digenerate.
+
+Catatan:
+
+- `auth.users` dibuat otomatis Supabase; jangan dibuat manual.
+- Schema belum diterapkan ke cloud karena MCP saat ini **read-only**.
+- Setelah migration, isi `pengaturan_sekolah.akreditasi` sebelum menerbitkan surat.
+
+---
+
+## 4. Environment
+
+Salin `.env.example` menjadi `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+Aturan:
+
+- `NEXT_PUBLIC_*` boleh di browser.
+- `SUPABASE_SERVICE_ROLE_KEY` hanya server.
+- Jangan commit `.env.local`.
+
+---
+
+## 5. Perintah
+
+```bash
+npm run dev
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+---
+
+## 6. Status saat ini
+
+| Bagian | Status |
+|---|---|
+| Dokumen produk & desain | Selesai |
+| ERD | Selesai, tervalidasi |
+| Migration schema | **Sudah diterapkan ke Supabase** |
+| RLS & storage policy | **Sudah diterapkan** |
+| Tipe database | **Sudah digenerate** (`types/database.ts`) |
+| Route & endpoint | Selesai (`ROUTES.md`) |
+| Struktur folder | Selesai |
+| Next.js scaffold | Selesai (Next 16.4.6, React 19.3) |
+| Design token di `globals.css` | Selesai |
+| Navigasi per role | Selesai (`lib/navigation.ts`) |
+| Supabase client | Selesai (`lib/supabase/*`) |
+| AppShell + role guard | Selesai |
+| Halaman login | Selesai (username/email + password, redirect per role) |
+| Beranda siswa | Selesai (status PKL, jurnal hari ini, mutaba'ah, jurnal terakhir) |
+| Halaman lain | Belum diisi (bertahap) |
+
+Data demo pengembangan: `npm run seed:demo` membuat akun siswa
+`20240001` beserta penempatan, jurnal, dan mutaba'ah contoh. Jangan
+jalankan pada database produksi.
+
+### Known advisors
+
+`supabase db lint` tidak menemukan error. `supabase db advisors` masih memberi warning non-blocking:
+
+- **46 multiple permissive policies** — akibat policy `admin_all` + policy spesifik. Ini warning performa, bukan kebocoran data.
+- **15 security definer helper** — fungsi `can_*`/`is_*`/`current_*` bisa dipanggil lewat RPC oleh `authenticated`. Memang diperlukan untuk RLS; fungsi hanya mengembalikan boolean/ID, bukan data sensitif. Kalau ingin nol warning, pindahkan helper ke schema `private` pada iterasi berikutnya.
+
+---
+
+## 7. Langkah berikutnya
+
+1. Terapkan migration ke Supabase (butuh write access / CLI).
+2. Generate `types/database.ts`.
+3. Buat `AppShell` + `PageHeader`.
+4. Buat halaman login + auth guard.
+5. Buat vertical slice: admin ringkasan, data siswa, siswa jurnal, guru verifikasi.
+6. Jalankan gate `design-taste-frontend` untuk halaman pertama.

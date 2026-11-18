@@ -1,0 +1,762 @@
+// ============================================================================
+//  ERD — Sistem Informasi PKL (SyifaPKL)
+//  Stack tujuan : Next.js + Supabase (PostgreSQL)
+//  Cara pakai   : buka https://dbdiagram.io  ->  Import  ->  DBML  ->  paste
+//  Dokumen      : PRD.md (fitur), AGENTS.md (aturan), TECH_STACK.md (stack)
+//
+//  Alur yang didukung:
+//  Siswa ajukan tempat
+//    -> Surat Izin Orang Tua terbit
+//    -> Siswa upload izin ortu yang sudah ditandatangani
+//    -> Surat Pengajuan ke Perusahaan terbit
+//    -> Siswa upload Surat Balasan dari perusahaan
+//    -> Admin approve (status = diterima)
+//    -> Surat Keberangkatan + Surat Tugas Monitoring terbit
+//    -> PKL berlangsung (jurnal harian + mutaba'ah)
+//    -> Verifikasi 2 langkah (guru -> instruktur)
+//    -> Surat Penarikan terbit
+//    -> Selesai
+//
+//  Perubahan dari draft awal (16 Nov 2026):
+//  - peran_pengguna: + instruktur, ortu (5 role)
+//  - status_pengajuan: + keberangkatan_terbit, berlangsung, penarikan_terbit, selesai
+//  - jenis_surat: + tugas_monitoring, penarikan
+//    "pengantar"/"pemberangkatan" digabung menjadi "keberangkatan"
+//  - jenis_dokumen: surat_pengajuan & surat_pemberangkatan dihapus
+//    (itu surat terbit sistem, bukan file upload)
+//  - jurnal: verifikasi 2 langkah dipindah ke verifikasi_jurnal
+//  - mutabaah: form dinamis + versioning + 6 tipe pertanyaan
+//    (ya_tidak, pilih_satu, pilih_banyak, isian_singkat, isian_angka, essay)
+//  - tambah: periode_pkl, instruktur, orang_tua_siswa, tugas, tugas_siswa,
+//    mutabaah_form, mutabaah_pertanyaan, mutabaah_opsi, mutabaah_harian,
+//    mutabaah_jawaban, mutabaah_jawaban_opsi, penilaian,
+//    pengaturan_sekolah, penomoran_surat, log_aktivitas, notifikasi
+// ============================================================================
+
+Project syifapkl {
+  database_type: 'PostgreSQL'
+  Note: 'ERD Sistem Informasi PKL untuk Next.js + Supabase. 5 role: admin, guru, siswa, instruktur, ortu.'
+}
+
+// ----------------------------------------------------------------------------
+//  STUB — hanya supaya garis relasi ke Supabase Auth terlihat di ERD.
+//  Tabel aslinya auth.users, dibuat OTOMATIS oleh Supabase. Jangan dibuat manual.
+//  Saat menulis migrasi Supabase: hapus tabel ini dan arahkan FK
+//  pengguna.id -> auth.users(id).
+// ----------------------------------------------------------------------------
+Table auth_users [note: 'STUB. Tabel asli = auth.users (Supabase Auth). Jangan dibuat manual.'] {
+  id    uuid         [pk, note: 'UUID user dari Supabase Auth']
+  email varchar(255) [unique]
+}
+
+// ================================ ENUM ======================================
+
+enum peran_pengguna {
+  admin
+  guru
+  siswa
+  instruktur
+  ortu
+}
+
+// Status keseluruhan perjalanan PKL (satu pipeline)
+enum status_pengajuan {
+  draft
+  diajukan
+  izin_ortu_terbit
+  izin_ortu_diunggah
+  pengajuan_terbit
+  balasan_diunggah
+  diterima
+  keberangkatan_terbit
+  berlangsung
+  penarikan_terbit
+  selesai
+  ditolak
+  dibatalkan
+}
+
+enum jenis_surat {
+  izin_orang_tua
+  pernyataan
+  pengajuan
+  keberangkatan
+  tugas_monitoring
+  perjanjian
+  penarikan
+}
+
+enum status_surat {
+  draft
+  terbit
+  dibatalkan
+}
+
+// File yang DIUNGGAH user. Surat yang DITERBITKAN sistem ada di tabel surat.
+enum jenis_dokumen {
+  izin_orang_tua_ttd
+  surat_balasan_perusahaan
+  surat_pernyataan
+  dokumen_pendukung
+  lainnya
+}
+
+enum status_verifikasi {
+  menunggu
+  diterima
+  revisi
+  ditolak
+}
+
+// Verifikasi jurnal 2 langkah
+enum status_jurnal {
+  menunggu
+  terverifikasi_guru
+  terverifikasi_instruktur
+  revisi
+}
+
+enum status_tugas {
+  belum
+  selesai
+  terlambat
+}
+
+enum tipe_pertanyaan {
+  ya_tidak
+  pilih_satu
+  pilih_banyak
+  isian_singkat
+  isian_angka
+  essay
+}
+
+enum status_form {
+  draft
+  aktif
+  arsip
+}
+
+enum peran_anggota {
+  ketua
+  anggota
+}
+
+enum peran_verifikator {
+  guru
+  instruktur
+}
+
+enum peran_instruktur {
+  instruktur
+  pembimbing
+}
+
+enum hubungan_ortu {
+  ayah
+  ibu
+  wali
+}
+
+enum peran_penilai {
+  guru
+  instruktur
+}
+
+// ============================= MASTER DATA ==================================
+
+Table pengguna [note: 'Profil user. id = auth.users.id (Supabase Auth).'] {
+  id           uuid           [pk, note: 'Sama dengan auth.users.id']
+  username     varchar(100)   [unique, not null, note: 'Pengganti kolom id_login lama (NIS/NIP/username)']
+  email        varchar(255)   [unique, not null]
+  nama_lengkap varchar(150)   [not null]
+  peran        peran_pengguna [not null]
+  telepon      varchar(25)
+  avatar_url   text
+  aktif        boolean        [not null, default: true]
+  created_at   timestamptz    [not null, default: `now()`]
+  updated_at   timestamptz    [not null, default: `now()`]
+
+  indexes {
+    peran
+    aktif
+  }
+}
+
+Table jurusan {
+  id         uuid         [pk, default: `gen_random_uuid()`]
+  nama       varchar(150) [not null, unique]
+  kode       varchar(20)  [unique]
+  created_at timestamptz  [not null, default: `now()`]
+  updated_at timestamptz  [not null, default: `now()`]
+}
+
+Table guru [note: 'Data khusus guru. Nama diambil dari pengguna.nama_lengkap.'] {
+  id          uuid         [pk, default: `gen_random_uuid()`]
+  pengguna_id uuid         [not null, unique]
+  nip         varchar(30)  [unique]
+  nuptk       varchar(30)  [unique]
+  jabatan     varchar(100)
+  jurusan_id  uuid
+  created_at  timestamptz  [not null, default: `now()`]
+  updated_at  timestamptz  [not null, default: `now()`]
+
+  indexes {
+    jurusan_id
+  }
+}
+
+Table siswa [note: 'Data khusus siswa. Nama diambil dari pengguna.nama_lengkap.'] {
+  id               uuid         [pk, default: `gen_random_uuid()`]
+  pengguna_id      uuid         [not null, unique]
+  nis              varchar(30)  [not null, unique]
+  nisn             varchar(30)  [unique]
+  kelas            varchar(30)
+  jurusan_id       uuid
+  telepon          varchar(25)
+  alamat           text
+  tempat_lahir     varchar(100)
+  tanggal_lahir    date
+  nama_orangtua    varchar(150) [note: 'Kontak darurat; akun orang tua ada di orang_tua_siswa']
+  telepon_orangtua varchar(25)
+  aktif            boolean      [not null, default: true]
+  created_at       timestamptz  [not null, default: `now()`]
+  updated_at       timestamptz  [not null, default: `now()`]
+
+  indexes {
+    jurusan_id
+    aktif
+  }
+}
+
+Table perusahaan [note: 'Master tempat PKL / DUDI.'] {
+  id          uuid         [pk, default: `gen_random_uuid()`]
+  nama        varchar(200) [not null]
+  alamat      text         [not null]
+  kota        varchar(100)
+  telepon     varchar(30)
+  email       varchar(255)
+  website     varchar(255)
+  aktif       boolean      [not null, default: true]
+  created_at  timestamptz  [not null, default: `now()`]
+  updated_at  timestamptz  [not null, default: `now()`]
+
+  indexes {
+    nama
+    kota
+    aktif
+  }
+}
+
+Table periode_pkl {
+  id             uuid         [pk, default: `gen_random_uuid()`]
+  nama           varchar(100) [not null, note: 'contoh: PKL Ganjil 2026/2027']
+  tahun_ajaran   varchar(20)  [not null, note: 'contoh: 2026/2027']
+  tanggal_mulai  date         [not null]
+  tanggal_selesai date        [not null]
+  aktif          boolean      [not null, default: true]
+  created_at     timestamptz  [not null, default: `now()`]
+  updated_at     timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (tahun_ajaran, nama) [unique]
+    aktif
+  }
+}
+
+// Akun instruktur/pembimbing perusahaan. Terhubung ke Supabase Auth.
+Table instruktur [note: 'Akun instruktur/pembimbing perusahaan. Bisa login dan verifikasi jurnal.'] {
+  id            uuid            [pk, default: `gen_random_uuid()`]
+  pengguna_id   uuid            [not null]
+  perusahaan_id uuid            [not null]
+  peran         peran_instruktur [not null, default: 'instruktur']
+  jabatan       varchar(100)
+  telepon       varchar(30)
+  aktif         boolean         [not null, default: true]
+  created_at    timestamptz     [not null, default: `now()`]
+  updated_at    timestamptz     [not null, default: `now()`]
+
+  indexes {
+    (pengguna_id, perusahaan_id, peran) [unique]
+    perusahaan_id
+    pengguna_id
+  }
+}
+
+// Relasi orang tua/wali ke siswa. Satu orang tua bisa punya beberapa anak.
+Table orang_tua_siswa {
+  id          uuid         [pk, default: `gen_random_uuid()`]
+  pengguna_id uuid         [not null, note: 'pengguna dengan peran ortu']
+  siswa_id    uuid         [not null]
+  hubungan    hubungan_ortu [not null, default: 'wali']
+  created_at  timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (pengguna_id, siswa_id) [unique]
+    siswa_id
+  }
+}
+
+// ============================== ALUR PKL ===================================
+
+Table pengajuan_pkl [note: 'Satu baris = satu pengajuan/penempatan PKL (bisa berkelompok). Satu siswa hanya boleh punya satu pengajuan aktif; ditegakkan di aplikasi + partial unique index.'] {
+  id                 uuid             [pk, default: `gen_random_uuid()`]
+  perusahaan_id      uuid             [not null]
+  periode_id         uuid             [not null]
+  dibuat_oleh        uuid             [not null, note: 'pengguna.id siswa yang mengajukan']
+  guru_pembimbing_id uuid             [note: 'guru.id pembimbing dari sekolah']
+  instruktur_id      uuid             [note: 'instruktur.id verifikator dari perusahaan']
+  pembimbing_id      uuid             [note: 'instruktur.id pembimbing lapangan (opsional)']
+  tanggal_mulai      date
+  tanggal_selesai    date
+  status             status_pengajuan [not null, default: 'draft']
+  catatan            text
+  alasan_penolakan   text
+  diverifikasi_oleh  uuid             [note: 'pengguna.id admin yang approve/reject']
+  diverifikasi_pada  timestamptz
+  created_at         timestamptz      [not null, default: `now()`]
+  updated_at         timestamptz      [not null, default: `now()`]
+
+  indexes {
+    (perusahaan_id, periode_id)
+    (guru_pembimbing_id)
+    (instruktur_id)
+    status
+  }
+}
+
+Table pengajuan_anggota [note: 'Anggota kelompok pada satu pengajuan.'] {
+  id           uuid          [pk, default: `gen_random_uuid()`]
+  pengajuan_id uuid          [not null]
+  siswa_id     uuid          [not null]
+  peran        peran_anggota [not null, default: 'anggota']
+  created_at   timestamptz   [not null, default: `now()`]
+
+  indexes {
+    (pengajuan_id, siswa_id) [unique]
+    siswa_id
+  }
+}
+
+Table surat [note: 'Surat yang DITERBITKAN sistem (PDF). File disimpan di Supabase Storage.'] {
+  id              uuid         [pk, default: `gen_random_uuid()`]
+  pengajuan_id    uuid         [not null]
+  jenis           jenis_surat  [not null]
+  nomor           varchar(100) [unique]
+  tanggal_terbit  date
+  file_path       text         [note: 'path di bucket Storage, contoh: surat/2025/izin-ortu-xxx.pdf']
+  kode_verifikasi varchar(50)  [unique, note: 'isi QR verifikasi surat (opsional)']
+  status          status_surat [not null, default: 'draft']
+  dibuat_oleh     uuid
+  created_at      timestamptz  [not null, default: `now()`]
+  updated_at      timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (pengajuan_id, jenis)
+    status
+    nomor
+  }
+}
+
+Table dokumen [note: 'File yang DIUNGGAH user (scan TTD, balasan perusahaan, dll).'] {
+  id                uuid              [pk, default: `gen_random_uuid()`]
+  pengajuan_id      uuid              [not null]
+  jenis             jenis_dokumen     [not null]
+  file_path         text              [not null, note: 'path di bucket Storage, contoh: dokumen/izin-ortu-xxx.pdf']
+  file_name         varchar(255)
+  mime_type         varchar(100)
+  ukuran            integer           [note: 'ukuran file dalam byte']
+  diunggah_oleh     uuid              [not null]
+  diunggah_pada     timestamptz       [not null, default: `now()`]
+  status            status_verifikasi [not null, default: 'menunggu']
+  catatan           text
+  diverifikasi_oleh uuid
+  diverifikasi_pada timestamptz
+  updated_at        timestamptz       [not null, default: `now()`]
+
+  indexes {
+    (pengajuan_id, jenis)
+    status
+  }
+}
+
+// ============================== MONITORING =================================
+
+Table jurnal [note: 'Jurnal kegiatan harian siswa. Maksimal 1 entri per siswa per tanggal.'] {
+  id           uuid         [pk, default: `gen_random_uuid()`]
+  siswa_id     uuid         [not null]
+  pengajuan_id uuid
+  tanggal      date         [not null]
+  waktu_mulai  time
+  waktu_selesai time
+  kegiatan     varchar(200) [not null]
+  deskripsi    text
+  ringkasan_ai text         [note: 'Opsional; ringkasan AI. Perhatikan privasi.']
+  foto_path    text         [note: 'path di bucket Storage foto-jurnal']
+  status       status_jurnal [not null, default: 'menunggu']
+  created_at   timestamptz  [not null, default: `now()`]
+  updated_at   timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (siswa_id, tanggal) [unique]
+    status
+    pengajuan_id
+  }
+}
+
+// Verifikasi 2 langkah: guru dulu, lalu instruktur.
+Table verifikasi_jurnal {
+  id            uuid             [pk, default: `gen_random_uuid()`]
+  jurnal_id     uuid             [not null]
+  verifikator_id uuid            [not null, note: 'pengguna.id guru atau instruktur']
+  peran         peran_verifikator [not null]
+  status        status_verifikasi [not null, default: 'menunggu']
+  catatan       text
+  created_at    timestamptz      [not null, default: `now()`]
+  updated_at    timestamptz      [not null, default: `now()`]
+
+  indexes {
+    (jurnal_id, peran) [unique]
+    verifikator_id
+  }
+}
+
+// Tugas dari guru pembimbing. Porsi dijaga agar siswa tetap fokus di industri.
+Table tugas {
+  id           uuid         [pk, default: `gen_random_uuid()`]
+  pengajuan_id uuid         [not null]
+  guru_id      uuid         [not null]
+  judul        varchar(200) [not null]
+  deskripsi    text
+  deadline     date
+  created_at   timestamptz  [not null, default: `now()`]
+  updated_at   timestamptz  [not null, default: `now()`]
+
+  indexes {
+    pengajuan_id
+    guru_id
+    deadline
+  }
+}
+
+Table tugas_siswa {
+  id           uuid         [pk, default: `gen_random_uuid()`]
+  tugas_id     uuid         [not null]
+  siswa_id     uuid         [not null]
+  status       status_tugas [not null, default: 'belum']
+  catatan      text
+  file_path    text         [note: 'path di bucket Storage tugas']
+  selesai_pada timestamptz
+  created_at   timestamptz  [not null, default: `now()`]
+  updated_at   timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (tugas_id, siswa_id) [unique]
+    siswa_id
+    status
+  }
+}
+
+Table mutabaah_form [note: 'Template/versi form mutabaah. Hanya satu form aktif per periode; form berjawaban tidak boleh diubah, buat versi baru.'] {
+  id          uuid         [pk, default: `gen_random_uuid()`]
+  nama        varchar(150) [not null, note: 'contoh: Mutabaah Harian']
+  deskripsi   text
+  versi       integer      [not null, default: 1]
+  periode_id  uuid
+  status      status_form  [not null, default: 'draft']
+  dibuat_oleh uuid
+  created_at  timestamptz  [not null, default: `now()`]
+  updated_at  timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (nama, versi) [unique]
+    periode_id
+    status
+  }
+}
+
+Table mutabaah_pertanyaan [note: 'Pertanyaan dinamis. Tipe mengikuti enum tipe_pertanyaan.'] {
+  id          uuid            [pk, default: `gen_random_uuid()`]
+  form_id     uuid            [not null]
+  pertanyaan  varchar(255)    [not null]
+  deskripsi   text            [note: 'Petunjuk/placeholder untuk siswa']
+  tipe        tipe_pertanyaan [not null, default: 'ya_tidak']
+  wajib       boolean         [not null, default: true]
+  urutan      integer         [not null, default: 0]
+  min_angka   numeric(10,2)   [note: 'Hanya untuk isian_angka']
+  max_angka   numeric(10,2)   [note: 'Hanya untuk isian_angka']
+  satuan      varchar(30)     [note: 'contoh: halaman, menit, kali']
+  aktif       boolean         [not null, default: true]
+  created_at  timestamptz     [not null, default: `now()`]
+  updated_at  timestamptz     [not null, default: `now()`]
+
+  indexes {
+    form_id
+    urutan
+    aktif
+  }
+}
+
+Table mutabaah_opsi [note: 'Pilihan untuk pertanyaan pilih_satu / pilih_banyak.'] {
+  id           uuid         [pk, default: `gen_random_uuid()`]
+  pertanyaan_id uuid        [not null]
+  label        varchar(150) [not null]
+  nilai        varchar(100) [note: 'Nilai untuk rekap; opsional']
+  urutan       integer      [not null, default: 0]
+  aktif        boolean      [not null, default: true]
+  created_at   timestamptz  [not null, default: `now()`]
+
+  indexes {
+    pertanyaan_id
+    urutan
+  }
+}
+
+Table mutabaah_harian [note: 'Satu entri per siswa per tanggal. form_id mencatat versi form yang dipakai.'] {
+  id         uuid        [pk, default: `gen_random_uuid()`]
+  siswa_id   uuid        [not null]
+  form_id    uuid        [not null]
+  tanggal    date        [not null]
+  catatan    text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (siswa_id, tanggal) [unique]
+    form_id
+  }
+}
+
+Table mutabaah_jawaban [note: 'Satu baris jawaban per pertanyaan per hari. Pilihan ganda disimpan di mutabaah_jawaban_opsi.'] {
+  id               uuid         [pk, default: `gen_random_uuid()`]
+  harian_id        uuid         [not null]
+  pertanyaan_id    uuid         [not null]
+  jawaban_teks     text
+  jawaban_angka    numeric(10,2)
+  jawaban_boolean  boolean
+  created_at       timestamptz  [not null, default: `now()`]
+  updated_at       timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (harian_id, pertanyaan_id) [unique]
+    pertanyaan_id
+  }
+}
+
+Table mutabaah_jawaban_opsi [note: 'Opsi terpilih untuk pilih_satu / pilih_banyak.'] {
+  id         uuid        [pk, default: `gen_random_uuid()`]
+  jawaban_id uuid        [not null]
+  opsi_id    uuid        [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (jawaban_id, opsi_id) [unique]
+    opsi_id
+  }
+}
+
+Table penilaian [note: 'Nilai akhir dari guru dan/atau instruktur. Opsional di MVP, disiapkan untuk sertifikat.'] {
+  id           uuid         [pk, default: `gen_random_uuid()`]
+  pengajuan_id uuid         [not null]
+  siswa_id     uuid         [not null]
+  penilai_id   uuid         [not null, note: 'pengguna.id guru atau instruktur']
+  peran        peran_penilai [not null]
+  nilai        numeric(5,2) [note: '0-100']
+  catatan      text
+  created_at   timestamptz  [not null, default: `now()`]
+  updated_at   timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (pengajuan_id, siswa_id, peran) [unique]
+    penilai_id
+  }
+}
+
+Table sertifikat {
+  id             uuid         [pk, default: `gen_random_uuid()`]
+  siswa_id       uuid         [not null]
+  pengajuan_id   uuid
+  nomor          varchar(100) [not null, unique]
+  tanggal_terbit date         [not null]
+  file_path      text         [note: 'path di bucket Storage sertifikat']
+  dibuat_oleh    uuid
+  created_at     timestamptz  [not null, default: `now()`]
+
+  indexes {
+    siswa_id
+  }
+}
+
+// ============================ PENGATURAN & AUDIT ===========================
+
+Table pengaturan_sekolah [note: 'Baris tunggal (id = 1). Dipakai untuk kop, footer, dan nomor surat.'] {
+  id                  smallint     [pk, default: 1, note: 'Selalu 1']
+  nama_sekolah        varchar(200) [not null]
+  alamat              text         [not null]
+  telepon             varchar(30)
+  email               varchar(255)
+  website             varchar(255)
+  kepala_sekolah      varchar(150)
+  nip_kepala          varchar(30)
+  akreditasi          varchar(100) [note: 'contoh: A (Unggul) — wajib di kop surat']
+  logo_path           text
+  kop_path            text
+  footer_path         text
+  format_nomor_surat  varchar(200) [note: 'contoh: {nomor}/{kode}/{tahun}']
+  updated_at          timestamptz  [not null, default: `now()`]
+}
+
+Table penomoran_surat [note: 'Counter nomor surat per jenis per tahun. Hindari nomor ganda.'] {
+  id               uuid        [pk, default: `gen_random_uuid()`]
+  jenis            jenis_surat [not null]
+  tahun            integer     [not null]
+  urutan_terakhir  integer     [not null, default: 0]
+  updated_at       timestamptz [not null, default: `now()`]
+
+  indexes {
+    (jenis, tahun) [unique]
+  }
+}
+
+Table log_aktivitas {
+  id         uuid         [pk, default: `gen_random_uuid()`]
+  pengguna_id uuid        [note: 'nullable: aksi sistem']
+  aksi       varchar(100) [not null, note: 'contoh: approve_pengajuan, verifikasi_jurnal']
+  entitas    varchar(100) [not null, note: 'contoh: pengajuan_pkl, jurnal']
+  entitas_id uuid
+  detail     jsonb
+  created_at timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (entitas, entitas_id)
+    (pengguna_id, created_at)
+  }
+}
+
+Table notifikasi {
+  id          uuid         [pk, default: `gen_random_uuid()`]
+  pengguna_id uuid         [not null]
+  judul       varchar(150) [not null]
+  pesan       text         [not null]
+  tautan      text
+  dibaca      boolean      [not null, default: false]
+  created_at  timestamptz  [not null, default: `now()`]
+
+  indexes {
+    (pengguna_id, dibaca)
+  }
+}
+
+// =============================== RELASI ====================================
+
+// Catatan DBML: pada relasi one-to-one (tanda "-"), tabel di sisi KANAN
+// adalah tabel yang menyimpan foreign key. Pada relasi many-to-one (>),
+// tabel di sisi KIRI menyimpan foreign key.
+Ref: auth_users.id - pengguna.id [delete: cascade]
+
+Ref: pengguna.id - guru.pengguna_id [delete: cascade]
+Ref: guru.jurusan_id > jurusan.id [delete: set null]
+
+Ref: pengguna.id - siswa.pengguna_id [delete: cascade]
+Ref: siswa.jurusan_id > jurusan.id [delete: set null]
+
+Ref: instruktur.pengguna_id > pengguna.id [delete: cascade]
+Ref: instruktur.perusahaan_id > perusahaan.id [delete: cascade]
+
+Ref: orang_tua_siswa.pengguna_id > pengguna.id [delete: cascade]
+Ref: orang_tua_siswa.siswa_id > siswa.id [delete: cascade]
+
+Ref: pengajuan_pkl.perusahaan_id > perusahaan.id [delete: restrict]
+Ref: pengajuan_pkl.periode_id > periode_pkl.id [delete: restrict]
+Ref: pengajuan_pkl.dibuat_oleh > pengguna.id [delete: restrict]
+Ref: pengajuan_pkl.guru_pembimbing_id > guru.id [delete: set null]
+Ref: pengajuan_pkl.instruktur_id > instruktur.id [delete: set null]
+Ref: pengajuan_pkl.pembimbing_id > instruktur.id [delete: set null]
+Ref: pengajuan_pkl.diverifikasi_oleh > pengguna.id [delete: set null]
+
+Ref: pengajuan_anggota.pengajuan_id > pengajuan_pkl.id [delete: cascade]
+Ref: pengajuan_anggota.siswa_id > siswa.id [delete: cascade]
+
+Ref: surat.pengajuan_id > pengajuan_pkl.id [delete: cascade]
+Ref: surat.dibuat_oleh > pengguna.id [delete: set null]
+
+Ref: dokumen.pengajuan_id > pengajuan_pkl.id [delete: cascade]
+Ref: dokumen.diunggah_oleh > pengguna.id [delete: restrict]
+Ref: dokumen.diverifikasi_oleh > pengguna.id [delete: set null]
+
+Ref: jurnal.siswa_id > siswa.id [delete: cascade]
+Ref: jurnal.pengajuan_id > pengajuan_pkl.id [delete: set null]
+
+Ref: verifikasi_jurnal.jurnal_id > jurnal.id [delete: cascade]
+Ref: verifikasi_jurnal.verifikator_id > pengguna.id [delete: restrict]
+
+Ref: tugas.pengajuan_id > pengajuan_pkl.id [delete: cascade]
+Ref: tugas.guru_id > guru.id [delete: restrict]
+Ref: tugas_siswa.tugas_id > tugas.id [delete: cascade]
+Ref: tugas_siswa.siswa_id > siswa.id [delete: cascade]
+
+Ref: mutabaah_form.periode_id > periode_pkl.id [delete: set null]
+Ref: mutabaah_form.dibuat_oleh > pengguna.id [delete: set null]
+Ref: mutabaah_pertanyaan.form_id > mutabaah_form.id [delete: cascade]
+Ref: mutabaah_opsi.pertanyaan_id > mutabaah_pertanyaan.id [delete: cascade]
+
+Ref: mutabaah_harian.form_id > mutabaah_form.id [delete: restrict]
+Ref: mutabaah_harian.siswa_id > siswa.id [delete: cascade]
+Ref: mutabaah_jawaban.harian_id > mutabaah_harian.id [delete: cascade]
+Ref: mutabaah_jawaban.pertanyaan_id > mutabaah_pertanyaan.id [delete: restrict]
+Ref: mutabaah_jawaban_opsi.jawaban_id > mutabaah_jawaban.id [delete: cascade]
+Ref: mutabaah_jawaban_opsi.opsi_id > mutabaah_opsi.id [delete: restrict]
+
+Ref: penilaian.pengajuan_id > pengajuan_pkl.id [delete: cascade]
+Ref: penilaian.siswa_id > siswa.id [delete: cascade]
+Ref: penilaian.penilai_id > pengguna.id [delete: restrict]
+
+Ref: sertifikat.siswa_id > siswa.id [delete: cascade]
+Ref: sertifikat.pengajuan_id > pengajuan_pkl.id [delete: set null]
+Ref: sertifikat.dibuat_oleh > pengguna.id [delete: set null]
+
+Ref: log_aktivitas.pengguna_id > pengguna.id [delete: set null]
+Ref: notifikasi.pengguna_id > pengguna.id [delete: cascade]
+
+// ============================== GROUPING ===================================
+
+TableGroup "Master Data" {
+  auth_users
+  pengguna
+  jurusan
+  guru
+  siswa
+  perusahaan
+  periode_pkl
+  instruktur
+  orang_tua_siswa
+}
+
+TableGroup "Alur PKL" {
+  pengajuan_pkl
+  pengajuan_anggota
+  surat
+  dokumen
+  penomoran_surat
+}
+
+TableGroup "Monitoring" {
+  jurnal
+  verifikasi_jurnal
+  tugas
+  tugas_siswa
+  mutabaah_form
+  mutabaah_pertanyaan
+  mutabaah_opsi
+  mutabaah_harian
+  mutabaah_jawaban
+  mutabaah_jawaban_opsi
+  penilaian
+  sertifikat
+}
+
+TableGroup "Pengaturan & Audit" {
+  pengaturan_sekolah
+  log_aktivitas
+  notifikasi
+}
