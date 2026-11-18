@@ -127,12 +127,12 @@ export function SidebarContent({
                     />
                   </button>
 
-                  {groupOpen ? (
-                    <ul
-                      id={groupId}
-                      className="ml-5 mt-1 space-y-1 border-l border-sidebar-line pl-3"
-                    >
-                      {item.children?.map((child) => {
+                  <ul
+                    id={groupId}
+                    hidden={!groupOpen}
+                    className="ml-5 mt-1 space-y-1 border-l border-sidebar-line pl-3"
+                  >
+                    {item.children?.map((child) => {
                         const childActive = isNavActive(
                           pathname,
                           child.href,
@@ -168,9 +168,8 @@ export function SidebarContent({
                             </Link>
                           </li>
                         );
-                      })}
-                    </ul>
-                  ) : null}
+                    })}
+                  </ul>
                 </li>
               );
             }
