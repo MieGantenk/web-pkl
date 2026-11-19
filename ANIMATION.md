@@ -37,6 +37,7 @@ Referensi rasa: aplikasi seperti Linear, Stripe Dashboard, dan Vercel — bukan 
 8. **Sukses hanya setelah server menjawab.** Jangan menampilkan cap/centang optimistis.
 9. **Konten terbaca tanpa animasi.** Tanpa JS dan reduced motion, halaman tetap utuh.
 10. **Satu sistem.** Durasi, easing, dan jarak hanya dari token di §2.
+11. **Ganti tema** memakai transisi warna 320 ms + ikon 300 ms; hanya saat tombol tema ditekan, bukan pada hover.
 
 ---
 

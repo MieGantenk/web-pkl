@@ -482,7 +482,7 @@ Format laporan akhir:
 - Halaman admin mutaba'ah terpisah: riwayat + filter + form builder.
 - Tugas guru dengan peringatan porsi.
 - Notifikasi in-app v1; email/WA nanti.
-- Light mode v1; dark mode nanti.
+- Light & dark mode aktif. Gunakan token; jangan hardcode warna.
 - Scan tanda tangan; digital signature nanti.
 - Sertifikat & penilaian v1.1.
 - UI: "Buku Kerja", teal sekolah, Sora + Plus Jakarta Sans.

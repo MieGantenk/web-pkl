@@ -14,6 +14,7 @@ import {
   GraduationCap,
   History,
   Play,
+  Settings,
   Upload,
   UserSearch,
   Users,
@@ -42,19 +43,23 @@ const activityLabels: Record<string, string> = {
   approve_pengajuan: "menyetujui pengajuan",
   reject_pengajuan: "menolak pengajuan",
   verifikasi_jurnal: "memverifikasi jurnal",
+  revisi_jurnal: "meminta revisi jurnal",
   upload_dokumen: "mengunggah dokumen",
   terbit_surat: "menerbitkan surat",
   mulai_pkl: "memulai PKL",
   arsip_pengajuan: "mengarsipkan pengajuan",
+  update_pengaturan: "memperbarui pengaturan sekolah",
 };
 
 const activityIcons: Record<string, LucideIcon> = {
   approve_pengajuan: Check,
   reject_pengajuan: X,
   verifikasi_jurnal: FileCheck,
+  revisi_jurnal: FileText,
   upload_dokumen: Upload,
   terbit_surat: FileText,
   mulai_pkl: Play,
+  update_pengaturan: Settings,
 };
 
 function activityLabel(action: string) {

@@ -38,6 +38,7 @@ export default function RootLayout({
     <html
       lang="id"
       data-type="software"
+      suppressHydrationWarning
       className={`${jakarta.variable} ${sora.variable}`}
     >
       <body className="min-h-dvh bg-canvas text-ink antialiased">

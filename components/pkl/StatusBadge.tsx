@@ -18,8 +18,10 @@ import {
   statusJurnal,
   statusPengajuan,
   statusToneClass,
+  statusTugas,
   type StatusJurnal,
   type StatusPengajuan,
+  type StatusTugas,
   type StatusTone,
 } from "@/lib/status";
 import { cn } from "@/lib/utils";
@@ -45,6 +47,12 @@ const jurnalIcons: Record<StatusJurnal, LucideIcon> = {
   terverifikasi_guru: FileCheck,
   terverifikasi_instruktur: BadgeCheck,
   revisi: X,
+};
+
+const tugasIcons: Record<StatusTugas, LucideIcon> = {
+  belum: CircleDashed,
+  selesai: Check,
+  terlambat: Clock,
 };
 
 type StatusBadgeProps = {
@@ -132,4 +140,12 @@ export function HubunganBadge({
   }[hubungan];
 
   return <StatusBadge label={label} tone="neutral" icon={UserRound} />;
+}
+
+export function TugasBadge({ status }: { status: StatusTugas }) {
+  const meta = statusTugas[status];
+
+  return (
+    <StatusBadge label={meta.label} tone={meta.tone} icon={tugasIcons[status]} />
+  );
 }
