@@ -128,3 +128,33 @@ export const statusVerifikasi: Record<
   revisi: { label: "Perlu revisi", tone: "info" },
   ditolak: { label: "Ditolak", tone: "danger" },
 };
+
+export type StatusSurat = "draft" | "terbit" | "dibatalkan";
+
+export const statusSurat: Record<
+  StatusSurat,
+  { label: string; tone: StatusTone }
+> = {
+  draft: { label: "Draft", tone: "neutral" },
+  terbit: { label: "Terbit", tone: "success" },
+  dibatalkan: { label: "Dibatalkan", tone: "danger" },
+};
+
+export type JenisSurat =
+  | "izin_orang_tua"
+  | "pernyataan"
+  | "pengajuan"
+  | "keberangkatan"
+  | "tugas_monitoring"
+  | "perjanjian"
+  | "penarikan";
+
+export const jenisSuratLabel: Record<JenisSurat, string> = {
+  izin_orang_tua: "Izin Orang Tua",
+  pernyataan: "Surat Pernyataan",
+  pengajuan: "Surat Pengajuan",
+  keberangkatan: "Surat Keberangkatan",
+  tugas_monitoring: "Surat Tugas Monitoring",
+  perjanjian: "Surat Perjanjian",
+  penarikan: "Surat Penarikan",
+};

@@ -89,7 +89,7 @@ Kalau masih bertentangan, berhenti dan minta keputusan. Jangan menebak.
 
 ## Langkah berikutnya
 
-1. Selesai: `AppShell`, login, role guard, beranda siswa, ringkasan admin, dan pengelolaan data siswa + akun.
+1. Selesai: `AppShell`, login, role guard, beranda siswa, ringkasan admin, pengelolaan data siswa + akun, dan beranda orang tua.
 2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, dan jurnal.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Untuk data demo pengembangan: `npm run seed:demo` (jangan dijalankan di produksi).

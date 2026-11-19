@@ -1,5 +1,6 @@
 /**
- * DEV ONLY — data demo untuk login, beranda siswa, dan ringkasan admin.
+ * DEV ONLY — data demo untuk login, beranda siswa, ringkasan admin,
+ * dan beranda orang tua.
  *
  *   npm run seed:demo
  *
@@ -74,6 +75,9 @@ const NAMA = "Farel Ahmad";
 const ADMIN_EMAIL = "admin.demo@example.com";
 const ADMIN_USERNAME = "admin";
 const ADMIN_NAMA = "Admin PKL";
+const ORTU_EMAIL = "ortu.demo@example.com";
+const ORTU_USERNAME = "ortu";
+const ORTU_NAMA = "Fauzi Ahmad";
 
 const today = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Jakarta",
@@ -98,6 +102,9 @@ const ids = {
   siswaIsa: uuidFor("demo-siswa-isa"),
   guruSandi: uuidFor("demo-guru-sandi"),
   guruRina: uuidFor("demo-guru-rina"),
+  orangTua: uuidFor("demo-orang-tua-fauzi"),
+  relasiOrtuFarel: uuidFor("demo-relasi-ortu-farel"),
+  relasiOrtuAhmad: uuidFor("demo-relasi-ortu-ahmad"),
   pengajuan: uuidFor("demo-pengajuan-farel"),
   pengajuanAhmad: uuidFor("demo-pengajuan-ahmad"),
   pengajuanHisyam: uuidFor("demo-pengajuan-hisyam"),
@@ -228,6 +235,12 @@ const isa = await ensureDemoUser({
   nama: "Isa",
   peran: "siswa",
 });
+const ortu = await ensureDemoUser({
+  email: ORTU_EMAIL,
+  username: ORTU_USERNAME,
+  nama: ORTU_NAMA,
+  peran: "ortu",
+});
 
 must(
   await admin.from("jurusan").upsert(
@@ -356,6 +369,29 @@ must(
     { onConflict: "id" },
   ),
   "upsert siswa",
+);
+
+must(
+  await admin.from("orang_tua_siswa").upsert(
+    [
+      {
+        id: ids.relasiOrtuFarel,
+        pengguna_id: ortu.id,
+        siswa_id: ids.siswa,
+        hubungan: "ayah",
+        created_at: isoAt(today, "08:00:00"),
+      },
+      {
+        id: ids.relasiOrtuAhmad,
+        pengguna_id: ortu.id,
+        siswa_id: ids.siswaAhmad,
+        hubungan: "ayah",
+        created_at: isoAt(today, "08:01:00"),
+      },
+    ],
+    { onConflict: "pengguna_id,siswa_id" },
+  ),
+  "upsert relasi orang tua",
 );
 
 must(
@@ -689,3 +725,5 @@ console.log(`Admin: ${ADMIN_USERNAME} / ${PASSWORD}`);
 console.log(`Email admin: ${ADMIN_EMAIL}`);
 console.log(`Siswa: ${USERNAME} / ${PASSWORD}`);
 console.log(`Email siswa: ${EMAIL}`);
+console.log(`Orang tua: ${ORTU_USERNAME} / ${PASSWORD}`);
+console.log(`Email orang tua: ${ORTU_EMAIL}`);
