@@ -14,11 +14,11 @@ export default function AdminError({ reset }: { reset: () => void }) {
           aria-hidden
         />
         <h1 className="mt-3 text-xl font-semibold text-ink">
-          Ringkasan belum dapat dimuat
+          Halaman admin belum dapat dimuat
         </h1>
         <p className="mt-2 text-base leading-[26px] text-ink-soft">
-          Periksa koneksi Anda, lalu coba lagi. Jika masih gagal, periksa data
-          antrean di menu terkait.
+          Periksa koneksi Anda, lalu coba lagi. Jika masih gagal, hubungi
+          pengelola sistem.
         </p>
         <Button onClick={reset} className="mt-5 w-full sm:w-auto">
           Coba lagi

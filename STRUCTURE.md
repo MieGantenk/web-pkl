@@ -237,6 +237,7 @@ npm run build
 | Halaman login | Selesai (username/email + password, redirect per role) |
 | Beranda siswa | Selesai (status PKL, jurnal hari ini, mutaba'ah, jurnal terakhir) |
 | Ringkasan admin | Selesai (antrean, statistik, grafik pengajuan, aktivitas) |
+| Data siswa + akun | Selesai (list, filter, pagination, tambah, detail, edit, aktif/nonaktif) |
 | Halaman modul lain | Belum diisi (bertahap) |
 
 Data demo pengembangan: `npm run seed:demo` membuat akun admin `admin`

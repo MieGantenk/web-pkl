@@ -12,13 +12,13 @@ Versi 1.0 · 17 November 2026
 | Kelompok | MVP | v1.1 |
 |---|---:|---:|
 | Auth & status | 1 login + 3 halaman status | — |
-| Admin | 20 | — |
+| Admin | 21 | — |
 | Guru | 8 | — |
 | Siswa | 8 | — |
 | Instruktur | 4 | 1 |
 | Orang tua | 5 | — |
 | Print | 1 | 1 |
-| **Total halaman** | **47** | **2** |
+| **Total halaman** | **48** | **2** |
 
 Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 
@@ -37,13 +37,14 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 
 ---
 
-## 3. Admin — 20 halaman
+## 3. Admin — 21 halaman
 
 | Route | Halaman | Isi utama |
 |---|---|---|
 | `/admin` | Ringkasan | Antrean persetujuan, jurnal belum verifikasi, siswa belum dapat tempat, KPI, grafik |
-| `/admin/siswa` | Data siswa | Tabel, filter, CRUD, nonaktifkan |
-| `/admin/siswa/[id]` | Detail siswa | Profil, penempatan, jurnal, surat, mutaba'ah, timeline |
+| `/admin/siswa` | Data siswa | Tabel, filter, pagination, tambah, nonaktifkan |
+| `/admin/siswa/baru` | Tambah siswa | Form data siswa + akun login |
+| `/admin/siswa/[id]` | Detail siswa | Profil, akun, penempatan, jurnal terakhir |
 | `/admin/guru` | Data guru | CRUD, jurusan, akun |
 | `/admin/jurusan` | Jurusan | CRUD |
 | `/admin/perusahaan` | Perusahaan | CRUD DUDI, instruktur |
