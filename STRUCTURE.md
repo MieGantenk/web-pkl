@@ -22,7 +22,6 @@ pkl-web/
 │   │   │   │   ├── page.tsx          # /admin/siswa
 │   │   │   │   └── [id]/page.tsx     # /admin/siswa/[id]
 │   │   │   ├── guru/
-│   │   │   ├── jurusan/
 │   │   │   ├── perusahaan/
 │   │   │   ├── periode/
 │   │   │   ├── instruktur/
