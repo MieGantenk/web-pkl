@@ -87,3 +87,13 @@ export function JurnalBadge({ status }: { status: StatusJurnal }) {
     <StatusBadge label={meta.label} tone={meta.tone} icon={jurnalIcons[status]} />
   );
 }
+
+export function AkunBadge({ aktif }: { aktif: boolean }) {
+  return (
+    <StatusBadge
+      label={aktif ? "Aktif" : "Nonaktif"}
+      tone={aktif ? "success" : "neutral"}
+      icon={aktif ? Check : Ban}
+    />
+  );
+}

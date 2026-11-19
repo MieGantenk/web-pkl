@@ -115,6 +115,17 @@
   }
 }
 
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -170,8 +181,13 @@
     transform: translateX(0);
   }
 
-  .app-drawer::backdrop {
+  .app-drawer::backdrop,
+  .app-dialog::backdrop {
     background: var(--color-backdrop);
+  }
+
+  .app-dialog[open] {
+    animation: dialog-enter var(--m-panel) var(--ease-enter) both;
   }
 
   body:has(.app-drawer[open]) .bottom-nav {
