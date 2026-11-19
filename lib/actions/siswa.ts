@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { assertAdminAction } from "@/lib/actions/admin-guard";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import {
   createSiswaSchema,
   fieldErrorsFrom,
@@ -31,33 +31,6 @@ function revalidateSiswa(id?: string) {
   if (id) {
     revalidatePath(`/admin/siswa/${id}`);
   }
-}
-
-async function assertAdmin(): Promise<{
-  ok: false;
-  message: string;
-} | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { ok: false, message: "Sesi tidak valid. Silakan masuk lagi." };
-  }
-
-  const admin = createAdminClient();
-  const { data: profile } = await admin
-    .from("pengguna")
-    .select("peran, aktif")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (!profile?.aktif || profile.peran !== "admin") {
-    return { ok: false, message: "Anda tidak berwenang." };
-  }
-
-  return null;
 }
 
 async function checkUnique(input: {
@@ -128,7 +101,7 @@ async function checkUnique(input: {
 export async function createSiswaAction(
   input: unknown,
 ): Promise<SiswaActionResult> {
-  const auth = await assertAdmin();
+  const auth = await assertAdminAction();
   if (auth) return auth;
 
   const parsed = createSiswaSchema.safeParse(input);
@@ -243,7 +216,7 @@ export async function updateSiswaAction(
   siswaId: unknown,
   input: unknown,
 ): Promise<SiswaActionResult> {
-  const auth = await assertAdmin();
+  const auth = await assertAdminAction();
   if (auth) return auth;
 
   const parsedId = idSchema.safeParse(siswaId);
@@ -364,7 +337,7 @@ export async function setSiswaAktifAction(input: {
   id: string;
   aktif: boolean;
 }): Promise<SiswaActionResult> {
-  const auth = await assertAdmin();
+  const auth = await assertAdminAction();
   if (auth) return auth;
 
   const parsedId = idSchema.safeParse(input.id);

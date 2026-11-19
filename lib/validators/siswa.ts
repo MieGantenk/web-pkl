@@ -1,7 +1,8 @@
 import { z } from "zod";
 
-export const postgresUuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { fieldErrorsFrom, postgresUuidPattern } from "./common";
+
+export { fieldErrorsFrom, postgresUuidPattern };
 
 const optionalText = (max: number) => z.string().trim().max(max);
 
@@ -55,16 +56,3 @@ export const createSiswaSchema = siswaFormSchema.superRefine((data, ctx) => {
 });
 
 export type SiswaFormInput = z.infer<typeof siswaFormSchema>;
-
-export function fieldErrorsFrom(error: z.ZodError) {
-  const fields: Record<string, string> = {};
-
-  for (const issue of error.issues) {
-    const key = issue.path[0];
-    if (typeof key === "string" && !fields[key]) {
-      fields[key] = issue.message;
-    }
-  }
-
-  return fields;
-}

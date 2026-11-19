@@ -4,6 +4,8 @@ import { connection } from "next/server";
 import type { StatusJurnal, StatusPengajuan } from "@/lib/status";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export { getJurusanOptions, type JurusanOption } from "./master";
+
 export const SISWA_PAGE_SIZE = 10;
 
 export type SiswaListItem = {
@@ -58,8 +60,6 @@ export type SiswaDetail = {
     status: StatusJurnal;
   }>;
 };
-
-export type JurusanOption = { id: string; nama: string };
 
 function cleanSearch(value: string) {
   return value.replace(/[%_,()]/g, " ").trim();
@@ -282,18 +282,3 @@ export const getSiswaDetail = cache(
   },
 );
 
-export const getJurusanOptions = cache(async (): Promise<JurusanOption[]> => {
-  await connection();
-
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("jurusan")
-    .select("id, nama")
-    .order("nama", { ascending: true });
-
-  if (error) {
-    throw new Error("Gagal memuat data jurusan.");
-  }
-
-  return data ?? [];
-});
