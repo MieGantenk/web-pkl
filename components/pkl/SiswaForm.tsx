@@ -42,6 +42,7 @@ export function SiswaForm({
     ),
     defaultValues,
   });
+  const submit = handleSubmit(onSubmit);
 
   async function onSubmit(values: SiswaFormInput) {
     try {
@@ -94,7 +95,16 @@ export function SiswaForm({
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={(event) => event.preventDefault()}
+      onKeyDown={(event) => {
+        if (
+          event.key === "Enter" &&
+          event.target instanceof HTMLInputElement
+        ) {
+          event.preventDefault();
+          submit();
+        }
+      }}
       noValidate
       className="max-w-[680px] space-y-6"
     >
@@ -343,7 +353,7 @@ export function SiswaForm({
         >
           Batal
         </Link>
-        <Button type="submit" loading={isSubmitting}>
+        <Button type="button" onClick={submit} loading={isSubmitting}>
           {mode === "create" ? "Buat siswa" : "Simpan perubahan"}
         </Button>
       </div>

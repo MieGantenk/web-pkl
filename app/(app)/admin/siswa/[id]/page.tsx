@@ -136,6 +136,26 @@ export default async function AdminSiswaDetailPage({
                 ? "Siswa dapat masuk dan mengisi jurnal."
                 : "Siswa tidak dapat masuk. Data tetap tersimpan."}
             </p>
+
+            <dl className="mt-4 space-y-3 border-t border-border pt-4 text-sm">
+              <div>
+                <dt className="text-[13px] leading-[18px] text-muted">
+                  Username
+                </dt>
+                <dd className="mt-0.5 font-medium text-ink">
+                  {data.pengguna.username}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[13px] leading-[18px] text-muted">
+                  Email
+                </dt>
+                <dd className="mt-0.5 break-all font-medium text-ink">
+                  {data.pengguna.email}
+                </dd>
+              </div>
+            </dl>
+
             <div className="mt-4">
               <SiswaStatusButton
                 id={data.id}

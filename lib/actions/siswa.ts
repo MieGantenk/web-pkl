@@ -297,30 +297,32 @@ export async function updateSiswaAction(
     };
   }
 
-  const authResult = await admin.auth.admin.updateUserById(
-    current.pengguna_id,
-    {
-      email,
-      email_confirm: true,
-      user_metadata: {
-        username: data.username,
-        nama_lengkap: data.nama_lengkap,
+  if (current.pengguna.email !== email) {
+    const authResult = await admin.auth.admin.updateUserById(
+      current.pengguna_id,
+      {
+        email,
+        email_confirm: true,
+        user_metadata: {
+          username: data.username,
+          nama_lengkap: data.nama_lengkap,
+        },
       },
-    },
-  );
+    );
 
-  if (authResult.error) {
-    const emailTaken = authResult.error.message
-      .toLowerCase()
-      .includes("already");
+    if (authResult.error) {
+      const emailTaken = authResult.error.message
+        .toLowerCase()
+        .includes("already");
 
-    return {
-      ok: false,
-      message: emailTaken
-        ? "Email sudah dipakai."
-        : "Akun siswa belum dapat diperbarui. Coba lagi.",
-      fieldErrors: emailTaken ? { email: "Email sudah dipakai." } : undefined,
-    };
+      return {
+        ok: false,
+        message: emailTaken
+          ? "Email sudah dipakai."
+          : "Akun siswa belum dapat diperbarui. Coba lagi.",
+        fieldErrors: emailTaken ? { email: "Email sudah dipakai." } : undefined,
+      };
+    }
   }
 
   const penggunaResult = await admin
