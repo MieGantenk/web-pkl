@@ -371,7 +371,6 @@ Penjelasan lengkap ada di `LAYOUT.md`. Ringkasnya:
 
 ## 11. Yang sengaja tidak dikerjakan di v1
 
-- **Dark mode** — token disiapkan, tetapi rilis pertama light-only agar konsisten dengan surat/cetak.
 - **PWA/offline** — berguna nanti untuk siswa dengan sinyal lemah; bukan prioritas pertama.
 - **Ilustrasi custom** — ikon garis + konten nyata lebih jujur.
 - **Grafik dashboard kompleks** — satu bar chart dan satu progress cukup.

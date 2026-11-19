@@ -1,6 +1,6 @@
 /**
  * DEV ONLY — data demo untuk login, beranda siswa, ringkasan admin,
- * dan beranda orang tua.
+ * beranda orang tua, dan halaman guru.
  *
  *   npm run seed:demo
  *
@@ -114,6 +114,9 @@ const ids = {
   anggotaHisyam: uuidFor("demo-anggota-hisyam"),
   anggotaAbdullah: uuidFor("demo-anggota-abdullah"),
   surat: uuidFor("demo-surat-keberangkatan"),
+  suratTugas: uuidFor("demo-surat-tugas-monitoring"),
+  tugas: uuidFor("demo-tugas-laporan"),
+  tugasSiswa: uuidFor("demo-tugas-siswa-farel"),
   jurnalAhmad: uuidFor("demo-jurnal-ahmad"),
   jurnalHisyam: uuidFor("demo-jurnal-hisyam"),
   verifikasiHisyamGuru: uuidFor("demo-verifikasi-hisyam-guru"),
@@ -402,6 +405,7 @@ must(
         perusahaan_id: ids.perusahaan,
         periode_id: ids.periode,
         dibuat_oleh: farel.id,
+        guru_pembimbing_id: ids.guruSandi,
         tanggal_mulai: addDays(today, -16),
         tanggal_selesai: addDays(today, 60),
         status: "berlangsung",
@@ -420,6 +424,7 @@ must(
         perusahaan_id: ids.perusahaan3,
         periode_id: ids.periode,
         dibuat_oleh: hisyam.id,
+        guru_pembimbing_id: ids.guruSandi,
         tanggal_mulai: addDays(today, -20),
         tanggal_selesai: addDays(today, 70),
         status: "diterima",
@@ -474,18 +479,59 @@ must(
 
 must(
   await admin.from("surat").upsert(
-    {
-      id: ids.surat,
-      pengajuan_id: ids.pengajuan,
-      jenis: "keberangkatan",
-      nomor: `001/PKL/SMK-IT/XI/${year}`,
-      tanggal_terbit: addDays(today, -20),
-      status: "terbit",
-      dibuat_oleh: farel.id,
-    },
+    [
+      {
+        id: ids.surat,
+        pengajuan_id: ids.pengajuan,
+        jenis: "keberangkatan",
+        nomor: `001/PKL/SMK-IT/XI/${year}`,
+        tanggal_terbit: addDays(today, -20),
+        status: "terbit",
+        dibuat_oleh: adminUser.id,
+      },
+      {
+        id: ids.suratTugas,
+        pengajuan_id: ids.pengajuan,
+        jenis: "tugas_monitoring",
+        nomor: `002/PKL/SMK-IT/XI/${year}`,
+        tanggal_terbit: addDays(today, -16),
+        status: "terbit",
+        dibuat_oleh: adminUser.id,
+      },
+    ],
     { onConflict: "id" },
   ),
   "upsert surat",
+);
+
+must(
+  await admin.from("tugas").upsert(
+    {
+      id: ids.tugas,
+      pengajuan_id: ids.pengajuan,
+      guru_id: ids.guruSandi,
+      judul: "Laporan mingguan kegiatan PKL",
+      deskripsi:
+        "Susun laporan singkat kegiatan selama satu minggu, lalu unggah sebagai bukti.",
+      deadline: addDays(today, 7),
+      created_at: isoAt(addDays(today, -3), "09:00:00"),
+    },
+    { onConflict: "id" },
+  ),
+  "upsert tugas",
+);
+
+must(
+  await admin.from("tugas_siswa").upsert(
+    {
+      id: ids.tugasSiswa,
+      tugas_id: ids.tugas,
+      siswa_id: ids.siswa,
+      status: "belum",
+    },
+    { onConflict: "tugas_id,siswa_id" },
+  ),
+  "upsert tugas siswa",
 );
 
 const journals = [
@@ -727,3 +773,5 @@ console.log(`Siswa: ${USERNAME} / ${PASSWORD}`);
 console.log(`Email siswa: ${EMAIL}`);
 console.log(`Orang tua: ${ORTU_USERNAME} / ${PASSWORD}`);
 console.log(`Email orang tua: ${ORTU_EMAIL}`);
+console.log(`Guru: guru.sandi / ${PASSWORD}`);
+console.log("Email guru: guru.sandi@example.com");

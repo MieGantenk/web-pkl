@@ -238,12 +238,15 @@ npm run build
 | Beranda siswa | Selesai (status PKL, jurnal hari ini, mutaba'ah, jurnal terakhir) |
 | Ringkasan admin | Selesai (antrean, statistik, grafik pengajuan, aktivitas) |
 | Beranda orang tua | Selesai (pilih anak, status PKL, jurnal, mutaba'ah, surat) |
+| Pengaturan admin | Selesai (profil sekolah, aset surat, penomoran, ringkasan mutaba'ah) |
+| Halaman guru | Selesai (ringkasan, siswa bimbingan, detail, verifikasi, ekspor CSV) |
+| Dark/light mode | Selesai (toggle global, preferensi tersimpan per perangkat) |
 | Halaman modul lain | Belum diisi (bertahap) |
 
-Data demo pengembangan: `npm run seed:demo` membuat akun admin `admin`
-dan siswa `20240001` beserta contoh siswa, guru, perusahaan, pengajuan,
-jurnal, mutaba'ah, dan log aktivitas. Jangan jalankan pada database
-produksi.
+Data demo pengembangan: `npm run seed:demo` membuat akun admin `admin`,
+siswa `20240001`, guru `guru.sandi`, dan orang tua `ortu` beserta contoh
+siswa, guru, perusahaan, pengajuan, jurnal, mutaba'ah, tugas, dan log
+aktivitas. Jangan jalankan pada database produksi.
 
 ### Known advisors
 
@@ -256,7 +259,7 @@ produksi.
 
 ## 7. Langkah berikutnya
 
-1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, ringkasan admin, dan beranda orang tua.
+1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, ringkasan admin, beranda orang tua, pengaturan admin, halaman guru inti, dan dark/light mode.
 2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, data siswa, jurnal.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Jalankan gate `design-taste-frontend` untuk halaman publik; halaman di balik auth diuji dengan Lighthouse dan review visual.

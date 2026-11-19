@@ -47,7 +47,7 @@ Stack: Next.js App Router + TypeScript + Tailwind CSS + Supabase.
 - **Mutaba'ah** masuk database, memakai form dinamis + versioning; admin punya halaman sendiri.
 - **Tugas guru** ada di MVP, dengan peringatan porsi.
 - **Notifikasi in-app** di v1; email/WA ditunda.
-- **Light mode** v1; dark mode ditunda.
+- **Light & dark mode** aktif; preferensi tersimpan per perangkat.
 - **Scan tanda tangan**; digital signature ditunda.
 - **Sertifikat & penilaian** v1.1; skema sudah disiapkan.
 
@@ -89,7 +89,7 @@ Kalau masih bertentangan, berhenti dan minta keputusan. Jangan menebak.
 
 ## Langkah berikutnya
 
-1. Selesai: `AppShell`, login, role guard, beranda siswa, ringkasan admin, dan beranda orang tua.
+1. Selesai: `AppShell`, login, role guard, beranda siswa, ringkasan admin, beranda orang tua, pengaturan admin, halaman guru inti, dan dark/light mode.
 2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, data siswa, dan jurnal.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Untuk data demo pengembangan: `npm run seed:demo` (jangan dijalankan di produksi).

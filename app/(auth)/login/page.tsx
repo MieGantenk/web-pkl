@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/auth/LoginForm";
+import { ThemeToggle } from "@/components/app/ThemeToggle";
 import { getCurrentProfile } from "@/lib/auth";
 import { roleHome } from "@/lib/navigation";
 
@@ -66,7 +67,10 @@ export default async function LoginPage() {
         </div>
       </aside>
 
-      <section className="flex flex-1 items-center justify-center px-5 py-10 sm:px-8 lg:px-12 lg:py-16">
+      <section className="relative flex flex-1 items-center justify-center px-5 py-10 sm:px-8 lg:px-12 lg:py-16">
+        <div className="absolute right-5 top-5 sm:right-8 sm:top-6">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-[400px]">
           <header className="mb-8">
             <p className="text-[13px] font-medium leading-[18px] text-brand-700">

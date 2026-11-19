@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-sora), var(--font-plus-jakarta), system-ui, sans-serif;
@@ -44,6 +46,7 @@
   --color-danger: #b42318;
   --color-danger-bg: #feebe9;
   --color-danger-border: #f5c6c2;
+  --color-danger-solid: #b42318;
   --color-info: #175cd3;
   --color-info-bg: #eaf1fe;
   --color-info-border: #c7d7fe;
@@ -82,6 +85,92 @@
   --m-timeline: 320ms;
   --m-progress: 600ms;
   --m-count: 900ms;
+}
+
+/* Tema gelap. Token yang sama dioverride agar seluruh UI ikut berubah. */
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --color-brand-50: #0c2b29;
+  --color-brand-100: #103835;
+  --color-brand-200: #174d48;
+  --color-brand-300: #1f6660;
+  --color-brand-400: #2b8780;
+  --color-brand-500: #3aa39d;
+  --color-brand-600: #55bcb6;
+  --color-brand-700: #7dd3cd;
+  --color-brand-800: #a7e3de;
+  --color-brand-900: #c7eeea;
+  --color-brand-950: #e5f8f6;
+
+  --color-primary: #147a76;
+  --color-primary-hover: #17807c;
+  --color-primary-active: #0f6e6a;
+  --color-primary-subtle: #0f2f2c;
+
+  --color-canvas: #07110f;
+  --color-surface: #0d1a18;
+  --color-surface-muted: #132521;
+  --color-border: #223a35;
+  --color-border-strong: #33524b;
+  --color-ink: #eef7f5;
+  --color-ink-soft: #c2d6d1;
+  --color-muted: #92aaa4;
+  --color-disabled: #5f7872;
+
+  --color-gold-400: #d1ae6c;
+  --color-gold-700: #e0c286;
+  --color-maroon-500: #d16a6a;
+
+  --color-success: #5fd3a0;
+  --color-success-bg: #0d2f23;
+  --color-success-border: #1f5a43;
+  --color-warning: #f0c56a;
+  --color-warning-bg: #33260c;
+  --color-warning-border: #5c461a;
+  --color-danger: #ff9a90;
+  --color-danger-bg: #331614;
+  --color-danger-border: #5e2a25;
+  --color-danger-solid: #b42318;
+  --color-info: #8ab4ff;
+  --color-info-bg: #101f3a;
+  --color-info-border: #243e6b;
+  --color-neutral-text: #c3ccd6;
+  --color-neutral-bg: #1a232b;
+  --color-neutral-border: #2e3b46;
+
+  --color-sidebar: #061c1a;
+  --color-sidebar-hover: #0c2b28;
+  --color-sidebar-active: #11423e;
+  --color-sidebar-text: #eaf4f2;
+  --color-sidebar-muted: #8fb3ae;
+  --color-sidebar-line: #163d39;
+
+  --color-backdrop: rgba(0, 0, 0, 0.62);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Transisi tema hanya aktif sesaat setelah tombol tema ditekan. */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition-property: background-color, border-color, color, fill, stroke !important;
+  transition-duration: var(--m-timeline) !important;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+html.theme-transition .theme-toggle-icon {
+  transition-property: opacity, transform !important;
+  transition-duration: var(--m-upload) !important;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1) !important;
 }
 
 @keyframes login-field-enter {
@@ -124,6 +213,10 @@
   body {
     margin: 0;
     padding: 0;
+  }
+
+  html {
+    background: var(--color-canvas);
   }
 
   body {
@@ -198,8 +291,61 @@
 }
 
 @media print {
+  :root,
+  .dark {
+    color-scheme: light;
+
+    --color-brand-50: #ecf8f7;
+    --color-brand-100: #d3efed;
+    --color-brand-200: #a7dfdc;
+    --color-brand-300: #73c9c5;
+    --color-brand-400: #3fb0ac;
+    --color-brand-500: #1d9a96;
+    --color-brand-600: #17807c;
+    --color-brand-700: #126662;
+    --color-brand-800: #0f4f4c;
+    --color-brand-900: #0b3b39;
+    --color-brand-950: #072422;
+
+    --color-primary: #147a76;
+    --color-primary-hover: #0f6e6a;
+    --color-primary-active: #0b5a57;
+    --color-primary-subtle: #e7f5f3;
+
+    --color-canvas: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f5f5f5;
+    --color-border: #d4d4d4;
+    --color-border-strong: #a3a3a3;
+    --color-ink: #000000;
+    --color-ink-soft: #1f1f1f;
+    --color-muted: #404040;
+    --color-disabled: #737373;
+
+    --color-success: #146c4c;
+    --color-success-bg: #e7f5ee;
+    --color-success-border: #b7e3ce;
+    --color-warning: #8a5a00;
+    --color-warning-bg: #fff6e0;
+    --color-warning-border: #f0d9a6;
+    --color-danger: #b42318;
+    --color-danger-bg: #feebe9;
+    --color-danger-border: #f5c6c2;
+    --color-danger-solid: #b42318;
+    --color-info: #175cd3;
+    --color-info-bg: #eaf1fe;
+    --color-info-border: #c7d7fe;
+    --color-neutral-text: #475467;
+    --color-neutral-bg: #f2f4f7;
+    --color-neutral-border: #d0d5dd;
+
+    --color-gold-700: #8a6a1f;
+    --color-maroon-500: #820101;
+  }
+
   body {
     background: #fff;
+    color: #000;
   }
 
   .no-print {

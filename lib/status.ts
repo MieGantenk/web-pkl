@@ -158,3 +158,13 @@ export const jenisSuratLabel: Record<JenisSurat, string> = {
   perjanjian: "Surat Perjanjian",
   penarikan: "Surat Penarikan",
 };
+
+export const jenisSuratList: readonly JenisSurat[] = [
+  "izin_orang_tua",
+  "pernyataan",
+  "pengajuan",
+  "keberangkatan",
+  "tugas_monitoring",
+  "perjanjian",
+  "penarikan",
+];
