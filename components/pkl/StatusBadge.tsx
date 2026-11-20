@@ -17,12 +17,16 @@ import type { LucideIcon } from "lucide-react";
 import {
   statusJurnal,
   statusPengajuan,
+  statusSurat,
   statusToneClass,
   statusTugas,
+  statusVerifikasi,
   type StatusJurnal,
   type StatusPengajuan,
+  type StatusSurat,
   type StatusTugas,
   type StatusTone,
+  type StatusVerifikasi,
 } from "@/lib/status";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +57,19 @@ const tugasIcons: Record<StatusTugas, LucideIcon> = {
   belum: CircleDashed,
   selesai: Check,
   terlambat: Clock,
+};
+
+const verifikasiIcons: Record<StatusVerifikasi, LucideIcon> = {
+  menunggu: Clock,
+  diterima: Check,
+  revisi: FileText,
+  ditolak: X,
+};
+
+const suratIcons: Record<StatusSurat, LucideIcon> = {
+  draft: FileText,
+  terbit: Check,
+  dibatalkan: Ban,
 };
 
 type StatusBadgeProps = {
@@ -95,6 +112,30 @@ export function JurnalBadge({ status }: { status: StatusJurnal }) {
 
   return (
     <StatusBadge label={meta.label} tone={meta.tone} icon={jurnalIcons[status]} />
+  );
+}
+
+export function DokumenBadge({ status }: { status: StatusVerifikasi }) {
+  const meta = statusVerifikasi[status];
+
+  return (
+    <StatusBadge
+      label={meta.label}
+      tone={meta.tone}
+      icon={verifikasiIcons[status]}
+    />
+  );
+}
+
+export function SuratBadge({ status }: { status: StatusSurat }) {
+  const meta = statusSurat[status];
+
+  return (
+    <StatusBadge
+      label={meta.label}
+      tone={meta.tone}
+      icon={suratIcons[status]}
+    />
   );
 }
 
