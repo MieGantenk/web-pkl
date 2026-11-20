@@ -7,11 +7,16 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { updateGuruProfileAction } from "@/lib/actions/guru-profile";
 import {
-  guruProfileSchema,
-  type GuruProfileInput,
-} from "@/lib/validators/guru-profile";
+  profileIdentitySchema,
+  type ProfileIdentityInput,
+} from "@/lib/validators/profile-identity";
+
+type ProfileResult =
+  | { ok: true; message: string }
+  | { ok: false; message: string };
+
+type ProfileAction = (input: unknown) => Promise<ProfileResult>;
 
 type TextFieldProps = React.ComponentProps<typeof Input> & {
   label: string;
@@ -70,26 +75,28 @@ function TextField({
   );
 }
 
-export function GuruProfileForm({
+export function ProfileIdentityForm({
   initial,
+  action,
 }: {
   initial: { nama_lengkap: string; telepon: string | null };
+  action: ProfileAction;
 }) {
   const router = useRouter();
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<GuruProfileInput>({
-    resolver: zodResolver(guruProfileSchema),
+  } = useForm<ProfileIdentityInput>({
+    resolver: zodResolver(profileIdentitySchema),
     defaultValues: {
       nama_lengkap: initial.nama_lengkap,
       telepon: initial.telepon ?? "",
     },
   });
 
-  async function onSubmit(values: GuruProfileInput) {
-    const result = await updateGuruProfileAction(values);
+  async function onSubmit(values: ProfileIdentityInput) {
+    const result = await action(values);
 
     if (!result.ok) {
       toast.error(result.message);
@@ -101,11 +108,7 @@ export function GuruProfileForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      noValidate
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
       <TextField
         label="Nama lengkap"
         required
@@ -118,6 +121,7 @@ export function GuruProfileForm({
         label="Telepon"
         type="tel"
         inputMode="tel"
+        autoComplete="tel"
         maxLength={25}
         placeholder="0812..."
         hint="Dipakai untuk kontak sekolah."

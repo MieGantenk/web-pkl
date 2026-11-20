@@ -6,18 +6,22 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { verifyJurnalAction } from "@/lib/actions/verifikasi";
+import type { VerifyJurnalResult } from "@/lib/validators/verifikasi-jurnal";
+
+type VerificationAction = (input: unknown) => Promise<VerifyJurnalResult>;
 
 export function VerificationPanel({
   jurnalId,
   canVerify,
   existingNote,
-  hasInstrukturVerification,
+  unavailableMessage,
+  action,
 }: {
   jurnalId: string;
   canVerify: boolean;
   existingNote: string | null;
-  hasInstrukturVerification: boolean;
+  unavailableMessage: string;
+  action: VerificationAction;
 }) {
   const router = useRouter();
   const [catatan, setCatatan] = useState(existingNote ?? "");
@@ -34,7 +38,7 @@ export function VerificationPanel({
     setSubmittingAction(status);
 
     try {
-      const result = await verifyJurnalAction({
+      const result = await action({
         jurnalId,
         status,
         catatan,
@@ -55,9 +59,7 @@ export function VerificationPanel({
   if (!canVerify) {
     return (
       <div className="rounded-sm border border-success-border bg-success-bg px-3 py-2.5 text-sm leading-[22px] text-success">
-        {hasInstrukturVerification
-          ? "Jurnal ini sudah diverifikasi instruktur. Verifikasi tidak bisa diubah lagi."
-          : "Jurnal ini tidak dapat diverifikasi saat ini."}
+        {unavailableMessage}
       </div>
     );
   }

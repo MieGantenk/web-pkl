@@ -1,6 +1,6 @@
 /**
  * DEV ONLY — data demo untuk login, beranda siswa, ringkasan admin,
- * beranda orang tua, dan halaman guru.
+ * beranda orang tua, halaman guru, dan halaman instruktur.
  *
  *   npm run seed:demo
  *
@@ -78,6 +78,12 @@ const ADMIN_NAMA = "Admin PKL";
 const ORTU_EMAIL = "ortu.demo@example.com";
 const ORTU_USERNAME = "ortu";
 const ORTU_NAMA = "Fauzi Ahmad";
+const INSTRUKTUR_MITRA_EMAIL = "instruktur.mitra@example.com";
+const INSTRUKTUR_MITRA_USERNAME = "instruktur.mitra";
+const INSTRUKTUR_MITRA_NAMA = "Dewi Lestari";
+const INSTRUKTUR_KARYA_EMAIL = "instruktur.karya@example.com";
+const INSTRUKTUR_KARYA_USERNAME = "instruktur.karya";
+const INSTRUKTUR_KARYA_NAMA = "Budi Santoso";
 
 const today = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Jakarta",
@@ -102,6 +108,8 @@ const ids = {
   siswaIsa: uuidFor("demo-siswa-isa"),
   guruSandi: uuidFor("demo-guru-sandi"),
   guruRina: uuidFor("demo-guru-rina"),
+  instrukturMitra: uuidFor("demo-instruktur-mitra"),
+  instrukturKarya: uuidFor("demo-instruktur-karya"),
   orangTua: uuidFor("demo-orang-tua-fauzi"),
   relasiOrtuFarel: uuidFor("demo-relasi-ortu-farel"),
   relasiOrtuAhmad: uuidFor("demo-relasi-ortu-ahmad"),
@@ -213,6 +221,18 @@ const guruRina = await ensureDemoUser({
   username: "guru.rina",
   nama: "Rina Kusuma",
   peran: "guru",
+});
+const instrukturMitra = await ensureDemoUser({
+  email: INSTRUKTUR_MITRA_EMAIL,
+  username: INSTRUKTUR_MITRA_USERNAME,
+  nama: INSTRUKTUR_MITRA_NAMA,
+  peran: "instruktur",
+});
+const instrukturKarya = await ensureDemoUser({
+  email: INSTRUKTUR_KARYA_EMAIL,
+  username: INSTRUKTUR_KARYA_USERNAME,
+  nama: INSTRUKTUR_KARYA_NAMA,
+  peran: "instruktur",
 });
 const ahmad = await ensureDemoUser({
   email: "ahmad.demo@example.com",
@@ -326,6 +346,33 @@ must(
 );
 
 must(
+  await admin.from("instruktur").upsert(
+    [
+      {
+        id: ids.instrukturMitra,
+        pengguna_id: instrukturMitra.id,
+        perusahaan_id: ids.perusahaan,
+        peran: "instruktur",
+        jabatan: "Instruktur Lapangan",
+        telepon: "081311112222",
+        aktif: true,
+      },
+      {
+        id: ids.instrukturKarya,
+        pengguna_id: instrukturKarya.id,
+        perusahaan_id: ids.perusahaan3,
+        peran: "instruktur",
+        jabatan: "Pembimbing Lapangan",
+        telepon: "081333334444",
+        aktif: true,
+      },
+    ],
+    { onConflict: "id" },
+  ),
+  "upsert instruktur",
+);
+
+must(
   await admin.from("siswa").upsert(
     [
       {
@@ -406,6 +453,7 @@ must(
         periode_id: ids.periode,
         dibuat_oleh: farel.id,
         guru_pembimbing_id: ids.guruSandi,
+        instruktur_id: ids.instrukturMitra,
         tanggal_mulai: addDays(today, -16),
         tanggal_selesai: addDays(today, 60),
         status: "berlangsung",
@@ -425,6 +473,7 @@ must(
         periode_id: ids.periode,
         dibuat_oleh: hisyam.id,
         guru_pembimbing_id: ids.guruSandi,
+        instruktur_id: ids.instrukturKarya,
         tanggal_mulai: addDays(today, -20),
         tanggal_selesai: addDays(today, 70),
         status: "diterima",
@@ -775,3 +824,7 @@ console.log(`Orang tua: ${ORTU_USERNAME} / ${PASSWORD}`);
 console.log(`Email orang tua: ${ORTU_EMAIL}`);
 console.log(`Guru: guru.sandi / ${PASSWORD}`);
 console.log("Email guru: guru.sandi@example.com");
+console.log(`Instruktur MitraComm: ${INSTRUKTUR_MITRA_USERNAME} / ${PASSWORD}`);
+console.log(`Email instruktur MitraComm: ${INSTRUKTUR_MITRA_EMAIL}`);
+console.log(`Instruktur Karya Mandiri: ${INSTRUKTUR_KARYA_USERNAME} / ${PASSWORD}`);
+console.log(`Email instruktur Karya Mandiri: ${INSTRUKTUR_KARYA_EMAIL}`);
