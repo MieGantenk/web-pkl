@@ -12,7 +12,7 @@ import { ChangePasswordForm } from "@/components/pkl/ChangePasswordForm";
 import { EmptyState } from "@/components/pkl/EmptyState";
 import { SiswaProfileForm } from "@/components/pkl/SiswaProfileForm";
 import { StatusBadge } from "@/components/pkl/StatusBadge";
-import { changeSiswaPasswordAction } from "@/lib/actions/siswa-profile";
+import { changePasswordAction } from "@/lib/actions/profile";
 import { requireRole } from "@/lib/auth";
 import { getSiswaProfile } from "@/lib/data/siswa-profile";
 
@@ -170,7 +170,7 @@ export default async function SiswaProfilePage() {
           </p>
 
           <div className="mt-5">
-            <ChangePasswordForm action={changeSiswaPasswordAction} />
+            <ChangePasswordForm action={changePasswordAction} />
           </div>
 
           <div className="mt-5 rounded-sm border border-border bg-surface-muted px-3 py-2.5 text-xs leading-4 text-muted">

@@ -7,6 +7,7 @@ import { ClipboardCheck } from "lucide-react";
 import { EmptyState } from "@/components/pkl/EmptyState";
 import { JurnalBadge } from "@/components/pkl/StatusBadge";
 import { VerificationPanel } from "@/components/pkl/VerificationPanel";
+import { verifyJurnalAction } from "@/lib/actions/verifikasi";
 import { requireRole } from "@/lib/auth";
 import { getGuruVerificationQueue } from "@/lib/data/guru";
 import { cn } from "@/lib/utils";
@@ -207,9 +208,12 @@ export default async function GuruVerificationPage({
                   jurnalId={selected.id}
                   canVerify={selected.canVerify}
                   existingNote={selected.guruVerification?.catatan ?? null}
-                  hasInstrukturVerification={
+                  unavailableMessage={
                     selected.hasInstrukturVerification
+                      ? "Jurnal ini sudah diverifikasi instruktur. Verifikasi tidak bisa diubah lagi."
+                      : "Jurnal ini tidak dapat diverifikasi saat ini."
                   }
+                  action={verifyJurnalAction}
                 />
               </div>
             </div>

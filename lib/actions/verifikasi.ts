@@ -1,43 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-
-const verifySchema = z
-  .object({
-    jurnalId: z
-      .string()
-      .regex(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-        "Jurnal tidak valid.",
-      ),
-    status: z.enum(["diterima", "revisi"]),
-    catatan: z
-      .string()
-      .trim()
-      .max(1000, "Catatan maksimal 1000 karakter.")
-      .optional()
-      .or(z.literal("")),
-  })
-  .refine(
-    (data) => data.status !== "revisi" || Boolean(data.catatan?.trim()),
-    {
-      message: "Catatan wajib diisi saat meminta revisi.",
-      path: ["catatan"],
-    },
-  );
-
-export type VerifyJurnalResult =
-  | { ok: true; message: string }
-  | { ok: false; message: string };
+import {
+  verifyJurnalSchema,
+  type VerifyJurnalResult,
+} from "@/lib/validators/verifikasi-jurnal";
 
 export async function verifyJurnalAction(
   input: unknown,
 ): Promise<VerifyJurnalResult> {
-  const parsed = verifySchema.safeParse(input);
+  const parsed = verifyJurnalSchema.safeParse(input);
 
   if (!parsed.success) {
     return {

@@ -8,9 +8,12 @@ import {
 
 import { ChangePasswordForm } from "@/components/pkl/ChangePasswordForm";
 import { EmptyState } from "@/components/pkl/EmptyState";
-import { GuruProfileForm } from "@/components/pkl/GuruProfileForm";
+import { ProfileIdentityForm } from "@/components/pkl/ProfileIdentityForm";
 import { StatusBadge } from "@/components/pkl/StatusBadge";
-import { changeGuruPasswordAction } from "@/lib/actions/guru-profile";
+import {
+  changePasswordAction,
+  updateProfileAction,
+} from "@/lib/actions/profile";
 import { requireRole } from "@/lib/auth";
 import { getGuruProfile } from "@/lib/data/guru-profile";
 
@@ -123,7 +126,8 @@ export default async function GuruProfilePage() {
               Perbarui nama dan nomor telepon yang tampil di sistem.
             </p>
             <div className="mt-4">
-              <GuruProfileForm
+              <ProfileIdentityForm
+                action={updateProfileAction}
                 initial={{
                   nama_lengkap: profile.nama_lengkap,
                   telepon: profile.telepon,
@@ -152,7 +156,7 @@ export default async function GuruProfilePage() {
           </p>
 
           <div className="mt-5">
-            <ChangePasswordForm action={changeGuruPasswordAction} />
+            <ChangePasswordForm action={changePasswordAction} />
           </div>
 
           <div className="mt-5 rounded-sm border border-border bg-surface-muted px-3 py-2.5 text-xs leading-4 text-muted">
