@@ -58,6 +58,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/mutabaah` | Mutaba'ah | Riwayat semua siswa, filter tanggal/kelas/kelengkapan, rekap |
 | `/admin/mutabaah/pertanyaan` | Form builder | Form, versi, pertanyaan, opsi, publish/arsip |
 | `/admin/surat` | Surat | 7 jenis, terbitkan, nomor, pratinjau, unduh |
+| `/admin/surat/print/[id]` | Cetak surat | Pratinjau A4, cetak, unduh PDF |
 | `/admin/laporan` | Laporan | Rekap periode/perusahaan/kelas, ekspor v1.1 |
 | `/admin/pengaturan` | Pengaturan | Profil sekolah, akreditasi, kop/footer, nomor surat, item mutaba'ah |
 | `/admin/audit` | Audit | Log aksi, filter |

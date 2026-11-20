@@ -8,6 +8,7 @@ import {
   Download,
   Eye,
   FileText,
+  Printer,
 } from "lucide-react";
 
 import { EmptyState } from "@/components/pkl/EmptyState";
@@ -280,7 +281,7 @@ export default async function AdminSuratPage({
         {data.rows.length ? (
           <>
             <div className="hidden overflow-x-auto rounded-md border border-border bg-surface shadow-xs md:block">
-              <table className="w-full min-w-[900px] border-collapse text-sm">
+              <table className="w-full min-w-[980px] border-collapse text-sm">
                 <caption className="sr-only">Daftar surat PKL</caption>
                 <thead className="bg-surface-muted text-left text-[13px] font-semibold text-ink-soft">
                   <tr>
@@ -339,11 +340,25 @@ export default async function AdminSuratPage({
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
                           <Link
+                            href={`/admin/surat/print/${row.id}`}
+                            className={buttonVariants({
+                              variant: "secondary",
+                              size: "sm",
+                            })}
+                          >
+                            <Printer
+                              className="size-4"
+                              strokeWidth={1.75}
+                              aria-hidden
+                            />
+                            Cetak
+                          </Link>
+                          <Link
                             href={`/api/surat/${row.id}/pdf`}
                             target="_blank"
                             rel="noreferrer"
                             className={buttonVariants({
-                              variant: "secondary",
+                              variant: "ghost",
                               size: "sm",
                             })}
                           >
@@ -405,11 +420,25 @@ export default async function AdminSuratPage({
                     </p>
                     <div className="mt-3 flex gap-2 border-t border-border pt-3">
                       <Link
+                        href={`/admin/surat/print/${row.id}`}
+                        className={cn(
+                          buttonVariants({ variant: "secondary", size: "sm" }),
+                          "flex-1",
+                        )}
+                      >
+                        <Printer
+                          className="size-4"
+                          strokeWidth={1.75}
+                          aria-hidden
+                        />
+                        Cetak
+                      </Link>
+                      <Link
                         href={`/api/surat/${row.id}/pdf`}
                         target="_blank"
                         rel="noreferrer"
                         className={cn(
-                          buttonVariants({ variant: "secondary", size: "sm" }),
+                          buttonVariants({ variant: "ghost", size: "sm" }),
                           "flex-1",
                         )}
                       >
