@@ -163,6 +163,7 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 | Orang tua | `createOrangTuaAction`, `updateOrangTuaAction`, `setOrangTuaAktifAction`, `linkOrangTuaAction`, `updateHubunganOrangTuaAction`, `unlinkOrangTuaAction` | Admin |
 | Pengajuan | `createPengajuanAction`, `updatePengajuanDraftAction`, `submitPengajuanAction`, `addAnggotaAction`, `removeAnggotaAction` | Siswa |
 | Pengajuan | `verifyDokumenAction`, `approvePengajuanAction`, `rejectPengajuanAction`, `issueSuratAction`, `startPklAction` | Admin |
+| Pengajuan | `reviewPengajuanAction` (verifikasi dokumen & keputusan) | Admin |
 | Dokumen | `recordDokumenAction` (metadata setelah upload ke Storage) | Siswa |
 | Surat | `issueSuratAction`, `downloadSuratAction` | Admin |
 | Jurnal | `createJurnalAction`, `updateJurnalAction`, `deleteJurnalAction` | Siswa |
