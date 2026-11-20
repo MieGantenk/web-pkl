@@ -29,7 +29,7 @@ import { getGuruStudentDetail } from "@/lib/data/guru";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Detail Siswa",
+  title: "Detail siswa",
 };
 
 export const instant = false;
@@ -244,9 +244,19 @@ export default async function GuruStudentDetailPage({
               </div>
               <div>
                 <dt className="text-[13px] font-medium text-muted">
-                  Instruktur / pembimbing perusahaan
+                  Instruktur perusahaan
                 </dt>
-                <dd className="mt-0.5 text-sm text-ink">Belum ditetapkan</dd>
+                <dd className="mt-0.5 text-sm text-ink">
+                  {data.instrukturNama ?? "Belum ditetapkan"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[13px] font-medium text-muted">
+                  Pembimbing lapangan
+                </dt>
+                <dd className="mt-0.5 text-sm text-ink">
+                  {data.pembimbingNama ?? "Belum ditetapkan"}
+                </dd>
               </div>
             </dl>
           </section>
@@ -269,14 +279,14 @@ export default async function GuruStudentDetailPage({
               <div className="flex items-center gap-4">
                 <a
                   href={`/api/guru/jurnal/${student.id}/export`}
-                  className="text-sm font-semibold text-brand-700 hover:text-brand-800"
+                  className="inline-flex h-11 items-center text-sm font-semibold text-brand-700 hover:text-brand-800"
                 >
                   Ekspor CSV
                 </a>
                 <Link
                   href="/guru/verifikasi"
                   prefetch={false}
-                  className="text-sm font-semibold text-brand-700 hover:text-brand-800"
+                  className="inline-flex h-11 items-center text-sm font-semibold text-brand-700 hover:text-brand-800"
                 >
                   Verifikasi
                 </Link>
