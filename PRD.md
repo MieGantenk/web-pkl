@@ -110,7 +110,6 @@ Aturan:
 - Sertifikat PDF + QR (v1.1).
 - Penilaian akhir (v1.1; skema sudah disiapkan).
 - PWA/offline.
-- Dark mode.
 - Multi-sekolah (tenant).
 - Import data lama sebagai fitur UI (migrasi dilakukan lewat script).
 - Export Excel/Word (v1.1).
@@ -473,7 +472,7 @@ Mengacu ke `DESIGN.md`:
 | **0. Fondasi** | Next.js, Supabase, auth, role, RLS, AppShell, token | 1–2 minggu |
 | **1. MVP** | Master data, pengajuan, surat, jurnal, mutaba'ah, verifikasi, dashboard, penarikan | 6–8 minggu |
 | **1.1** | Penilaian, sertifikat, QR, email/WA | 3–4 minggu |
-| **2. Lanjutan** | PWA/offline, dark mode, multi-sekolah, analytics | sesuai kebutuhan |
+| **2. Lanjutan** | PWA/offline, multi-sekolah, analytics | sesuai kebutuhan |
 
 ---
 
@@ -489,7 +488,7 @@ Mengacu ke `DESIGN.md`:
 - Mutaba'ah punya halaman admin sendiri: riwayat, filter tanggal, dan form builder.
 - Tugas guru dibatasi dengan peringatan (bukan hard block).
 - Notifikasi in-app di v1; email/WA ditunda.
-- Light mode di v1; dark mode ditunda.
+- Light & dark mode; preferensi pengguna disimpan per perangkat.
 - Tanda tangan: scan/tanda tangan basah; digital signature ditunda.
 - Sertifikat & penilaian: skema disiapkan, fitur v1.1.
 

@@ -235,7 +235,7 @@ Belum diputuskan, jangan dipasang dulu:
 | Notifikasi WhatsApp | Fonnte / Wablas | Orang tua lebih aktif di WA |
 | Tanda tangan digital | `signature_pad` | Alternatif: scan tanda tangan |
 | PWA / offline | Serwist / Workbox | Berguna untuk sinyal lemah |
-| Dark mode | Token + `next-themes` | v1 light-only |
+| Dark mode | Token + `next-themes` | Aktif (toggle global) |
 | Multi-sekolah | Tambahan `sekolah_id` + RLS | Jangan di v1 |
 | QR verifikasi | `qrcode` (sudah opsional) | Tergantung kebutuhan |
 | Testing framework | Vitest / Playwright | v1: lint + typecheck + build |

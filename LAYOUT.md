@@ -34,8 +34,8 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 │  DATA MASTER         │                                                          │
 │    Siswa             │  ┌────────────────────────────────────────────────────┐  │
 │    Guru              │  │ [Cari nama/NIS] [Kelas ▾] [Status ▾]  [Reset]     │  │
-│    Jurusan           │  ├────────────────────────────────────────────────────┤  │
-│    Perusahaan        │  │ Nama        NIS       Kelas  Status     Aksi      │  │
+│    Perusahaan        │  ├────────────────────────────────────────────────────┤  │
+│                      │  │ Nama        NIS       Kelas  Status     Aksi      │  │
 │    Periode           │  │ Abdullah    2024…     XI RPL  Diterima   ⋯         │  │
 │    Instruktur        │  │ Ahmad …     2024…     XI RPL  Diajukan   ⋯         │  │
 │    Orang Tua         │  │ …                                                  │  │
@@ -202,7 +202,7 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 
 | Role | Menu utama | Menu sekunder |
 |---|---|---|
-| **Admin** | Ringkasan | Data Master (Siswa, Guru, Jurusan, Perusahaan, Periode, Instruktur, Orang Tua), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Tugas, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
+| **Admin** | Ringkasan | Data Master (Siswa, Guru, Perusahaan, Periode, Instruktur, Orang Tua), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Tugas, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
 | **Guru** | Ringkasan | Siswa Bimbingan, Verifikasi Jurnal, Tugas, Mutaba'ah, Surat Tugas, Penarikan, Profil |
 | **Siswa** | Beranda | Pengajuan PKL, Jurnal Harian, Mutaba'ah, Tugas, Surat, Profil |
 | **Instruktur** | Ringkasan | Siswa PKL, Verifikasi Jurnal, Penilaian, Profil |
@@ -630,7 +630,6 @@ app/
       siswa/page.tsx
       siswa/[id]/page.tsx
       guru/page.tsx
-      jurusan/page.tsx
       perusahaan/page.tsx
       periode/page.tsx
       instruktur/page.tsx
@@ -788,7 +787,6 @@ export default function Template({ children }: { children: React.ReactNode }) {
 | `admin/siswa/index.blade.php` | `/admin/siswa` | `StudentTable` |
 | `admin/siswa/create|edit` | `/admin/siswa/baru`, `/admin/siswa/[id]` | `StudentForm` |
 | `admin/guru/*` | `/admin/guru` | `TeacherTable`, `TeacherForm` |
-| `admin/jurusan/*` | `/admin/jurusan` | `MajorTable` |
 | `admin/tempat/index` | `/admin/perusahaan` | `CompanyTable` |
 | `daily.blade.php` | `/admin/jurnal` | `JournalTable` |
 | `admin/surat/*` | `/admin/surat` | `LetterTable`, `LetterPreview` |

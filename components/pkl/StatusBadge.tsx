@@ -8,6 +8,8 @@ import {
   FileText,
   Play,
   Send,
+  UserCog,
+  UserRound,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -16,8 +18,10 @@ import {
   statusJurnal,
   statusPengajuan,
   statusToneClass,
+  statusTugas,
   type StatusJurnal,
   type StatusPengajuan,
+  type StatusTugas,
   type StatusTone,
 } from "@/lib/status";
 import { cn } from "@/lib/utils";
@@ -43,6 +47,12 @@ const jurnalIcons: Record<StatusJurnal, LucideIcon> = {
   terverifikasi_guru: FileCheck,
   terverifikasi_instruktur: BadgeCheck,
   revisi: X,
+};
+
+const tugasIcons: Record<StatusTugas, LucideIcon> = {
+  belum: CircleDashed,
+  selesai: Check,
+  terlambat: Clock,
 };
 
 type StatusBadgeProps = {
@@ -88,12 +98,54 @@ export function JurnalBadge({ status }: { status: StatusJurnal }) {
   );
 }
 
-export function AkunBadge({ aktif }: { aktif: boolean }) {
+export function AktifBadge({ aktif }: { aktif: boolean }) {
   return (
     <StatusBadge
       label={aktif ? "Aktif" : "Nonaktif"}
       tone={aktif ? "success" : "neutral"}
       icon={aktif ? Check : Ban}
     />
+  );
+}
+
+export function AkunBadge({ aktif }: { aktif: boolean }) {
+  return <AktifBadge aktif={aktif} />;
+}
+
+export function PeranInstrukturBadge({
+  peran,
+}: {
+  peran: "instruktur" | "pembimbing";
+}) {
+  const isInstruktur = peran === "instruktur";
+
+  return (
+    <StatusBadge
+      label={isInstruktur ? "Instruktur" : "Pembimbing"}
+      tone="neutral"
+      icon={isInstruktur ? UserCog : UserRound}
+    />
+  );
+}
+
+export function HubunganBadge({
+  hubungan,
+}: {
+  hubungan: "ayah" | "ibu" | "wali";
+}) {
+  const label = {
+    ayah: "Ayah",
+    ibu: "Ibu",
+    wali: "Wali",
+  }[hubungan];
+
+  return <StatusBadge label={label} tone="neutral" icon={UserRound} />;
+}
+
+export function TugasBadge({ status }: { status: StatusTugas }) {
+  const meta = statusTugas[status];
+
+  return (
+    <StatusBadge label={meta.label} tone={meta.tone} icon={tugasIcons[status]} />
   );
 }

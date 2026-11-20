@@ -12,13 +12,13 @@ Versi 1.0 · 17 November 2026
 | Kelompok | MVP | v1.1 |
 |---|---:|---:|
 | Auth & status | 1 login + 3 halaman status | — |
-| Admin | 21 | — |
+| Admin | 20 | — |
 | Guru | 8 | — |
 | Siswa | 8 | — |
 | Instruktur | 4 | 1 |
 | Orang tua | 5 | — |
 | Print | 1 | 1 |
-| **Total halaman** | **48** | **2** |
+| **Total halaman** | **47** | **2** |
 
 Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 
@@ -37,7 +37,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 
 ---
 
-## 3. Admin — 21 halaman
+## 3. Admin — 20 halaman
 
 | Route | Halaman | Isi utama |
 |---|---|---|
@@ -46,7 +46,6 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/siswa/baru` | Tambah siswa | Form data siswa + akun login |
 | `/admin/siswa/[id]` | Detail siswa | Profil, akun, penempatan, jurnal terakhir |
 | `/admin/guru` | Data guru | CRUD, jurusan, akun |
-| `/admin/jurusan` | Jurusan | CRUD |
 | `/admin/perusahaan` | Perusahaan | CRUD DUDI, instruktur |
 | `/admin/periode` | Periode PKL | Tahun ajaran, tanggal, aktif |
 | `/admin/instruktur` | Instruktur | Akun, perusahaan, peran |
@@ -158,11 +157,10 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 | Profil | `updateProfileAction`, `changePasswordAction` | Semua |
 | Master siswa | `createSiswaAction`, `updateSiswaAction`, `deactivateSiswaAction` | Admin |
 | Master guru | `createGuruAction`, `updateGuruAction`, `deactivateGuruAction` | Admin |
-| Master jurusan | `createJurusanAction`, `updateJurusanAction` | Admin |
 | Master perusahaan | `createPerusahaanAction`, `updatePerusahaanAction`, `setPerusahaanAktifAction` | Admin |
 | Master periode | `createPeriodeAction`, `updatePeriodeAction`, `setPeriodeAktifAction` | Admin |
-| Instruktur | `createInstrukturAction`, `updateInstrukturAction` | Admin |
-| Orang tua | `linkOrangTuaAction`, `unlinkOrangTuaAction` | Admin |
+| Instruktur | `createInstrukturAction`, `updateInstrukturAction`, `setInstrukturAktifAction`, `savePenugasanAction`, `setPenugasanAktifAction` | Admin |
+| Orang tua | `createOrangTuaAction`, `updateOrangTuaAction`, `setOrangTuaAktifAction`, `linkOrangTuaAction`, `updateHubunganOrangTuaAction`, `unlinkOrangTuaAction` | Admin |
 | Pengajuan | `createPengajuanAction`, `updatePengajuanDraftAction`, `submitPengajuanAction`, `addAnggotaAction`, `removeAnggotaAction` | Siswa |
 | Pengajuan | `verifyDokumenAction`, `approvePengajuanAction`, `rejectPengajuanAction`, `issueSuratAction`, `startPklAction` | Admin |
 | Dokumen | `uploadDokumenAction`, `uploadIzinOrtuAction`, `uploadBalasanAction` | Siswa |
