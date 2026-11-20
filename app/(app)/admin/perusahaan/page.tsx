@@ -14,6 +14,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { FilterForm } from "@/components/pkl/FilterForm";
 import { requireRole } from "@/lib/auth";
 import { getPerusahaanList } from "@/lib/data/admin-perusahaan";
 import { cn } from "@/lib/utils";
@@ -88,9 +89,7 @@ export default async function AdminPerusahaanPage({
         </Link>
       </header>
 
-      <form
-        method="get"
-        className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_170px_auto] sm:items-end"
+      <FilterForm className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_170px_auto] sm:items-end"
       >
         <Field label="Cari" htmlFor="q">
           <Input
@@ -111,15 +110,6 @@ export default async function AdminPerusahaanPage({
         </Field>
 
         <div className="flex items-center gap-2">
-          <button
-            type="submit"
-            className={cn(
-              buttonVariants({ variant: "secondary", size: "md" }),
-              "flex-1 sm:flex-none",
-            )}
-          >
-            Terapkan
-          </button>
           <Link
             href="/admin/perusahaan"
             className={cn(
@@ -130,7 +120,7 @@ export default async function AdminPerusahaanPage({
             Reset
           </Link>
         </div>
-      </form>
+      </FilterForm>
 
       {data.rows.length ? (
         <>

@@ -244,6 +244,8 @@ npm run build
 | Halaman instruktur | Selesai (ringkasan, siswa PKL, verifikasi langkah 2, profil) |
 | Profil orang tua | Selesai (data diri, anak terkait, kata sandi) |
 | Penempatan admin | Selesai (daftar, filter, guru/instruktur, tanggal, mulai PKL) |
+| Surat admin | Selesai (7 jenis, nomor otomatis, pratinjau/unduh PDF) |
+| Filter otomatis | Selesai (pilihan filter langsung memuat hasil) |
 | Dark/light mode | Selesai (toggle global, preferensi tersimpan per perangkat) |
 | Halaman modul lain | Belum diisi (bertahap) |
 
@@ -264,7 +266,7 @@ jalankan pada database produksi.
 
 ## 7. Langkah berikutnya
 
-1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, profil siswa, ringkasan admin, pengelolaan data siswa + akun, penempatan admin, beranda orang tua, profil orang tua, pengaturan admin, halaman guru inti, halaman instruktur inti, dan dark/light mode.
+1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, profil siswa, ringkasan admin, pengelolaan data siswa + akun, penempatan admin, surat admin, filter otomatis, beranda orang tua, profil orang tua, pengaturan admin, halaman guru inti, halaman instruktur inti, dan dark/light mode.
 2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, dan jurnal.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Jalankan gate `design-taste-frontend` untuk halaman publik; halaman di balik auth diuji dengan Lighthouse dan review visual.

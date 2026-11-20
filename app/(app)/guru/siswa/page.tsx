@@ -13,6 +13,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { FilterForm } from "@/components/pkl/FilterForm";
 import { requireRole } from "@/lib/auth";
 import { getGuruStudents } from "@/lib/data/guru";
 import { cn } from "@/lib/utils";
@@ -116,9 +117,7 @@ export default async function GuruStudentsPage({
         ) : null}
       </header>
 
-      <form
-        method="get"
-        className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_190px_auto] sm:items-end"
+      <FilterForm className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_190px_auto] sm:items-end"
       >
         <Field label="Cari siswa" htmlFor="q">
           <Input
@@ -142,16 +141,6 @@ export default async function GuruStudentsPage({
         </Field>
 
         <div className="flex items-center gap-2">
-          <button
-            type="submit"
-            className={cn(
-              buttonVariants({ variant: "secondary", size: "md" }),
-              "flex-1 sm:flex-none",
-            )}
-          >
-            <Search className="size-4" strokeWidth={1.75} aria-hidden />
-            Terapkan
-          </button>
           <Link
             href="/guru/siswa"
             className={cn(
@@ -162,7 +151,7 @@ export default async function GuruStudentsPage({
             Reset
           </Link>
         </div>
-      </form>
+      </FilterForm>
 
       {!students.length ? (
         <section className={cn(card, "mt-4")}>
