@@ -426,6 +426,8 @@ export type GuruStudentDetail = {
     tempatLahir: string | null;
     tanggalLahir: string | null;
   } | null;
+  instrukturNama: string | null;
+  pembimbingNama: string | null;
   journals: Array<{
     id: string;
     tanggal: string;
@@ -461,7 +463,7 @@ export const getGuruStudentDetail = cache(
       return null;
     }
 
-    const [profileRes, journalsRes, tasksRes] = await Promise.all([
+    const [profileRes, journalsRes, tasksRes, placementRes] = await Promise.all([
       supabase
         .from("siswa")
         .select(
@@ -483,10 +485,47 @@ export const getGuruStudentDetail = cache(
         .select("id, judul, deskripsi, deadline, created_at")
         .eq("pengajuan_id", student.pengajuanId)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("pengajuan_pkl")
+        .select("instruktur_id, pembimbing_id")
+        .eq("id", student.pengajuanId)
+        .maybeSingle(),
     ]);
 
-    if (profileRes.error || journalsRes.error || tasksRes.error) {
+    if (
+      profileRes.error ||
+      journalsRes.error ||
+      tasksRes.error ||
+      placementRes.error
+    ) {
       throw new Error("Gagal memuat detail siswa.");
+    }
+
+    const instructorIds = Array.from(
+      new Set(
+        [placementRes.data?.instruktur_id, placementRes.data?.pembimbing_id].filter(
+          (value): value is string => Boolean(value),
+        ),
+      ),
+    );
+    const instructorNameById = new Map<string, string>();
+
+    if (instructorIds.length) {
+      const { data: instructors, error: instructorError } = await supabase
+        .from("instruktur")
+        .select("id, pengguna:pengguna_id(nama_lengkap)")
+        .in("id", instructorIds);
+
+      if (instructorError) {
+        throw new Error("Gagal memuat data instruktur.");
+      }
+
+      for (const instructor of instructors ?? []) {
+        instructorNameById.set(
+          instructor.id,
+          instructor.pengguna?.nama_lengkap ?? "Tanpa nama",
+        );
+      }
     }
 
     const journalRows = await Promise.all(
@@ -577,6 +616,14 @@ export const getGuruStudentDetail = cache(
             tempatLahir: profileRes.data.tempat_lahir,
             tanggalLahir: profileRes.data.tanggal_lahir,
           }
+        : null,
+      instrukturNama: placementRes.data?.instruktur_id
+        ? (instructorNameById.get(placementRes.data.instruktur_id) ??
+          "Tanpa nama")
+        : null,
+      pembimbingNama: placementRes.data?.pembimbing_id
+        ? (instructorNameById.get(placementRes.data.pembimbing_id) ??
+          "Tanpa nama")
         : null,
       journals: journalRows,
       tasks,
