@@ -42,10 +42,10 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | Route | Halaman | Isi utama |
 |---|---|---|
 | `/admin` | Ringkasan | Antrean persetujuan, jurnal belum verifikasi, siswa belum dapat tempat, KPI, grafik |
-| `/admin/siswa` | Data siswa | Tabel, filter, CRUD, nonaktifkan |
-| `/admin/siswa/[id]` | Detail siswa | Profil, penempatan, jurnal, surat, mutaba'ah, timeline |
+| `/admin/siswa` | Data siswa | Tabel, filter, pagination, tambah, nonaktifkan |
+| `/admin/siswa/baru` | Tambah siswa | Form data siswa + akun login |
+| `/admin/siswa/[id]` | Detail siswa | Profil, akun, penempatan, jurnal terakhir |
 | `/admin/guru` | Data guru | CRUD, jurusan, akun |
-| `/admin/jurusan` | Jurusan | CRUD |
 | `/admin/perusahaan` | Perusahaan | CRUD DUDI, instruktur |
 | `/admin/periode` | Periode PKL | Tahun ajaran, tanggal, aktif |
 | `/admin/instruktur` | Instruktur | Akun, perusahaan, peran |
@@ -157,11 +157,10 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 | Profil | `updateProfileAction`, `changePasswordAction` | Semua |
 | Master siswa | `createSiswaAction`, `updateSiswaAction`, `deactivateSiswaAction` | Admin |
 | Master guru | `createGuruAction`, `updateGuruAction`, `deactivateGuruAction` | Admin |
-| Master jurusan | `createJurusanAction`, `updateJurusanAction` | Admin |
 | Master perusahaan | `createPerusahaanAction`, `updatePerusahaanAction`, `setPerusahaanAktifAction` | Admin |
 | Master periode | `createPeriodeAction`, `updatePeriodeAction`, `setPeriodeAktifAction` | Admin |
-| Instruktur | `createInstrukturAction`, `updateInstrukturAction` | Admin |
-| Orang tua | `linkOrangTuaAction`, `unlinkOrangTuaAction` | Admin |
+| Instruktur | `createInstrukturAction`, `updateInstrukturAction`, `setInstrukturAktifAction`, `savePenugasanAction`, `setPenugasanAktifAction` | Admin |
+| Orang tua | `createOrangTuaAction`, `updateOrangTuaAction`, `setOrangTuaAktifAction`, `linkOrangTuaAction`, `updateHubunganOrangTuaAction`, `unlinkOrangTuaAction` | Admin |
 | Pengajuan | `createPengajuanAction`, `updatePengajuanDraftAction`, `submitPengajuanAction`, `addAnggotaAction`, `removeAnggotaAction` | Siswa |
 | Pengajuan | `verifyDokumenAction`, `approvePengajuanAction`, `rejectPengajuanAction`, `issueSuratAction`, `startPklAction` | Admin |
 | Dokumen | `uploadDokumenAction`, `uploadIzinOrtuAction`, `uploadBalasanAction` | Siswa |

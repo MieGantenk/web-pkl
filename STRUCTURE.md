@@ -22,7 +22,6 @@ pkl-web/
 │   │   │   │   ├── page.tsx          # /admin/siswa
 │   │   │   │   └── [id]/page.tsx     # /admin/siswa/[id]
 │   │   │   ├── guru/
-│   │   │   ├── jurusan/
 │   │   │   ├── perusahaan/
 │   │   │   ├── periode/
 │   │   │   ├── instruktur/
@@ -237,6 +236,7 @@ npm run build
 | Halaman login | Selesai (username/email + password, redirect per role) |
 | Beranda siswa | Selesai (status PKL, jurnal hari ini, mutaba'ah, jurnal terakhir) |
 | Ringkasan admin | Selesai (antrean, statistik, grafik pengajuan, aktivitas) |
+| Data siswa + akun | Selesai (list, filter, pagination, tambah, detail, edit, aktif/nonaktif) |
 | Beranda orang tua | Selesai (pilih anak, status PKL, jurnal, mutaba'ah, surat) |
 | Pengaturan admin | Selesai (profil sekolah, aset surat, penomoran, ringkasan mutaba'ah) |
 | Halaman guru | Selesai (ringkasan, siswa bimbingan, detail, verifikasi, profil, ekspor CSV) |
@@ -260,7 +260,7 @@ aktivitas. Jangan jalankan pada database produksi.
 
 ## 7. Langkah berikutnya
 
-1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, profil siswa, ringkasan admin, beranda orang tua, pengaturan admin, halaman guru inti, dan dark/light mode.
-2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, data siswa, jurnal.
+1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, profil siswa, ringkasan admin, pengelolaan data siswa + akun, beranda orang tua, pengaturan admin, halaman guru inti, dan dark/light mode.
+2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, dan jurnal.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Jalankan gate `design-taste-frontend` untuk halaman publik; halaman di balik auth diuji dengan Lighthouse dan review visual.

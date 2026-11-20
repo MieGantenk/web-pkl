@@ -8,6 +8,8 @@ import {
   FileText,
   Play,
   Send,
+  UserCog,
+  UserRound,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -94,6 +96,50 @@ export function JurnalBadge({ status }: { status: StatusJurnal }) {
   return (
     <StatusBadge label={meta.label} tone={meta.tone} icon={jurnalIcons[status]} />
   );
+}
+
+export function AktifBadge({ aktif }: { aktif: boolean }) {
+  return (
+    <StatusBadge
+      label={aktif ? "Aktif" : "Nonaktif"}
+      tone={aktif ? "success" : "neutral"}
+      icon={aktif ? Check : Ban}
+    />
+  );
+}
+
+export function AkunBadge({ aktif }: { aktif: boolean }) {
+  return <AktifBadge aktif={aktif} />;
+}
+
+export function PeranInstrukturBadge({
+  peran,
+}: {
+  peran: "instruktur" | "pembimbing";
+}) {
+  const isInstruktur = peran === "instruktur";
+
+  return (
+    <StatusBadge
+      label={isInstruktur ? "Instruktur" : "Pembimbing"}
+      tone="neutral"
+      icon={isInstruktur ? UserCog : UserRound}
+    />
+  );
+}
+
+export function HubunganBadge({
+  hubungan,
+}: {
+  hubungan: "ayah" | "ibu" | "wali";
+}) {
+  const label = {
+    ayah: "Ayah",
+    ibu: "Ibu",
+    wali: "Wali",
+  }[hubungan];
+
+  return <StatusBadge label={label} tone="neutral" icon={UserRound} />;
 }
 
 export function TugasBadge({ status }: { status: StatusTugas }) {
