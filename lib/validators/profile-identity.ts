@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const guruProfileSchema = z.object({
+export const profileIdentitySchema = z.object({
   nama_lengkap: z
     .string()
     .trim()
@@ -14,4 +14,4 @@ export const guruProfileSchema = z.object({
     .or(z.literal("")),
 });
 
-export type GuruProfileInput = z.infer<typeof guruProfileSchema>;
+export type ProfileIdentityInput = z.infer<typeof profileIdentitySchema>;

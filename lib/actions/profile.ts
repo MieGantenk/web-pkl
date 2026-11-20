@@ -3,25 +3,20 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
-import { guruProfileSchema } from "@/lib/validators/guru-profile";
-import { passwordSchema } from "@/lib/validators/password";
+import {
+  passwordSchema,
+  type PasswordResult,
+} from "@/lib/validators/password";
+import { profileIdentitySchema } from "@/lib/validators/profile-identity";
 
-export type GuruProfileResult =
+export type ProfileResult =
   | { ok: true; message: string }
   | { ok: false; message: string };
 
-export type GuruPasswordResult =
-  | { ok: true; message: string }
-  | {
-      ok: false;
-      message: string;
-      field?: "currentPassword" | "newPassword";
-    };
-
-export async function updateGuruProfileAction(
+export async function updateProfileAction(
   input: unknown,
-): Promise<GuruProfileResult> {
-  const parsed = guruProfileSchema.safeParse(input);
+): Promise<ProfileResult> {
+  const parsed = profileIdentitySchema.safeParse(input);
 
   if (!parsed.success) {
     return {
@@ -41,12 +36,12 @@ export async function updateGuruProfileAction(
 
   const { data: profile } = await supabase
     .from("pengguna")
-    .select("peran, aktif")
+    .select("aktif")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile?.aktif || profile.peran !== "guru") {
-    return { ok: false, message: "Anda tidak berwenang mengubah profil ini." };
+  if (!profile?.aktif) {
+    return { ok: false, message: "Akun Anda tidak aktif." };
   }
 
   const { error } = await supabase
@@ -63,13 +58,15 @@ export async function updateGuruProfileAction(
 
   revalidatePath("/guru/profil");
   revalidatePath("/guru");
+  revalidatePath("/instruktur/profil");
+  revalidatePath("/instruktur");
 
   return { ok: true, message: "Profil diperbarui." };
 }
 
-export async function changeGuruPasswordAction(
+export async function changePasswordAction(
   input: unknown,
-): Promise<GuruPasswordResult> {
+): Promise<PasswordResult> {
   const parsed = passwordSchema.safeParse(input);
 
   if (!parsed.success) {
@@ -97,12 +94,12 @@ export async function changeGuruPasswordAction(
 
   const { data: profile } = await supabase
     .from("pengguna")
-    .select("peran, aktif")
+    .select("aktif")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile?.aktif || profile.peran !== "guru") {
-    return { ok: false, message: "Anda tidak berwenang mengubah kata sandi." };
+  if (!profile?.aktif) {
+    return { ok: false, message: "Akun Anda tidak aktif." };
   }
 
   const { error: reauthError } = await supabase.auth.signInWithPassword({
