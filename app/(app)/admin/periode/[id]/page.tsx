@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { PeriodeForm } from "@/components/pkl/PeriodeForm";
 import { PeriodeStatusButton } from "@/components/pkl/PeriodeStatusButton";
 import { AktifBadge } from "@/components/pkl/StatusBadge";
+import { buttonVariants } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth";
 import { getPeriodeDetail } from "@/lib/data/admin-periode";
 import { postgresUuidPattern } from "@/lib/validators/common";
@@ -108,6 +109,24 @@ export default async function AdminPeriodeDetailPage({
                 nama={data.nama}
               />
             </div>
+          </section>
+
+          <section className="rounded-md border border-border bg-surface p-5 shadow-xs">
+            <h2 className="text-xl font-semibold text-ink">
+              Siswa ditempatkan
+            </h2>
+            <p className="mt-3 font-display text-[32px] font-semibold leading-10 tracking-[-0.02em] text-ink tabular-nums">
+              {data.siswa}
+            </p>
+            <p className="mt-1 text-sm leading-[22px] text-ink-soft">
+              Siswa memiliki pengajuan PKL pada periode ini.
+            </p>
+            <Link
+              href={`/admin/siswa?periode=${data.id}`}
+              className={`${buttonVariants({ variant: "secondary", size: "md" })} mt-4 w-full`}
+            >
+              Lihat data siswa
+            </Link>
           </section>
         </aside>
       </div>

@@ -7,12 +7,14 @@ import {
   ArrowLeft,
   BookOpen,
   Building2,
+  CalendarDays,
   CircleDashed,
   FileText,
 } from "lucide-react";
 
 import { EmptyState } from "@/components/pkl/EmptyState";
 import { SiswaForm } from "@/components/pkl/SiswaForm";
+import { SiswaPasswordPanel } from "@/components/pkl/SiswaPasswordPanel";
 import { SiswaStatusButton } from "@/components/pkl/SiswaStatusButton";
 import {
   AkunBadge,
@@ -74,6 +76,7 @@ export default async function AdminSiswaDetailPage({
     nama_orangtua: data.nama_orangtua ?? "",
     telepon_orangtua: data.telepon_orangtua ?? "",
     password: "",
+    confirmPassword: "",
   };
 
   return (
@@ -165,6 +168,12 @@ export default async function AdminSiswaDetailPage({
             </div>
           </section>
 
+          <SiswaPasswordPanel
+            siswaId={data.id}
+            nama={data.pengguna.nama_lengkap}
+            username={data.pengguna.username}
+          />
+
           <section className="rounded-md border border-border bg-surface p-5 shadow-xs">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-xl font-semibold text-ink">
@@ -194,9 +203,21 @@ export default async function AdminSiswaDetailPage({
                   <p className="text-[13px] leading-[18px] text-muted">
                     Periode
                   </p>
-                  <p className="mt-0.5 text-sm font-medium text-ink">
-                    {data.pengajuan.periode?.nama ?? "—"}
-                  </p>
+                  {data.pengajuan.periode ? (
+                    <Link
+                      href={`/admin/siswa?periode=${data.pengajuan.periode.id}`}
+                      className="mt-0.5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
+                    >
+                      <CalendarDays
+                        className="size-3.5 shrink-0"
+                        strokeWidth={1.75}
+                        aria-hidden
+                      />
+                      {data.pengajuan.periode.nama}
+                    </Link>
+                  ) : (
+                    <p className="mt-0.5 text-sm font-medium text-ink">—</p>
+                  )}
                 </div>
 
                 <dl className="grid grid-cols-2 gap-3 text-sm">

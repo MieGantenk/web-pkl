@@ -9,6 +9,7 @@ import {
   createSiswaSchema,
   fieldErrorsFrom,
   postgresUuidPattern,
+  resetSiswaPasswordSchema,
   siswaFormSchema,
 } from "@/lib/validators/siswa";
 
@@ -327,6 +328,56 @@ export async function updateSiswaAction(
 
   if (siswaResult.error) {
     return { ok: false, message: "Data siswa belum dapat diperbarui." };
+  }
+
+  revalidateSiswa(current.id);
+  return { ok: true, id: current.id };
+}
+
+export async function resetSiswaPasswordAction(
+  siswaId: unknown,
+  input: unknown,
+): Promise<SiswaActionResult> {
+  const auth = await assertAdminAction();
+  if (auth) return auth;
+
+  const parsedId = idSchema.safeParse(siswaId);
+  const parsed = resetSiswaPasswordSchema.safeParse(input);
+
+  if (!parsedId.success) {
+    return { ok: false, message: "Data siswa tidak valid." };
+  }
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: "Periksa kembali kata sandi.",
+      fieldErrors: fieldErrorsFrom(parsed.error),
+    };
+  }
+
+  const admin = createAdminClient();
+  const { data: current, error } = await admin
+    .from("siswa")
+    .select("id, pengguna_id, pengguna:pengguna_id(peran)")
+    .eq("id", parsedId.data)
+    .maybeSingle();
+
+  if (error || !current || current.pengguna?.peran !== "siswa") {
+    return { ok: false, message: "Siswa tidak ditemukan." };
+  }
+
+  const result = await admin.auth.admin.updateUserById(current.pengguna_id, {
+    password: parsed.data.password,
+  });
+
+  if (result.error) {
+    return {
+      ok: false,
+      message: result.error.message.toLowerCase().includes("weak")
+        ? "Kata sandi terlalu lemah. Gunakan kombinasi huruf, angka, dan simbol."
+        : "Kata sandi belum dapat diperbarui. Coba lagi.",
+    };
   }
 
   revalidateSiswa(current.id);

@@ -324,6 +324,7 @@ Kelola data siswa, kelas, dan status PKL.
 
 - Header halaman: judul 32 + deskripsi 14 + aksi kanan.
 - Filter bar di card terpisah; di HP jadi tombol "Filter" + drawer.
+- Periode PKL tampil sebagai baris chip di atas filter bar; klik chip memfilter siswa pada periode itu.
 - Tabel: kolom utama selalu terlihat; kolom sekunder bisa disembunyikan.
 - Aksi baris di dropdown `⋯` (Edit, Lihat, Hapus).
 - Hapus memakai dialog konfirmasi, bukan `confirm()`.
@@ -350,6 +351,7 @@ Kelola data siswa, kelas, dan status PKL.
 
 - Split 8/4; panel kanan sticky 24 px di bawah topbar.
 - Di < 1024: panel status pindah ke atas (ringkas), timeline di bawah.
+- Panel kanan memuat status akun, kata sandi (ketik manual atau buat otomatis), penempatan, dan jurnal terakhir.
 - Tabs hanya untuk konten, bukan navigasi halaman.
 
 ### 3.7 Form — contoh `/siswa/jurnal/baru`

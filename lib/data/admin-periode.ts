@@ -12,6 +12,7 @@ export type PeriodeListItem = {
   tanggal_mulai: string;
   tanggal_selesai: string;
   aktif: boolean;
+  siswa: number;
 };
 
 export type PeriodeListResult = {
@@ -26,6 +27,34 @@ export type PeriodeDetail = PeriodeListItem;
 
 function cleanSearch(value: string) {
   return value.replace(/[%_,()]/g, " ").trim();
+}
+
+async function getSiswaCountByPeriode() {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("pengajuan_anggota")
+    .select("siswa_id, pengajuan:pengajuan_id(periode_id, status)");
+
+  if (error) {
+    throw new Error("Gagal memuat jumlah siswa per periode.");
+  }
+
+  const studentsByPeriode = new Map<string, Set<string>>();
+
+  for (const placement of data ?? []) {
+    const pengajuan = placement.pengajuan;
+
+    if (!pengajuan || pengajuan.status === "ditolak" || !pengajuan.periode_id) {
+      continue;
+    }
+
+    const studentIds =
+      studentsByPeriode.get(pengajuan.periode_id) ?? new Set<string>();
+    studentIds.add(placement.siswa_id);
+    studentsByPeriode.set(pengajuan.periode_id, studentIds);
+  }
+
+  return studentsByPeriode;
 }
 
 export async function getPeriodeList(params: {
@@ -68,10 +97,14 @@ export async function getPeriodeList(params: {
     throw new Error("Gagal memuat data periode PKL.");
   }
 
-  const total = count ?? 0;
+  const studentsByPeriode = await getSiswaCountByPeriode();
 
+  const total = count ?? 0;
   return {
-    rows: data ?? [],
+    rows: (data ?? []).map((periode) => ({
+      ...periode,
+      siswa: studentsByPeriode.get(periode.id)?.size ?? 0,
+    })),
     total,
     page,
     pageSize,
@@ -96,6 +129,15 @@ export const getPeriodeDetail = cache(
       throw new Error("Gagal memuat data periode PKL.");
     }
 
-    return data ?? null;
+    if (!data) {
+      return null;
+    }
+
+    const studentsByPeriode = await getSiswaCountByPeriode();
+
+    return {
+      ...data,
+      siswa: studentsByPeriode.get(data.id)?.size ?? 0,
+    };
   },
 );

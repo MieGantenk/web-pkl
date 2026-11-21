@@ -16,6 +16,17 @@ export type SiswaListItem = {
   nama: string;
   username: string;
   pengajuanStatus: StatusPengajuan | null;
+  periode: { id: string; nama: string } | null;
+};
+
+export type PeriodeOption = {
+  id: string;
+  nama: string;
+  tahun_ajaran: string;
+  tanggal_mulai: string;
+  tanggal_selesai: string;
+  aktif: boolean;
+  siswa: number;
 };
 
 export type SiswaListResult = {
@@ -25,6 +36,7 @@ export type SiswaListResult = {
   pageSize: number;
   pageCount: number;
   kelasOptions: string[];
+  periodeOptions: PeriodeOption[];
 };
 
 export type SiswaDetail = {
@@ -51,7 +63,7 @@ export type SiswaDetail = {
     tanggal_mulai: string | null;
     tanggal_selesai: string | null;
     perusahaan: { nama: string } | null;
-    periode: { nama: string } | null;
+    periode: { id: string; nama: string } | null;
   } | null;
   jurnal: Array<{
     id: string;
@@ -69,6 +81,7 @@ export async function getSiswaList(params: {
   q: string;
   kelas: string;
   status: string;
+  periode: string;
   page: number;
 }): Promise<SiswaListResult> {
   await connection();
@@ -77,12 +90,6 @@ export async function getSiswaList(params: {
   const page = Math.max(1, params.page || 1);
   const term = cleanSearch(params.q);
   const pageSize = SISWA_PAGE_SIZE;
-
-  const kelasOptionsPromise = admin
-    .from("siswa")
-    .select("kelas")
-    .not("kelas", "is", null)
-    .order("kelas", { ascending: true });
 
   const searchPromise = term
     ? Promise.all([
@@ -98,13 +105,39 @@ export async function getSiswaList(params: {
       ])
     : Promise.resolve(null);
 
-  const [kelasResult, searchResult] = await Promise.all([
-    kelasOptionsPromise,
-    searchPromise,
-  ]);
+  const [kelasResult, periodeResult, placementsResult, searchResult] =
+    await Promise.all([
+      admin
+        .from("siswa")
+        .select("kelas")
+        .not("kelas", "is", null)
+        .order("kelas", { ascending: true }),
+      admin
+        .from("periode_pkl")
+        .select(
+          "id, nama, tahun_ajaran, tanggal_mulai, tanggal_selesai, aktif",
+        )
+        .order("aktif", { ascending: false })
+        .order("tanggal_mulai", { ascending: false }),
+      admin
+        .from("pengajuan_anggota")
+        .select(
+          "siswa_id, created_at, pengajuan:pengajuan_id(status, periode:periode_id(id, nama))",
+        )
+        .order("created_at", { ascending: false }),
+      searchPromise,
+    ]);
 
   if (kelasResult.error) {
     throw new Error("Gagal memuat pilihan kelas.");
+  }
+
+  if (periodeResult.error) {
+    throw new Error("Gagal memuat pilihan periode.");
+  }
+
+  if (placementsResult.error) {
+    throw new Error("Gagal memuat status pengajuan.");
   }
 
   const kelasOptions = Array.from(
@@ -114,6 +147,56 @@ export async function getSiswaList(params: {
         .filter((value): value is string => Boolean(value)),
     ),
   );
+
+  const latestByStudent = new Map<
+    string,
+    {
+      status: StatusPengajuan;
+      periode: { id: string; nama: string } | null;
+    }
+  >();
+  const studentsByPeriode = new Map<string, Set<string>>();
+
+  for (const placement of placementsResult.data ?? []) {
+    const pengajuan = placement.pengajuan;
+
+    if (!pengajuan) {
+      continue;
+    }
+
+    if (!latestByStudent.has(placement.siswa_id)) {
+      latestByStudent.set(placement.siswa_id, {
+        status: pengajuan.status,
+        periode: pengajuan.periode ?? null,
+      });
+    }
+
+    if (pengajuan.status !== "ditolak" && pengajuan.periode) {
+      const studentIds =
+        studentsByPeriode.get(pengajuan.periode.id) ?? new Set<string>();
+      studentIds.add(placement.siswa_id);
+      studentsByPeriode.set(pengajuan.periode.id, studentIds);
+    }
+  }
+
+  const periodeOptions: PeriodeOption[] = (periodeResult.data ?? []).map(
+    (periode) => ({
+      ...periode,
+      siswa: studentsByPeriode.get(periode.id)?.size ?? 0,
+    }),
+  );
+
+  function emptyResult(): SiswaListResult {
+    return {
+      rows: [],
+      total: 0,
+      page,
+      pageSize,
+      pageCount: 1,
+      kelasOptions,
+      periodeOptions,
+    };
+  }
 
   let matchedIds: string[] | null = null;
 
@@ -132,14 +215,39 @@ export async function getSiswaList(params: {
     );
 
     if (!matchedIds.length) {
-      return {
-        rows: [],
-        total: 0,
-        page,
-        pageSize,
-        pageCount: 1,
-        kelasOptions,
-      };
+      return emptyResult();
+    }
+  }
+
+  if (params.periode) {
+    const periodStudentIds = studentsByPeriode.get(params.periode);
+
+    if (!periodStudentIds) {
+      return emptyResult();
+    }
+
+    const { data: periodStudents, error: periodStudentsError } = await admin
+      .from("siswa")
+      .select("pengguna_id")
+      .in("id", Array.from(periodStudentIds));
+
+    if (periodStudentsError) {
+      throw new Error("Gagal memuat siswa pada periode.");
+    }
+
+    const periodPenggunaIds = (periodStudents ?? []).map(
+      (row) => row.pengguna_id,
+    );
+
+    if (matchedIds) {
+      const allowed = new Set(periodPenggunaIds);
+      matchedIds = matchedIds.filter((id) => allowed.has(id));
+    } else {
+      matchedIds = periodPenggunaIds;
+    }
+
+    if (!matchedIds.length) {
+      return emptyResult();
     }
   }
 
@@ -173,51 +281,29 @@ export async function getSiswaList(params: {
     throw new Error("Gagal memuat data siswa.");
   }
 
-  const rows = data ?? [];
-  const ids = rows.map((row) => row.id);
-  const statusByStudent = new Map<string, StatusPengajuan>();
-
-  if (ids.length) {
-    const { data: placements, error: placementError } = await admin
-      .from("pengajuan_anggota")
-      .select("siswa_id, created_at, pengajuan:pengajuan_id(status)")
-      .in("siswa_id", ids)
-      .order("created_at", { ascending: false });
-
-    if (placementError) {
-      throw new Error("Gagal memuat status pengajuan.");
-    }
-
-    for (const placement of placements ?? []) {
-      if (
-        !statusByStudent.has(placement.siswa_id) &&
-        placement.pengajuan
-      ) {
-        statusByStudent.set(
-          placement.siswa_id,
-          placement.pengajuan.status,
-        );
-      }
-    }
-  }
-
   const total = count ?? 0;
 
   return {
-    rows: rows.map((row) => ({
-      id: row.id,
-      nis: row.nis,
-      kelas: row.kelas,
-      aktif: row.pengguna?.aktif ?? row.aktif,
-      nama: row.pengguna?.nama_lengkap ?? "Tanpa nama",
-      username: row.pengguna?.username ?? "—",
-      pengajuanStatus: statusByStudent.get(row.id) ?? null,
-    })),
+    rows: (data ?? []).map((row) => {
+      const placement = latestByStudent.get(row.id) ?? null;
+
+      return {
+        id: row.id,
+        nis: row.nis,
+        kelas: row.kelas,
+        aktif: row.pengguna?.aktif ?? row.aktif,
+        nama: row.pengguna?.nama_lengkap ?? "Tanpa nama",
+        username: row.pengguna?.username ?? "—",
+        pengajuanStatus: placement?.status ?? null,
+        periode: placement?.periode ?? null,
+      };
+    }),
     total,
     page,
     pageSize,
     pageCount: Math.max(1, Math.ceil(total / pageSize)),
     kelasOptions,
+    periodeOptions,
   };
 }
 
@@ -246,7 +332,7 @@ export const getSiswaDetail = cache(
       admin
         .from("pengajuan_anggota")
         .select(
-          "pengajuan:pengajuan_id(id, status, tanggal_mulai, tanggal_selesai, perusahaan:perusahaan_id(nama), periode:periode_id(nama))",
+          "pengajuan:pengajuan_id(id, status, tanggal_mulai, tanggal_selesai, perusahaan:perusahaan_id(nama), periode:periode_id(id, nama))",
         )
         .eq("siswa_id", data.id)
         .order("created_at", { ascending: false })

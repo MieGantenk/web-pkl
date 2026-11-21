@@ -3,9 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { PasswordInput } from "@/components/pkl/PasswordInput";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,8 @@ export function SiswaForm({
     register,
     handleSubmit,
     setError,
+    setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<SiswaFormInput>({
     resolver: zodResolver(
@@ -276,25 +279,55 @@ export function SiswaForm({
         </div>
 
         {mode === "create" ? (
-          <Field
-            label="Kata sandi awal"
-            htmlFor="password"
-            required
-            hint="Minimal 8 karakter. Berikan kepada siswa."
-            error={errors.password?.message}
-          >
-            <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={invalid("password")}
-              aria-describedby={describedBy(
-                "password",
-                "Minimal 8 karakter. Berikan kepada siswa.",
+          <div className="space-y-5">
+            <Controller
+              control={control}
+              name="password"
+              render={({ field }) => (
+                <PasswordInput
+                  id="password"
+                  name={field.name}
+                  label="Kata sandi awal"
+                  required
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onGenerate={(value) =>
+                    setValue("confirmPassword", value, {
+                      shouldValidate: true,
+                    })
+                  }
+                  error={errors.password?.message}
+                  hint="Minimal 8 karakter. Ketik manual atau buat otomatis, lalu salin sebelum menyimpan."
+                  autoComplete="new-password"
+                />
               )}
-              {...register("password")}
             />
-          </Field>
+
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <PasswordInput
+                  id="confirmPassword"
+                  name={field.name}
+                  label="Ulangi kata sandi"
+                  required
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  error={errors.confirmPassword?.message}
+                  hint="Harus sama dengan kata sandi di atas."
+                  autoComplete="new-password"
+                  showGenerate={false}
+                  showCopy={false}
+                />
+              )}
+            />
+
+            <p className="text-[13px] leading-[18px] text-muted">
+              Kata sandi tidak dapat dilihat lagi setelah halaman ditutup.
+              Gunakan detail siswa untuk mengatur ulang.
+            </p>
+          </div>
         ) : null}
       </section>
 
