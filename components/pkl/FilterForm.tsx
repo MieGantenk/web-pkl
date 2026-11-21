@@ -31,6 +31,15 @@ export function FilterForm({
 
   function submit() {
     clearTimer();
+
+    if (window.location.hash) {
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+      );
+    }
+
     formRef.current?.requestSubmit();
   }
 
