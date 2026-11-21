@@ -27,3 +27,16 @@ values (
   '{nomor}/{kode}/{tahun}'
 )
 on conflict (id) do nothing;
+
+-- Periode PKL mengikuti tingkat kelas: XI pada 2026/2027, X pada 2027/2028.
+insert into public.periode_pkl (
+  nama,
+  tahun_ajaran,
+  tanggal_mulai,
+  tanggal_selesai,
+  aktif
+)
+values
+  ('PKL Ganjil 2026/2027', '2026/2027', '2026-07-01', '2026-12-31', true),
+  ('PKL Ganjil 2027/2028', '2027/2028', '2027-07-01', '2027-12-31', false)
+on conflict (tahun_ajaran, nama) do nothing;

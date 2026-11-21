@@ -23,7 +23,6 @@ pkl-web/
 │   │   │   │   └── [id]/page.tsx     # /admin/siswa/[id]
 │   │   │   ├── guru/
 │   │   │   ├── perusahaan/
-│   │   │   ├── periode/
 │   │   │   ├── instruktur/
 │   │   │   ├── orang-tua/
 │   │   │   ├── pengajuan/

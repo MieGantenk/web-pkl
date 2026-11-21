@@ -102,6 +102,14 @@ export default async function AdminSiswaDetailPage({
             {data.kelas ? ` · ${data.kelas}` : ""}
             {data.jurusan ? ` · ${data.jurusan.nama}` : ""}
           </p>
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
+            <CalendarDays
+              className="size-3.5 shrink-0"
+              strokeWidth={1.75}
+              aria-hidden
+            />
+            {data.periode?.nama ?? "Periode PKL belum ditentukan"}
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-2">

@@ -1,11 +1,14 @@
 import { z } from "zod";
 
+import { toTitleCaseName } from "@/lib/name";
+
 export const profileIdentitySchema = z.object({
   nama_lengkap: z
     .string()
     .trim()
     .min(2, "Nama minimal 2 karakter.")
-    .max(150, "Maksimal 150 karakter."),
+    .max(150, "Maksimal 150 karakter.")
+    .transform(toTitleCaseName),
   telepon: z
     .string()
     .trim()

@@ -36,7 +36,7 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 │    Guru              │  │ [Cari nama/NIS] [Kelas ▾] [Status ▾]  [Reset]     │  │
 │    Perusahaan        │  ├────────────────────────────────────────────────────┤  │
 │                      │  │ Nama        NIS       Kelas  Status     Aksi      │  │
-│    Periode           │  │ Abdullah    2024…     XI RPL  Diterima   ⋯         │  │
+│                      │  │ Abdullah    2024…     XI RPL  Diterima   ⋯         │  │
 │    Instruktur        │  │ Ahmad …     2024…     XI RPL  Diajukan   ⋯         │  │
 │    Orang Tua         │  │ …                                                  │  │
 │                      │  └────────────────────────────────────────────────────┘  │
@@ -202,7 +202,7 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 
 | Role | Menu utama | Menu sekunder |
 |---|---|---|
-| **Admin** | Ringkasan | Data Master (Siswa, Guru, Perusahaan, Periode, Instruktur, Orang Tua), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Tugas, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
+| **Admin** | Ringkasan | Data Master (Siswa, Guru, Perusahaan, Instruktur, Orang Tua), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Tugas, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
 | **Guru** | Ringkasan | Siswa Bimbingan, Verifikasi Jurnal, Tugas, Mutaba'ah, Surat Tugas, Penarikan, Profil |
 | **Siswa** | Beranda | Pengajuan PKL, Jurnal Harian, Mutaba'ah, Tugas, Surat, Profil |
 | **Instruktur** | Ringkasan | Siswa PKL, Verifikasi Jurnal, Penilaian, Profil |
@@ -325,7 +325,7 @@ Kelola data siswa, kelas, dan status PKL.
 - Header halaman: judul 32 + deskripsi 14 + aksi kanan.
 - Aksi **Naik kelas** di header memakai dialog konfirmasi dan berlaku global: X menjadi XI, XI menjadi XII; kelas XII tidak diubah.
 - Filter bar di card terpisah; di HP jadi tombol "Filter" + drawer.
-- Periode PKL tampil sebagai baris chip di atas filter bar; klik chip memfilter siswa pada periode itu.
+- Periode PKL tampil sebagai baris chip di atas filter bar; klik chip memfilter siswa pada periode itu. Di halaman orang tua, chip memfilter akun berdasarkan periode anaknya.
 - Monitoring jurnal di `/admin/jurnal` memakai split: daftar jurnal di kiri, detail foto dan verifikasi di kanan; filter siswa, status, guru, kelas, dan rentang tanggal.
 - Riwayat jurnal siswa di `/siswa/jurnal` memakai split yang sama; filter kegiatan, status, dan bulan.
 - Tabel: kolom utama selalu terlihat; kolom sekunder bisa disembunyikan.
@@ -636,7 +636,6 @@ app/
       siswa/[id]/page.tsx
       guru/page.tsx
       perusahaan/page.tsx
-      periode/page.tsx
       instruktur/page.tsx
       orang-tua/page.tsx
       pengajuan/page.tsx

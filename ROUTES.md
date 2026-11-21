@@ -12,13 +12,13 @@ Versi 1.0 · 17 November 2026
 | Kelompok | MVP | v1.1 |
 |---|---:|---:|
 | Auth & status | 1 login + 3 halaman status | — |
-| Admin | 20 | — |
+| Admin | 19 | — |
 | Guru | 8 | — |
 | Siswa | 8 | — |
 | Instruktur | 4 | 1 |
 | Orang tua | 5 | — |
 | Print | 1 | 1 |
-| **Total halaman** | **47** | **2** |
+| **Total halaman** | **46** | **2** |
 
 Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 
@@ -37,17 +37,16 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 
 ---
 
-## 3. Admin — 20 halaman
+## 3. Admin — 19 halaman
 
 | Route | Halaman | Isi utama |
 |---|---|---|
 | `/admin` | Ringkasan | Antrean persetujuan, jurnal belum verifikasi, siswa belum dapat tempat, KPI, grafik |
-| `/admin/siswa` | Data siswa | Tabel, filter kelas/periode, pagination, tambah, naik kelas, nonaktifkan |
+| `/admin/siswa` | Data siswa | Tabel, filter kelas/periode (periode mengikuti kelas), pagination, tambah, naik kelas, nonaktifkan |
 | `/admin/siswa/baru` | Tambah siswa | Form data siswa + akun login + kata sandi |
 | `/admin/siswa/[id]` | Detail siswa | Profil, akun, kata sandi, penempatan, jurnal terakhir |
 | `/admin/guru` | Data guru | CRUD, jurusan, akun |
 | `/admin/perusahaan` | Perusahaan | CRUD DUDI, instruktur |
-| `/admin/periode` | Periode PKL | Tahun ajaran, tanggal, aktif |
 | `/admin/instruktur` | Instruktur | Akun, perusahaan, peran |
 | `/admin/orang-tua` | Orang tua | Akun, relasi ke siswa |
 | `/admin/pengajuan` | Pengajuan PKL | Semua pengajuan, tinjau dokumen, setujui/tolak, timeline |
@@ -62,6 +61,8 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/laporan` | Laporan | Rekap periode/perusahaan/kelas, ekspor v1.1 |
 | `/admin/pengaturan` | Pengaturan | Profil sekolah, akreditasi, kop/footer, nomor surat, item mutaba'ah |
 | `/admin/audit` | Audit | Log aksi, filter |
+
+> Periode PKL tidak punya halaman sendiri. Periode ditetapkan dari tingkat kelas: XI → 2026/2027, X → 2027/2028. Filter periode tersedia di halaman data siswa dan data orang tua.
 
 ---
 
@@ -159,7 +160,6 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 | Master siswa | `createSiswaAction`, `updateSiswaAction`, `resetSiswaPasswordAction`, `setSiswaAktifAction`, `promoteSiswaKelasAction` | Admin |
 | Master guru | `createGuruAction`, `updateGuruAction`, `deactivateGuruAction` | Admin |
 | Master perusahaan | `createPerusahaanAction`, `updatePerusahaanAction`, `setPerusahaanAktifAction` | Admin |
-| Master periode | `createPeriodeAction`, `updatePeriodeAction`, `setPeriodeAktifAction` | Admin |
 | Instruktur | `createInstrukturAction`, `updateInstrukturAction`, `setInstrukturAktifAction`, `savePenugasanAction`, `setPenugasanAktifAction` | Admin |
 | Orang tua | `createOrangTuaAction`, `updateOrangTuaAction`, `setOrangTuaAktifAction`, `linkOrangTuaAction`, `updateHubunganOrangTuaAction`, `unlinkOrangTuaAction` | Admin |
 | Pengajuan | `createPengajuanAction`, `updatePengajuanDraftAction`, `submitPengajuanAction`, `addAnggotaAction`, `removeAnggotaAction` | Siswa |

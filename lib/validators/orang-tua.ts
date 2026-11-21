@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { toTitleCaseName } from "@/lib/name";
+
 import { postgresUuidPattern } from "./common";
 
 const optionalText = (max: number) => z.string().trim().max(max);
@@ -18,7 +20,8 @@ export const orangTuaFormSchema = z.object({
     .string()
     .trim()
     .min(1, "Nama lengkap wajib diisi.")
-    .max(150, "Nama lengkap terlalu panjang."),
+    .max(150, "Nama lengkap terlalu panjang.")
+    .transform(toTitleCaseName),
   username: z
     .string()
     .trim()
