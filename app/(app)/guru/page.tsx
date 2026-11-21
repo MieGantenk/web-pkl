@@ -187,6 +187,18 @@ export default async function GuruHomePage() {
                 <p className="mt-4 text-sm text-muted">
                   Surat monitoring guru pembimbing.
                 </p>
+                <Link
+                  href="/guru/surat-tugas"
+                  prefetch={false}
+                  className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-800"
+                >
+                  Lihat surat tugas
+                  <ArrowRight
+                    className="size-4"
+                    strokeWidth={1.75}
+                    aria-hidden
+                  />
+                </Link>
               </div>
             </div>
           </section>
