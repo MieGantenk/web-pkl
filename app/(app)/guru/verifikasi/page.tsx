@@ -2,14 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { id as localeId } from "date-fns/locale";
-import { ClipboardCheck } from "lucide-react";
+import { ClipboardCheck, ImageOff } from "lucide-react";
 
 import { EmptyState } from "@/components/pkl/EmptyState";
+import { FilterForm } from "@/components/pkl/FilterForm";
 import { JurnalBadge } from "@/components/pkl/StatusBadge";
 import { VerificationPanel } from "@/components/pkl/VerificationPanel";
+import { buttonVariants } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { verifyJurnalAction } from "@/lib/actions/verifikasi";
 import { requireRole } from "@/lib/auth";
 import { getGuruVerificationQueue } from "@/lib/data/guru";
+import { statusJurnal, type StatusJurnal } from "@/lib/status";
+import { postgresUuidPattern } from "@/lib/validators/common";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -20,6 +27,13 @@ export const instant = false;
 
 const card =
   "rounded-md border border-border bg-surface p-4 shadow-xs sm:p-6";
+
+const statusFilters = [
+  { value: "menunggu", label: "Perlu diverifikasi" },
+  { value: "revisi", label: "Perlu revisi" },
+  { value: "terverifikasi_guru", label: "Menunggu instruktur" },
+  { value: "terverifikasi_instruktur", label: "Selesai" },
+] as const;
 
 function formatDay(isoDate: string) {
   return format(parseISO(isoDate), "EEEE, d MMM yyyy", {
@@ -44,9 +58,31 @@ export default async function GuruVerificationPage({
 }: GuruVerificationPageProps) {
   const profile = await requireRole("guru");
   const params = await searchParams;
+  const q = typeof params.q === "string" ? params.q.slice(0, 100).trim() : "";
+  const status =
+    typeof params.status === "string" &&
+    Object.hasOwn(statusJurnal, params.status)
+      ? (params.status as StatusJurnal)
+      : "";
   const selectedId =
-    typeof params.jurnal === "string" ? params.jurnal : undefined;
-  const data = await getGuruVerificationQueue(profile.id, selectedId);
+    typeof params.jurnal === "string" &&
+    postgresUuidPattern.test(params.jurnal)
+      ? params.jurnal
+      : undefined;
+  const data = await getGuruVerificationQueue(profile.id, {
+    jurnalId: selectedId,
+    q,
+    status,
+  });
+  const hasFilter = Boolean(q || status);
+
+  function jurnalHref(id: string) {
+    const next = new URLSearchParams();
+    if (q) next.set("q", q);
+    if (status) next.set("status", status);
+    next.set("jurnal", id);
+    return `/guru/verifikasi?${next.toString()}#jurnal-detail`;
+  }
 
   if (!data.context) {
     return (
@@ -86,12 +122,76 @@ export default async function GuruVerificationPage({
         </p>
       </header>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <aside className="overflow-hidden rounded-md border border-border bg-surface shadow-xs">
+      <FilterForm className="mb-4 grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_220px_auto] sm:items-end">
+        <Field label="Cari siswa atau kegiatan" htmlFor="q">
+          <Input
+            id="q"
+            name="q"
+            type="search"
+            defaultValue={q}
+            placeholder="Nama, NIS, atau kegiatan"
+          />
+        </Field>
+
+        <Field label="Status jurnal" htmlFor="status">
+          <Select id="status" name="status" defaultValue={status}>
+            <option value="">Semua status ({data.total})</option>
+            {statusFilters.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label} ({data.counts[item.value]})
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <div className="flex items-center gap-2">
+          {/* Muat ulang penuh agar input filter uncontrolled kembali kosong. */}
+          <a
+            href="/guru/verifikasi"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "md" }),
+              "flex-1 sm:flex-none",
+            )}
+          >
+            Reset
+          </a>
+        </div>
+      </FilterForm>
+
+      {!data.journals.length ? (
+        <section className={card}>
+          <EmptyState
+            icon={ClipboardCheck}
+            title={
+              hasFilter
+                ? "Tidak ada jurnal pada filter ini"
+                : "Belum ada jurnal"
+            }
+            description={
+              hasFilter
+                ? "Ubah filter atau reset pencarian untuk melihat jurnal lain."
+                : "Jurnal siswa bimbingan akan muncul di sini setelah diisi."
+            }
+            action={
+              hasFilter ? (
+                <a
+                  href="/guru/verifikasi"
+                  className={buttonVariants({ variant: "secondary" })}
+                >
+                  Reset filter
+                </a>
+              ) : undefined
+            }
+          />
+        </section>
+      ) : (
+        <div className="grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+        <aside className="overflow-hidden rounded-md border border-border bg-surface shadow-xs lg:order-1">
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <h2 className="text-base font-semibold text-ink">Antrean</h2>
             <span className="text-[13px] text-muted tabular-nums">
-              {data.journals.length} jurnal
+              {data.journals.length}
+              {hasFilter ? ` dari ${data.total}` : ""} jurnal
             </span>
           </div>
 
@@ -103,7 +203,7 @@ export default async function GuruVerificationPage({
                 return (
                   <li key={journal.id}>
                     <Link
-                      href={`/guru/verifikasi?jurnal=${journal.id}`}
+                      href={jurnalHref(journal.id)}
                       prefetch={false}
                       aria-current={active ? "page" : undefined}
                       className={cn(
@@ -134,19 +234,58 @@ export default async function GuruVerificationPage({
               <EmptyState
                 icon={ClipboardCheck}
                 title="Tidak ada jurnal"
-                description="Jurnal siswa bimbingan akan muncul di sini setelah diisi."
+                description={
+                  hasFilter
+                    ? "Ubah filter atau reset pencarian."
+                    : "Jurnal siswa bimbingan akan muncul di sini setelah diisi."
+                }
+                action={
+                  hasFilter ? (
+                    <a
+                      href="/guru/verifikasi"
+                      className={buttonVariants({ variant: "secondary" })}
+                    >
+                      Reset filter
+                    </a>
+                  ) : undefined
+                }
               />
             </div>
           )}
         </aside>
 
-        <section>
+        <section
+          id="jurnal-detail"
+          className={cn("lg:order-2", selected && "order-first")}
+        >
           {!selected ? (
             <div className={card}>
               <EmptyState
                 icon={ClipboardCheck}
-                title="Tidak ada jurnal untuk diverifikasi"
-                description="Pilih jurnal dari antrean atau tunggu siswa mengisi jurnal."
+                title={
+                  data.total === 0
+                    ? "Belum ada jurnal"
+                    : hasFilter
+                      ? "Tidak ada jurnal pada filter ini"
+                      : "Tidak ada jurnal untuk diverifikasi"
+                }
+                description={
+                  data.total === 0
+                    ? "Jurnal siswa bimbingan akan muncul di sini setelah diisi."
+                    : hasFilter
+                      ? "Ubah filter atau reset pencarian untuk melihat jurnal lain."
+                      : "Pilih jurnal dari antrean atau tunggu siswa mengisi jurnal."
+                }
+                action={
+                  hasFilter ? (
+                    <a
+                      href="/guru/verifikasi"
+                      className={buttonVariants({ variant: "secondary" })}
+                    >
+                      Reset filter
+                    </a>
+                  ) : undefined
+                }
               />
             </div>
           ) : (
@@ -160,6 +299,7 @@ export default async function GuruVerificationPage({
                     {selected.nama}
                   </h2>
                   <p className="mt-1 text-sm text-muted">
+                    {selected.nis ? `NIS ${selected.nis} · ` : ""}
                     {selected.kelas ?? "—"} · {formatDay(selected.tanggal)}
                     {formatTime(selected.waktuMulai) &&
                     formatTime(selected.waktuSelesai)
@@ -196,9 +336,14 @@ export default async function GuruVerificationPage({
                     />
                   </a>
                 ) : (
-                  <p className="mt-4 text-sm text-muted">
+                  <div className="mt-4 flex items-start gap-2 rounded-sm border border-warning-border bg-warning-bg px-3 py-2.5 text-[13px] leading-[18px] text-warning">
+                    <ImageOff
+                      className="mt-0.5 size-4 shrink-0"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
                     Foto jurnal tidak tersedia.
-                  </p>
+                  </div>
                 )}
               </div>
 
@@ -208,6 +353,7 @@ export default async function GuruVerificationPage({
                   jurnalId={selected.id}
                   canVerify={selected.canVerify}
                   existingNote={selected.guruVerification?.catatan ?? null}
+                  approveDescription="Jurnal akan diteruskan ke instruktur perusahaan. Pastikan kegiatan dan foto sudah sesuai."
                   unavailableMessage={
                     selected.hasInstrukturVerification
                       ? "Jurnal ini sudah diverifikasi instruktur. Verifikasi tidak bisa diubah lagi."
@@ -220,6 +366,7 @@ export default async function GuruVerificationPage({
           )}
         </section>
       </div>
+      )}
     </div>
   );
 }

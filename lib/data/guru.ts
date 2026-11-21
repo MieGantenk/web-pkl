@@ -637,13 +637,17 @@ export type GuruVerificationData = {
   journals: Array<
     GuruJournalSummary & {
       nama: string;
+      nis: string | null;
       kelas: string | null;
       perusahaan: string | null;
     }
   >;
   pending: number;
+  total: number;
+  counts: Record<StatusJurnal, number>;
   selected: (GuruJournalSummary & {
     nama: string;
+    nis: string | null;
     kelas: string | null;
     perusahaan: string | null;
     deskripsi: string | null;
@@ -660,13 +664,23 @@ export type GuruVerificationData = {
 export const getGuruVerificationQueue = cache(
   async (
     penggunaId: string,
-    selectedJurnalId?: string,
+    options: {
+      jurnalId?: string;
+      q?: string;
+      status?: StatusJurnal | "";
+    } = {},
   ): Promise<GuruVerificationData> => {
     await connection();
 
     const supabase = await createClient();
     const today = jakartaToday();
     const context = await getGuruContext(penggunaId);
+    const counts: Record<StatusJurnal, number> = {
+      menunggu: 0,
+      terverifikasi_guru: 0,
+      terverifikasi_instruktur: 0,
+      revisi: 0,
+    };
 
     if (!context) {
       return {
@@ -674,6 +688,8 @@ export const getGuruVerificationQueue = cache(
         context: null,
         journals: [],
         pending: 0,
+        total: 0,
+        counts,
         selected: null,
       };
     }
@@ -682,13 +698,14 @@ export const getGuruVerificationQueue = cache(
     const studentById = new Map(
       base.students.map((student) => [student.id, student]),
     );
-    const journals = base.journals
+    const allJournals = base.journals
       .map((journal) => {
         const student = studentById.get(journal.siswaId);
 
         return {
           ...journal,
           nama: student?.nama ?? "Siswa",
+          nis: student?.nis ?? null,
           kelas: student?.kelas ?? null,
           perusahaan: student?.perusahaan?.nama ?? null,
         };
@@ -703,8 +720,25 @@ export const getGuruVerificationQueue = cache(
         );
       });
 
+    for (const journal of allJournals) {
+      counts[journal.status] += 1;
+    }
+
+    const term = (options.q ?? "").trim().toLowerCase();
+    const journals = allJournals.filter((journal) => {
+      const matchesStatus =
+        !options.status || journal.status === options.status;
+      const matchesQuery =
+        !term ||
+        journal.nama.toLowerCase().includes(term) ||
+        (journal.nis ?? "").toLowerCase().includes(term) ||
+        journal.kegiatan.toLowerCase().includes(term);
+
+      return matchesStatus && matchesQuery;
+    });
+
     const selectedSummary =
-      journals.find((journal) => journal.id === selectedJurnalId) ??
+      journals.find((journal) => journal.id === options.jurnalId) ??
       journals.find((journal) => journal.status === "menunggu") ??
       journals[0] ??
       null;
@@ -771,8 +805,9 @@ export const getGuruVerificationQueue = cache(
       today,
       context,
       journals,
-      pending: journals.filter((journal) => journal.status === "menunggu")
-        .length,
+      pending: counts.menunggu,
+      total: allJournals.length,
+      counts,
       selected,
     };
   },
