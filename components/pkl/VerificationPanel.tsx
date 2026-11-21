@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,18 @@ export function VerificationPanel({
   canVerify,
   existingNote,
   unavailableMessage,
+  approveDescription,
   action,
 }: {
   jurnalId: string;
   canVerify: boolean;
   existingNote: string | null;
   unavailableMessage: string;
+  approveDescription?: string;
   action: VerificationAction;
 }) {
   const router = useRouter();
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const [catatan, setCatatan] = useState(existingNote ?? "");
   const [submittingAction, setSubmittingAction] = useState<
     "diterima" | "revisi" | null
@@ -32,7 +35,7 @@ export function VerificationPanel({
   async function submit(status: "diterima" | "revisi") {
     if (status === "revisi" && !catatan.trim()) {
       toast.error("Catatan wajib diisi saat meminta revisi.");
-      return;
+      return false;
     }
 
     setSubmittingAction(status);
@@ -46,11 +49,12 @@ export function VerificationPanel({
 
       if (!result.ok) {
         toast.error(result.message);
-        return;
+        return false;
       }
 
       toast.success(result.message);
       router.refresh();
+      return true;
     } finally {
       setSubmittingAction(null);
     }
@@ -104,13 +108,53 @@ export function VerificationPanel({
         </Button>
         <Button
           type="button"
-          onClick={() => void submit("diterima")}
-          loading={submittingAction === "diterima"}
+          onClick={() => dialogRef.current?.showModal()}
           disabled={submittingAction !== null}
         >
           Setujui jurnal
         </Button>
       </div>
+
+      <dialog
+        ref={dialogRef}
+        aria-labelledby="setujui-jurnal-title"
+        aria-describedby="setujui-jurnal-desc"
+        className="app-dialog m-auto w-[calc(100vw-32px)] max-w-[440px] rounded-lg border border-border bg-surface p-6 text-ink shadow-md"
+      >
+        <h2
+          id="setujui-jurnal-title"
+          className="text-xl font-semibold text-ink"
+        >
+          Setujui jurnal?
+        </h2>
+        <p
+          id="setujui-jurnal-desc"
+          className="mt-2 text-base leading-[26px] text-ink-soft"
+        >
+          {approveDescription ??
+            "Jurnal akan disetujui dan statusnya diperbarui. Pastikan kegiatan dan foto sudah sesuai."}
+        </p>
+
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            variant="secondary"
+            onClick={() => dialogRef.current?.close()}
+            disabled={submittingAction !== null}
+          >
+            Batal
+          </Button>
+          <Button
+            onClick={async () => {
+              if (await submit("diterima")) {
+                dialogRef.current?.close();
+              }
+            }}
+            loading={submittingAction === "diterima"}
+          >
+            Setujui
+          </Button>
+        </div>
+      </dialog>
     </div>
   );
 }
