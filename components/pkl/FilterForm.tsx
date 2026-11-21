@@ -44,8 +44,15 @@ export function FilterForm({
 
     if (
       target instanceof HTMLInputElement &&
-      (target.type === "search" || target.type === "text")
+      (target.type === "date" ||
+        target.type === "search" ||
+        target.type === "text")
     ) {
+      if (target.type === "date") {
+        submit();
+        return;
+      }
+
       clearTimer();
       timerRef.current = window.setTimeout(submit, 500);
     }

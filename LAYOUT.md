@@ -326,6 +326,7 @@ Kelola data siswa, kelas, dan status PKL.
 - Aksi **Naik kelas** di header memakai dialog konfirmasi dan berlaku global: X menjadi XI, XI menjadi XII; kelas XII tidak diubah.
 - Filter bar di card terpisah; di HP jadi tombol "Filter" + drawer.
 - Periode PKL tampil sebagai baris chip di atas filter bar; klik chip memfilter siswa pada periode itu.
+- Monitoring jurnal di `/admin/jurnal` memakai split: daftar jurnal di kiri, detail foto dan verifikasi di kanan; filter siswa, status, guru, kelas, dan rentang tanggal.
 - Tabel: kolom utama selalu terlihat; kolom sekunder bisa disembunyikan.
 - Aksi baris di dropdown `⋯` (Edit, Lihat, Hapus).
 - Hapus memakai dialog konfirmasi, bukan `confirm()`.
