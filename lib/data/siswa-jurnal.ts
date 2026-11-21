@@ -73,6 +73,27 @@ export type SiswaJurnalDetail = SiswaJurnalListItem & {
   verifikasi: SiswaJurnalVerification[];
 };
 
+export type SiswaJurnalFormContext = {
+  today: string;
+  siswa: {
+    id: string;
+    nis: string;
+    kelas: string | null;
+    jurusan: string | null;
+  } | null;
+  placement: {
+    id: string;
+    tanggalMulai: string | null;
+    tanggalSelesai: string | null;
+    perusahaan: string | null;
+    periode: string | null;
+  } | null;
+  jurnalHariIni: {
+    id: string;
+    status: StatusJurnal;
+  } | null;
+};
+
 type SiswaJurnalBase = {
   today: string;
   siswa: SiswaJurnalListResult["siswa"];
@@ -361,6 +382,83 @@ export const getSiswaJurnalDetail = cache(
         verifikator: verification.verifikator?.nama_lengkap ?? null,
         updatedAt: verification.updated_at,
       })),
+    };
+  },
+);
+
+export const getSiswaJurnalFormContext = cache(
+  async (penggunaId: string): Promise<SiswaJurnalFormContext> => {
+    await connection();
+
+    const supabase = await createClient();
+    const today = jakartaToday();
+    const { data: siswa, error: siswaError } = await supabase
+      .from("siswa")
+      .select("id, nis, kelas, jurusan:jurusan_id(nama)")
+      .eq("pengguna_id", penggunaId)
+      .eq("aktif", true)
+      .maybeSingle();
+
+    if (siswaError) {
+      throw new Error("Gagal memuat profil siswa.");
+    }
+
+    if (!siswa) {
+      return {
+        today,
+        siswa: null,
+        placement: null,
+        jurnalHariIni: null,
+      };
+    }
+
+    const { data: memberships, error: membershipError } = await supabase
+      .from("pengajuan_anggota")
+      .select(
+        "pengajuan:pengajuan_id(id, status, tanggal_mulai, tanggal_selesai, perusahaan:perusahaan_id(nama), periode:periode_id(nama))",
+      )
+      .eq("siswa_id", siswa.id)
+      .order("created_at", { ascending: false });
+
+    if (membershipError) {
+      throw new Error("Gagal memuat penempatan PKL.");
+    }
+
+    const active = (memberships ?? [])
+      .map((membership) => membership.pengajuan)
+      .find((pengajuan) => pengajuan?.status === "berlangsung");
+
+    const { data: todayJournal, error: journalError } = await supabase
+      .from("jurnal")
+      .select("id, status")
+      .eq("siswa_id", siswa.id)
+      .eq("tanggal", today)
+      .maybeSingle();
+
+    if (journalError) {
+      throw new Error("Gagal memeriksa jurnal hari ini.");
+    }
+
+    return {
+      today,
+      siswa: {
+        id: siswa.id,
+        nis: siswa.nis,
+        kelas: siswa.kelas,
+        jurusan: siswa.jurusan?.nama ?? null,
+      },
+      placement: active
+        ? {
+            id: active.id,
+            tanggalMulai: active.tanggal_mulai,
+            tanggalSelesai: active.tanggal_selesai,
+            perusahaan: active.perusahaan?.nama ?? null,
+            periode: active.periode?.nama ?? null,
+          }
+        : null,
+      jurnalHariIni: todayJournal
+        ? { id: todayJournal.id, status: todayJournal.status }
+        : null,
     };
   },
 );
