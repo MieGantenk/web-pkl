@@ -8,6 +8,15 @@ export { getJurusanOptions, type JurusanOption } from "./master";
 
 export const SISWA_PAGE_SIZE = 10;
 
+const BASE_KELAS = [
+  "X DKV",
+  "X RPL",
+  "XI DKV",
+  "XI RPL",
+  "XII DKV",
+  "XII RPL",
+];
+
 export type SiswaListItem = {
   id: string;
   nis: string;
@@ -140,13 +149,17 @@ export async function getSiswaList(params: {
     throw new Error("Gagal memuat status pengajuan.");
   }
 
-  const kelasOptions = Array.from(
+  const existingKelas = Array.from(
     new Set(
       (kelasResult.data ?? [])
         .map((row) => row.kelas)
         .filter((value): value is string => Boolean(value)),
     ),
-  );
+  ).sort((a, b) => a.localeCompare(b));
+  const kelasOptions = [
+    ...BASE_KELAS,
+    ...existingKelas.filter((kelas) => !BASE_KELAS.includes(kelas)),
+  ];
 
   const latestByStudent = new Map<
     string,

@@ -23,6 +23,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { FilterForm } from "@/components/pkl/FilterForm";
 import { requireRole } from "@/lib/auth";
 import {
   getAdminPengajuanQueue,
@@ -171,9 +172,7 @@ export default async function AdminPengajuanPage({
         </p>
       </header>
 
-      <form
-        method="get"
-        className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_220px_auto] sm:items-end"
+      <FilterForm className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_220px_auto] sm:items-end"
       >
         <Field label="Cari" htmlFor="q">
           <Input
@@ -198,15 +197,6 @@ export default async function AdminPengajuanPage({
         </Field>
 
         <div className="flex items-center gap-2">
-          <button
-            type="submit"
-            className={cn(
-              buttonVariants({ variant: "secondary", size: "md" }),
-              "flex-1 sm:flex-none",
-            )}
-          >
-            Terapkan
-          </button>
           <Link
             href="/admin/pengajuan"
             className={cn(
@@ -217,7 +207,7 @@ export default async function AdminPengajuanPage({
             Reset
           </Link>
         </div>
-      </form>
+      </FilterForm>
 
       <div className="mt-4 grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
         <aside
