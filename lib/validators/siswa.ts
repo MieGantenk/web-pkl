@@ -43,6 +43,10 @@ export const siswaFormSchema = z.object({
   nama_orangtua: optionalText(150),
   telepon_orangtua: optionalText(25),
   password: z.string().max(72, "Kata sandi terlalu panjang.").optional(),
+  confirmPassword: z
+    .string()
+    .max(72, "Kata sandi terlalu panjang.")
+    .optional(),
 });
 
 export const createSiswaSchema = siswaFormSchema.superRefine((data, ctx) => {
@@ -53,6 +57,30 @@ export const createSiswaSchema = siswaFormSchema.superRefine((data, ctx) => {
       message: "Kata sandi minimal 8 karakter.",
     });
   }
+
+  if (data.confirmPassword !== data.password) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["confirmPassword"],
+      message: "Ulangi kata sandi dengan benar.",
+    });
+  }
 });
 
+export const resetSiswaPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Kata sandi minimal 8 karakter.")
+      .max(72, "Kata sandi terlalu panjang."),
+    confirmPassword: z.string().min(1, "Ulangi kata sandi baru."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Ulangi kata sandi dengan benar.",
+  });
+
 export type SiswaFormInput = z.infer<typeof siswaFormSchema>;
+export type ResetSiswaPasswordInput = z.infer<
+  typeof resetSiswaPasswordSchema
+>;

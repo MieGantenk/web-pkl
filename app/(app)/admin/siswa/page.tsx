@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   CircleDashed,
@@ -33,6 +34,7 @@ type SearchParams = Promise<{
   q?: string;
   kelas?: string;
   status?: string;
+  periode?: string;
   page?: string;
 }>;
 
@@ -50,19 +52,33 @@ export default async function AdminSiswaPage({
     params.status === "aktif" || params.status === "nonaktif"
       ? params.status
       : "";
+  const periode =
+    typeof params.periode === "string" ? params.periode.trim() : "";
   const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
 
-  const data = await getSiswaList({ q, kelas, status, page });
-  const hasFilter = Boolean(q || kelas || status);
+  const data = await getSiswaList({ q, kelas, status, periode, page });
+  const hasFilter = Boolean(q || kelas || status || periode);
   const from =
     data.total === 0 ? 0 : (data.page - 1) * data.pageSize + 1;
   const to = Math.min(data.page * data.pageSize, data.total);
+
+  function filterHref(nextPeriode: string) {
+    const next = new URLSearchParams();
+    if (q) next.set("q", q);
+    if (kelas) next.set("kelas", kelas);
+    if (status) next.set("status", status);
+    if (nextPeriode) next.set("periode", nextPeriode);
+
+    const query = next.toString();
+    return query ? `/admin/siswa?${query}` : "/admin/siswa";
+  }
 
   function pageHref(target: number) {
     const next = new URLSearchParams();
     if (q) next.set("q", q);
     if (kelas) next.set("kelas", kelas);
     if (status) next.set("status", status);
+    if (periode) next.set("periode", periode);
     if (target > 1) next.set("page", String(target));
 
     const query = next.toString();
@@ -97,9 +113,65 @@ export default async function AdminSiswaPage({
         </Link>
       </header>
 
+      {data.periodeOptions.length ? (
+        <nav aria-label="Filter periode PKL" className="mb-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 inline-flex items-center gap-1.5 text-[13px] font-medium leading-[18px] text-muted">
+              <CalendarDays
+                className="size-4"
+                strokeWidth={1.75}
+                aria-hidden
+              />
+              Periode PKL
+            </span>
+
+            <Link
+              href={filterHref("")}
+              aria-current={!periode ? "page" : undefined}
+              className={cn(
+                "inline-flex min-h-11 items-center rounded-full border px-3 text-[13px] font-medium transition-colors duration-[var(--m-fast)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-100",
+                !periode
+                  ? "border-brand-300 bg-brand-50 text-brand-800"
+                  : "border-border bg-surface text-ink-soft hover:border-border-strong hover:text-ink",
+              )}
+            >
+              Semua periode
+            </Link>
+
+            {data.periodeOptions.map((option) => {
+              const active = periode === option.id;
+
+              return (
+                <Link
+                  key={option.id}
+                  href={filterHref(option.id)}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border px-3 text-[13px] font-medium transition-colors duration-[var(--m-fast)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-100",
+                    active
+                      ? "border-brand-300 bg-brand-50 text-brand-800"
+                      : "border-border bg-surface text-ink-soft hover:border-border-strong hover:text-ink",
+                  )}
+                >
+                  <span className="min-w-0 truncate">{option.nama}</span>
+                  <span
+                    className={cn(
+                      "shrink-0 tabular-nums text-[12px]",
+                      active ? "text-brand-700" : "text-muted",
+                    )}
+                  >
+                    {option.siswa}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      ) : null}
+
       <form
         method="get"
-        className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_170px_170px_auto] sm:items-end"
+        className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_150px_180px_160px_auto] lg:items-end"
       >
         <Field label="Cari" htmlFor="q">
           <Input
@@ -117,6 +189,17 @@ export default async function AdminSiswaPage({
             {data.kelasOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label="Periode PKL" htmlFor="periode">
+          <Select id="periode" name="periode" defaultValue={periode}>
+            <option value="">Semua periode</option>
+            {data.periodeOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.nama} ({option.siswa})
               </option>
             ))}
           </Select>
@@ -155,7 +238,7 @@ export default async function AdminSiswaPage({
       {data.rows.length ? (
         <>
           <div className="mt-4 hidden overflow-x-auto rounded-md border border-border bg-surface shadow-xs md:block">
-            <table className="w-full min-w-[620px] border-collapse text-sm">
+            <table className="w-full min-w-[880px] border-collapse text-sm">
               <caption className="sr-only">Daftar siswa PKL</caption>
               <thead className="bg-surface-muted text-left text-[13px] font-semibold text-ink-soft">
                 <tr>
@@ -173,6 +256,9 @@ export default async function AdminSiswaPage({
                   </th>
                   <th scope="col" className="px-4 py-3">
                     Status PKL
+                  </th>
+                  <th scope="col" className="px-4 py-3">
+                    Periode PKL
                   </th>
                   <th scope="col" className="px-4 py-3 text-right">
                     Aksi
@@ -214,6 +300,25 @@ export default async function AdminSiswaPage({
                           tone="neutral"
                           icon={CircleDashed}
                         />
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {row.periode ? (
+                        <Link
+                          href={filterHref(row.periode.id)}
+                          className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-medium text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
+                        >
+                          <CalendarDays
+                            className="size-3.5 shrink-0"
+                            strokeWidth={1.75}
+                            aria-hidden
+                          />
+                          {row.periode.nama}
+                        </Link>
+                      ) : (
+                        <span className="whitespace-nowrap text-[13px] text-muted">
+                          Belum ditempatkan
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -272,7 +377,16 @@ export default async function AdminSiswaPage({
                     )}
                   </div>
 
-                  <p className="mt-3 text-[12px] leading-4 text-muted">
+                  <p className="mt-3 flex items-center gap-1.5 text-[13px] leading-[18px] text-ink-soft">
+                    <CalendarDays
+                      className="size-3.5 shrink-0 text-muted"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
+                    {row.periode?.nama ?? "Belum ditempatkan"}
+                  </p>
+
+                  <p className="mt-2 text-[12px] leading-4 text-muted">
                     @{row.username}
                   </p>
                 </Link>

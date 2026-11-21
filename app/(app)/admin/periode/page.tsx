@@ -155,6 +155,9 @@ export default async function AdminPeriodePage({
                     Tanggal
                   </th>
                   <th scope="col" className="px-4 py-3">
+                    Siswa
+                  </th>
+                  <th scope="col" className="px-4 py-3">
                     Status
                   </th>
                   <th scope="col" className="px-4 py-3 text-right">
@@ -182,6 +185,14 @@ export default async function AdminPeriodePage({
                     <td className="px-4 py-3 text-ink-soft tabular-nums">
                       {formatDate(row.tanggal_mulai)} –{" "}
                       {formatDate(row.tanggal_selesai)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/siswa?periode=${row.id}`}
+                        className="inline-flex h-11 items-center whitespace-nowrap text-sm font-medium text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
+                      >
+                        {row.siswa} siswa
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
                       <AktifBadge aktif={row.aktif} />
@@ -231,6 +242,11 @@ export default async function AdminPeriodePage({
                   <p className="mt-2 text-[13px] leading-[18px] text-ink-soft tabular-nums">
                     {formatDate(row.tanggal_mulai)} –{" "}
                     {formatDate(row.tanggal_selesai)}
+                  </p>
+
+                  <p className="mt-1 text-[13px] leading-[18px] text-muted">
+                    <span className="tabular-nums">{row.siswa}</span> siswa
+                    ditempatkan
                   </p>
 
                   <div className="mt-3">

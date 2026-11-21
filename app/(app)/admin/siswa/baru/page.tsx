@@ -26,6 +26,7 @@ const emptyValues: SiswaFormInput = {
   nama_orangtua: "",
   telepon_orangtua: "",
   password: "",
+  confirmPassword: "",
 };
 
 export default async function AdminSiswaBaruPage() {
