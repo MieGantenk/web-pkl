@@ -30,6 +30,13 @@ export const suratNextStatus: Partial<
   penarikan: "penarikan_terbit",
 };
 
+export const studentSuratTypes: readonly JenisSurat[] = [
+  "izin_orang_tua",
+  "pengajuan",
+  "keberangkatan",
+  "penarikan",
+];
+
 export const suratKode: Record<JenisSurat, string> = {
   izin_orang_tua: "IZIN",
   pernyataan: "PERNYATAAN",
