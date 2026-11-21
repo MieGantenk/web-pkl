@@ -86,7 +86,7 @@ Aturan:
 ### Termasuk MVP
 
 - Auth + 5 role + RLS.
-- Master data: siswa, guru, jurusan, perusahaan, periode, instruktur, orang tua.
+- Master data: siswa (periode PKL mengikuti kelas), guru, jurusan, perusahaan, instruktur, orang tua.
 - Pengajuan PKL + kelompok.
 - Surat izin orang tua (terbit, unduh, upload TTD).
 - Surat pengajuan ke perusahaan.
@@ -228,7 +228,7 @@ Aturan:
 | Modul | Admin | Guru | Siswa | Instruktur | Ortu |
 |---|---|---|---|---|---|
 | Pengguna & role | F | R | R self | R self | R self |
-| Master siswa/guru/jurusan/perusahaan/periode | F | R assigned | — | R assigned | R child |
+| Master siswa/guru/jurusan/perusahaan | F | R assigned | — | R assigned | R child |
 | Instruktur | F | R assigned | — | R self | — |
 | Orang tua | F | — | R self | — | R self |
 | Pengajuan PKL | F + setujui | R assigned | C + R own | R assigned | R child |
@@ -264,7 +264,7 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 
 | ID | Requirement | Acceptance |
 |---|---|---|
-| MST-01 | CRUD siswa, guru, jurusan, perusahaan, periode | Validasi unik NIS/NISN/NIP/email |
+| MST-01 | CRUD siswa, guru, jurusan, perusahaan | Validasi unik NIS/NISN/NIP/email; periode PKL ditetapkan dari kelas: XI → 2026/2027, X → 2027/2028 |
 | MST-02 | Hubungkan instruktur ke perusahaan | Satu instruktur bisa di beberapa perusahaan |
 | MST-03 | Hubungkan orang tua ke siswa | Satu ortu bisa punya beberapa anak |
 | MST-04 | Pencarian, filter, pagination server-side | 1.853 jurnal tidak dimuat sekaligus |

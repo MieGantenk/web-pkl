@@ -191,6 +191,9 @@ export function RelasiManager({
                 <p className="mt-0.5 text-[13px] leading-[18px] text-muted tabular-nums">
                   NIS {relasi.siswa?.nis ?? "—"}
                   {relasi.siswa?.kelas ? ` · ${relasi.siswa.kelas}` : ""}
+                  {relasi.siswa?.periode
+                    ? ` · ${relasi.siswa.periode.nama}`
+                    : ""}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <HubunganBadge hubungan={relasi.hubungan} />

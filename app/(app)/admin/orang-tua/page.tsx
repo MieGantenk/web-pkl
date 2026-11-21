@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   HeartHandshake,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { EmptyState } from "@/components/pkl/EmptyState";
+import { PeriodeChips } from "@/components/pkl/PeriodeChips";
 import {
   AktifBadge,
   HubunganBadge,
@@ -34,6 +36,7 @@ export const instant = false;
 type SearchParams = Promise<{
   q?: string;
   status?: string;
+  periode?: string;
   page?: string;
 }>;
 
@@ -72,17 +75,30 @@ export default async function AdminOrangTuaPage({
     params.status === "aktif" || params.status === "nonaktif"
       ? params.status
       : "";
+  const periode =
+    typeof params.periode === "string" ? params.periode.trim() : "";
   const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
 
-  const data = await getOrangTuaList({ q, status, page });
-  const hasFilter = Boolean(q || status);
+  const data = await getOrangTuaList({ q, status, periode, page });
+  const hasFilter = Boolean(q || status || periode);
   const from = data.total === 0 ? 0 : (data.page - 1) * data.pageSize + 1;
   const to = Math.min(data.page * data.pageSize, data.total);
+
+  function filterHref(nextPeriode: string) {
+    const next = new URLSearchParams();
+    if (q) next.set("q", q);
+    if (status) next.set("status", status);
+    if (nextPeriode) next.set("periode", nextPeriode);
+
+    const query = next.toString();
+    return query ? `/admin/orang-tua?${query}` : "/admin/orang-tua";
+  }
 
   function pageHref(target: number) {
     const next = new URLSearchParams();
     if (q) next.set("q", q);
     if (status) next.set("status", status);
+    if (periode) next.set("periode", periode);
     if (target > 1) next.set("page", String(target));
 
     const query = next.toString();
@@ -117,8 +133,17 @@ export default async function AdminOrangTuaPage({
         </Link>
       </header>
 
-      <FilterForm className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_170px_auto] sm:items-end"
-      >
+      <PeriodeChips
+        options={data.periodeOptions.map((option) => ({
+          id: option.id,
+          nama: option.nama,
+          count: option.count,
+        }))}
+        selected={periode}
+        hrefFor={filterHref}
+      />
+
+      <FilterForm className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_170px_190px_auto] lg:items-end">
         <Field label="Cari" htmlFor="q">
           <Input
             id="q"
@@ -127,6 +152,17 @@ export default async function AdminOrangTuaPage({
             defaultValue={q}
             placeholder="Nama, username, atau email"
           />
+        </Field>
+
+        <Field label="Periode PKL" htmlFor="periode">
+          <Select id="periode" name="periode" defaultValue={periode}>
+            <option value="">Semua periode</option>
+            {data.periodeOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.nama} ({option.count})
+              </option>
+            ))}
+          </Select>
         </Field>
 
         <Field label="Status akun" htmlFor="status">
@@ -153,7 +189,7 @@ export default async function AdminOrangTuaPage({
       {data.rows.length ? (
         <>
           <div className="mt-4 hidden overflow-x-auto rounded-md border border-border bg-surface shadow-xs md:block">
-            <table className="w-full min-w-[700px] border-collapse text-sm">
+            <table className="w-full min-w-[900px] border-collapse text-sm">
               <caption className="sr-only">
                 Daftar akun orang tua siswa
               </caption>
@@ -164,6 +200,9 @@ export default async function AdminOrangTuaPage({
                   </th>
                   <th scope="col" className="px-4 py-3">
                     Anak
+                  </th>
+                  <th scope="col" className="px-4 py-3">
+                    Periode
                   </th>
                   <th scope="col" className="hidden px-4 py-3 xl:table-cell">
                     Hubungan
@@ -200,6 +239,28 @@ export default async function AdminOrangTuaPage({
                         <span className="block truncate text-ink-soft">
                           {anakNames(row)}
                         </span>
+                      </td>
+                      <td className="max-w-[220px] px-4 py-3">
+                        {row.periode.length ? (
+                          <div className="flex flex-wrap gap-x-3 gap-y-1">
+                            {row.periode.map((item) => (
+                              <Link
+                                key={item.id}
+                                href={filterHref(item.id)}
+                                className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-medium text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
+                              >
+                                <CalendarDays
+                                  className="size-3.5 shrink-0"
+                                  strokeWidth={1.75}
+                                  aria-hidden
+                                />
+                                {item.nama}
+                              </Link>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-[13px] text-muted">—</span>
+                        )}
                       </td>
                       <td className="hidden px-4 py-3 xl:table-cell">
                         {hubungan.length ? (
@@ -280,6 +341,24 @@ export default async function AdminOrangTuaPage({
                       </p>
                     )}
                   </div>
+
+                  {row.periode.length ? (
+                    <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] leading-[18px] text-ink-soft">
+                      {row.periode.map((item) => (
+                        <span
+                          key={item.id}
+                          className="inline-flex items-center gap-1.5"
+                        >
+                          <CalendarDays
+                            className="size-3.5 shrink-0 text-muted"
+                            strokeWidth={1.75}
+                            aria-hidden
+                          />
+                          {item.nama}
+                        </span>
+                      ))}
+                    </p>
+                  ) : null}
 
                   <div className="mt-3">
                     <AktifBadge aktif={row.aktif} />

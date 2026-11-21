@@ -145,6 +145,68 @@ function cleanName(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+const KEEP_UPPER = new Set([
+  "SE",
+  "SH",
+  "ST",
+  "MM",
+  "MBA",
+  "MSC",
+  "APT",
+]);
+
+function personName(value) {
+  return cleanName(value)
+    .replace(/\s+/g, " ")
+    .replace(/\s*,\s*/g, ", ")
+    .split(" ")
+    .map((word) => {
+      if (!word) {
+        return word;
+      }
+
+      const trailing = word.match(/[.,]+$/)?.[0] ?? "";
+      const core = trailing ? word.slice(0, -trailing.length) : word;
+
+      if (!core) {
+        return word;
+      }
+
+      if (core.includes(".")) {
+        return (
+          core
+            .split(".")
+            .map((part) =>
+              part
+                ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+                : part,
+            )
+            .join(".") + trailing
+        );
+      }
+
+      if (KEEP_UPPER.has(core.toUpperCase())) {
+        return core.toUpperCase() + trailing;
+      }
+
+      let lower = core.toLowerCase();
+
+      if (lower.startsWith("'")) {
+        lower = `'${lower.charAt(1).toUpperCase()}${lower.slice(2)}`;
+      } else {
+        lower = lower.charAt(0).toUpperCase() + lower.slice(1);
+      }
+
+      lower = lower.replace(
+        /-([a-z])/g,
+        (_, char) => `-${char.toUpperCase()}`,
+      );
+
+      return lower + trailing;
+    })
+    .join(" ");
+}
+
 function isPlaceholder(value) {
   return ["", "-", "ayah", "ibu", "wali"].includes(value.toLowerCase());
 }
@@ -271,9 +333,17 @@ if (!allStudents.length) {
   throw new Error("Berkas tidak berisi daftar students.");
 }
 
-const students = args.limit
+const students = (args.limit
   ? allStudents.slice(0, args.limit)
-  : allStudents;
+  : allStudents
+).map((student) => ({
+  ...student,
+  nama: personName(student.nama),
+  orang_tua: (student.orang_tua ?? []).map((parent) => ({
+    ...parent,
+    nama: personName(parent.nama),
+  })),
+}));
 
 if (args.execute && fs.existsSync(args.out) && !args.force) {
   throw new Error(

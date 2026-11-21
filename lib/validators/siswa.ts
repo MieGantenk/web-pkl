@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { toTitleCaseName } from "@/lib/name";
+
 import { fieldErrorsFrom, postgresUuidPattern } from "./common";
 
 export { fieldErrorsFrom, postgresUuidPattern };
@@ -11,7 +13,8 @@ export const siswaFormSchema = z.object({
     .string()
     .trim()
     .min(1, "Nama lengkap wajib diisi.")
-    .max(150, "Nama lengkap terlalu panjang."),
+    .max(150, "Nama lengkap terlalu panjang.")
+    .transform(toTitleCaseName),
   username: z
     .string()
     .trim()
@@ -40,7 +43,7 @@ export const siswaFormSchema = z.object({
   ]),
   telepon: optionalText(25),
   alamat: optionalText(1000),
-  nama_orangtua: optionalText(150),
+  nama_orangtua: optionalText(150).transform(toTitleCaseName),
   telepon_orangtua: optionalText(25),
   password: z.string().max(72, "Kata sandi terlalu panjang.").optional(),
   confirmPassword: z

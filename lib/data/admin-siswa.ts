@@ -1,12 +1,18 @@
 import { cache } from "react";
 import { connection } from "next/server";
 
+import { getPeriodeKelas } from "@/lib/periode-kelas";
 import type { StatusJurnal, StatusPengajuan } from "@/lib/status";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export { getJurusanOptions, type JurusanOption } from "./master";
 
 export const SISWA_PAGE_SIZE = 10;
+
+export type PeriodeRef = {
+  id: string;
+  nama: string;
+};
 
 export type SiswaListItem = {
   id: string;
@@ -16,7 +22,7 @@ export type SiswaListItem = {
   nama: string;
   username: string;
   pengajuanStatus: StatusPengajuan | null;
-  periode: { id: string; nama: string } | null;
+  periode: PeriodeRef | null;
 };
 
 export type PeriodeOption = {
@@ -58,6 +64,7 @@ export type SiswaDetail = {
     aktif: boolean;
   };
   jurusan: { id: string; nama: string } | null;
+  periode: PeriodeRef | null;
   pengajuan: {
     id: string;
     status: StatusPengajuan;
@@ -118,13 +125,10 @@ export async function getSiswaList(params: {
         .select(
           "id, nama, tahun_ajaran, tanggal_mulai, tanggal_selesai, aktif",
         )
-        .order("aktif", { ascending: false })
-        .order("tanggal_mulai", { ascending: false }),
+        .order("tanggal_mulai", { ascending: true }),
       admin
         .from("pengajuan_anggota")
-        .select(
-          "siswa_id, created_at, pengajuan:pengajuan_id(status, periode:periode_id(id, nama))",
-        )
+        .select("siswa_id, created_at, pengajuan:pengajuan_id(status)")
         .order("created_at", { ascending: false }),
       searchPromise,
     ]);
@@ -157,43 +161,43 @@ export async function getSiswaList(params: {
     }
   }
 
-  const latestByStudent = new Map<
-    string,
-    {
-      status: StatusPengajuan;
-      periode: { id: string; nama: string } | null;
-    }
-  >();
-  const studentsByPeriode = new Map<string, Set<string>>();
+  const periodRows = periodeResult.data ?? [];
+  const periodeByTahun = new Map(
+    periodRows.map((periode) => [periode.tahun_ajaran, periode]),
+  );
+  const latestStatusByStudent = new Map<string, StatusPengajuan>();
 
   for (const placement of placementsResult.data ?? []) {
     const pengajuan = placement.pengajuan;
 
-    if (!pengajuan) {
-      continue;
-    }
-
-    if (!latestByStudent.has(placement.siswa_id)) {
-      latestByStudent.set(placement.siswa_id, {
-        status: pengajuan.status,
-        periode: pengajuan.periode ?? null,
-      });
-    }
-
-    if (pengajuan.status !== "ditolak" && pengajuan.periode) {
-      const studentIds =
-        studentsByPeriode.get(pengajuan.periode.id) ?? new Set<string>();
-      studentIds.add(placement.siswa_id);
-      studentsByPeriode.set(pengajuan.periode.id, studentIds);
+    if (pengajuan && !latestStatusByStudent.has(placement.siswa_id)) {
+      latestStatusByStudent.set(placement.siswa_id, pengajuan.status);
     }
   }
 
-  const periodeOptions: PeriodeOption[] = (periodeResult.data ?? []).map(
-    (periode) => ({
-      ...periode,
-      siswa: studentsByPeriode.get(periode.id)?.size ?? 0,
-    }),
-  );
+  function periodeForKelas(kelas: string | null): PeriodeRef | null {
+    const mapping = getPeriodeKelas(kelas);
+
+    if (!mapping) {
+      return null;
+    }
+
+    const periode = periodeByTahun.get(mapping.tahunAjaran);
+
+    return periode ? { id: periode.id, nama: periode.nama } : null;
+  }
+
+  const periodeOptions: PeriodeOption[] = periodRows.map((periode) => {
+    let siswa = 0;
+
+    for (const [kelas, jumlah] of Object.entries(kelasCounts)) {
+      if (getPeriodeKelas(kelas)?.tahunAjaran === periode.tahun_ajaran) {
+        siswa += jumlah;
+      }
+    }
+
+    return { ...periode, siswa };
+  });
 
   function emptyResult(): SiswaListResult {
     return {
@@ -229,34 +233,23 @@ export async function getSiswaList(params: {
     }
   }
 
-  if (params.periode) {
-    const periodStudentIds = studentsByPeriode.get(params.periode);
+  let periodeKelas: string[] | null = null;
 
-    if (!periodStudentIds) {
+  if (params.periode) {
+    const selected = periodRows.find(
+      (periode) => periode.id === params.periode,
+    );
+
+    if (!selected) {
       return emptyResult();
     }
 
-    const { data: periodStudents, error: periodStudentsError } = await admin
-      .from("siswa")
-      .select("pengguna_id")
-      .in("id", Array.from(periodStudentIds));
-
-    if (periodStudentsError) {
-      throw new Error("Gagal memuat siswa pada periode.");
-    }
-
-    const periodPenggunaIds = (periodStudents ?? []).map(
-      (row) => row.pengguna_id,
+    periodeKelas = existingKelas.filter(
+      (kelas) =>
+        getPeriodeKelas(kelas)?.tahunAjaran === selected.tahun_ajaran,
     );
 
-    if (matchedIds) {
-      const allowed = new Set(periodPenggunaIds);
-      matchedIds = matchedIds.filter((id) => allowed.has(id));
-    } else {
-      matchedIds = periodPenggunaIds;
-    }
-
-    if (!matchedIds.length) {
+    if (!periodeKelas.length) {
       return emptyResult();
     }
   }
@@ -279,6 +272,10 @@ export async function getSiswaList(params: {
     query = query.eq("kelas", params.kelas);
   }
 
+  if (periodeKelas) {
+    query = query.in("kelas", periodeKelas);
+  }
+
   if (params.status === "aktif") {
     query = query.eq("aktif", true);
   } else if (params.status === "nonaktif") {
@@ -294,20 +291,16 @@ export async function getSiswaList(params: {
   const total = count ?? 0;
 
   return {
-    rows: (data ?? []).map((row) => {
-      const placement = latestByStudent.get(row.id) ?? null;
-
-      return {
-        id: row.id,
-        nis: row.nis,
-        kelas: row.kelas,
-        aktif: row.pengguna?.aktif ?? row.aktif,
-        nama: row.pengguna?.nama_lengkap ?? "Tanpa nama",
-        username: row.pengguna?.username ?? "—",
-        pengajuanStatus: placement?.status ?? null,
-        periode: placement?.periode ?? null,
-      };
-    }),
+    rows: (data ?? []).map((row) => ({
+      id: row.id,
+      nis: row.nis,
+      kelas: row.kelas,
+      aktif: row.pengguna?.aktif ?? row.aktif,
+      nama: row.pengguna?.nama_lengkap ?? "Tanpa nama",
+      username: row.pengguna?.username ?? "—",
+      pengajuanStatus: latestStatusByStudent.get(row.id) ?? null,
+      periode: periodeForKelas(row.kelas),
+    })),
     total,
     page,
     pageSize,
@@ -339,7 +332,7 @@ export const getSiswaDetail = cache(
       return null;
     }
 
-    const [pengajuanResult, jurnalResult] = await Promise.all([
+    const [pengajuanResult, jurnalResult, periodeResult] = await Promise.all([
       admin
         .from("pengajuan_anggota")
         .select(
@@ -355,11 +348,24 @@ export const getSiswaDetail = cache(
         .eq("siswa_id", data.id)
         .order("tanggal", { ascending: false })
         .limit(3),
+      admin
+        .from("periode_pkl")
+        .select("id, nama, tahun_ajaran"),
     ]);
 
-    if (pengajuanResult.error || jurnalResult.error) {
+    if (pengajuanResult.error || jurnalResult.error || periodeResult.error) {
       throw new Error("Gagal memuat riwayat siswa.");
     }
+
+    const mapping = getPeriodeKelas(data.kelas);
+    const periodeRow = mapping
+      ? (periodeResult.data ?? []).find(
+          (periode) => periode.tahun_ajaran === mapping.tahunAjaran,
+        )
+      : null;
+    const periode = periodeRow
+      ? { id: periodeRow.id, nama: periodeRow.nama }
+      : null;
 
     return {
       id: data.id,
@@ -373,6 +379,7 @@ export const getSiswaDetail = cache(
       jurusan_id: data.jurusan_id,
       pengguna: data.pengguna,
       jurusan: data.jurusan,
+      periode,
       pengajuan: pengajuanResult.data?.pengajuan ?? null,
       jurnal: jurnalResult.data ?? [],
     };
