@@ -269,6 +269,7 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 | MST-03 | Hubungkan orang tua ke siswa | Satu ortu bisa punya beberapa anak |
 | MST-04 | Pencarian, filter, pagination server-side | 1.853 jurnal tidak dimuat sekaligus |
 | MST-05 | Nonaktifkan user tanpa menghapus data | Riwayat tetap utuh |
+| MST-06 | Naik kelas massal | X menjadi XI, XI menjadi XII; konfirmasi global; kelas XII tidak diubah |
 
 ### 9.3 Pengajuan & surat
 

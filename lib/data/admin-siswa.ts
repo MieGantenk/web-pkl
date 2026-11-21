@@ -8,15 +8,6 @@ export { getJurusanOptions, type JurusanOption } from "./master";
 
 export const SISWA_PAGE_SIZE = 10;
 
-const BASE_KELAS = [
-  "X DKV",
-  "X RPL",
-  "XI DKV",
-  "XI RPL",
-  "XII DKV",
-  "XII RPL",
-];
-
 export type SiswaListItem = {
   id: string;
   nis: string;
@@ -45,6 +36,7 @@ export type SiswaListResult = {
   pageSize: number;
   pageCount: number;
   kelasOptions: string[];
+  kelasCounts: Record<string, number>;
   periodeOptions: PeriodeOption[];
 };
 
@@ -156,10 +148,14 @@ export async function getSiswaList(params: {
         .filter((value): value is string => Boolean(value)),
     ),
   ).sort((a, b) => a.localeCompare(b));
-  const kelasOptions = [
-    ...BASE_KELAS,
-    ...existingKelas.filter((kelas) => !BASE_KELAS.includes(kelas)),
-  ];
+  const kelasOptions = existingKelas;
+  const kelasCounts: Record<string, number> = {};
+
+  for (const row of kelasResult.data ?? []) {
+    if (row.kelas) {
+      kelasCounts[row.kelas] = (kelasCounts[row.kelas] ?? 0) + 1;
+    }
+  }
 
   const latestByStudent = new Map<
     string,
@@ -207,6 +203,7 @@ export async function getSiswaList(params: {
       pageSize,
       pageCount: 1,
       kelasOptions,
+      kelasCounts,
       periodeOptions,
     };
   }
@@ -316,6 +313,7 @@ export async function getSiswaList(params: {
     pageSize,
     pageCount: Math.max(1, Math.ceil(total / pageSize)),
     kelasOptions,
+    kelasCounts,
     periodeOptions,
   };
 }

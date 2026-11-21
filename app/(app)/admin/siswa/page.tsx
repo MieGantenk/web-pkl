@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 
 import { EmptyState } from "@/components/pkl/EmptyState";
+import { FilterForm } from "@/components/pkl/FilterForm";
+import { NaikKelasButton } from "@/components/pkl/NaikKelasButton";
 import {
   AkunBadge,
   PengajuanBadge,
@@ -20,7 +22,6 @@ import { buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { FilterForm } from "@/components/pkl/FilterForm";
 import { requireRole } from "@/lib/auth";
 import { getSiswaList } from "@/lib/data/admin-siswa";
 import { cn } from "@/lib/utils";
@@ -101,17 +102,20 @@ export default async function AdminSiswaPage({
           </p>
         </div>
 
-        <Link
-          href="/admin/siswa/baru"
-          prefetch={false}
-          className={cn(
-            buttonVariants({ variant: "primary", size: "md" }),
-            "w-full sm:w-auto",
-          )}
-        >
-          <Plus className="size-4" strokeWidth={1.75} aria-hidden />
-          Tambah siswa
-        </Link>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <NaikKelasButton counts={data.kelasCounts} />
+          <Link
+            href="/admin/siswa/baru"
+            prefetch={false}
+            className={cn(
+              buttonVariants({ variant: "primary", size: "md" }),
+              "w-full sm:w-auto",
+            )}
+          >
+            <Plus className="size-4" strokeWidth={1.75} aria-hidden />
+            Tambah siswa
+          </Link>
+        </div>
       </header>
 
       {data.periodeOptions.length ? (
