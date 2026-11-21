@@ -215,57 +215,63 @@ export default async function InstrukturStudentsPage({
               <dt className="text-[13px] font-medium leading-[18px] text-muted">
                 Siswa dampingan
               </dt>
-              <dd className="mt-1 font-display text-2xl font-semibold leading-8 tracking-[-0.02em] text-ink tabular-nums">
-                {students.length}
+              <dd className="mt-1">
+                <span className="block font-display text-2xl font-semibold leading-8 tracking-[-0.02em] text-ink tabular-nums">
+                  {students.length}
+                </span>
+                <span className="mt-1 block text-[13px] leading-[18px] text-muted">
+                  {companyLabel}
+                </span>
               </dd>
-              <p className="mt-1 text-[13px] leading-[18px] text-muted">
-                {companyLabel}
-              </p>
             </div>
 
             <div className="border-b border-border px-4 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:last:border-r-0">
               <dt className="text-[13px] font-medium leading-[18px] text-muted">
                 Siap diverifikasi
               </dt>
-              <dd
-                className={cn(
-                  "mt-1 font-display text-2xl font-semibold leading-8 tracking-[-0.02em] tabular-nums",
-                  pendingVerification ? "text-warning" : "text-ink",
-                )}
-              >
-                {pendingVerification}
+              <dd className="mt-1">
+                <span
+                  className={cn(
+                    "block font-display text-2xl font-semibold leading-8 tracking-[-0.02em] tabular-nums",
+                    pendingVerification ? "text-warning" : "text-ink",
+                  )}
+                >
+                  {pendingVerification}
+                </span>
+                <span className="mt-1 block text-[13px] leading-[18px] text-muted">
+                  {pendingVerification
+                    ? "Jurnal menunggu langkah 2"
+                    : "Tidak ada antrean"}
+                </span>
+                {revisionCount ? (
+                  <span className="mt-1 block text-[12px] leading-4 text-danger">
+                    {revisionCount} jurnal perlu revisi
+                  </span>
+                ) : null}
               </dd>
-              <p className="mt-1 text-[13px] leading-[18px] text-muted">
-                {pendingVerification
-                  ? "Jurnal menunggu langkah 2"
-                  : "Tidak ada antrean"}
-              </p>
-              {revisionCount ? (
-                <p className="mt-1 text-[12px] leading-4 text-danger">
-                  {revisionCount} jurnal perlu revisi
-                </p>
-              ) : null}
             </div>
 
             <div className="px-4 py-4 sm:px-5">
               <dt className="text-[13px] font-medium leading-[18px] text-muted">
                 Mutaba&apos;ah minggu ini
               </dt>
-              <dd className="mt-1 font-display text-2xl font-semibold leading-8 tracking-[-0.02em] text-ink tabular-nums">
-                {mutabaahFilled}
-                <span className="text-base font-medium text-muted">
-                  /{mutabaahTarget}
+              <dd className="mt-1">
+                <span className="block font-display text-2xl font-semibold leading-8 tracking-[-0.02em] text-ink tabular-nums">
+                  {mutabaahFilled}
+                  <span className="text-base font-medium text-muted">
+                    /{mutabaahTarget}
+                  </span>
+                </span>
+                <span
+                  className="mt-2 block h-1.5 overflow-hidden rounded-full bg-border"
+                  aria-hidden
+                >
+                  <span
+                    className="block h-full rounded-full bg-brand-600"
+                    style={{ width: `${mutabaahPercent}%` }}
+                  />
                 </span>
               </dd>
-              <div
-                className="mt-2 h-1.5 overflow-hidden rounded-full bg-border"
-                aria-hidden
-              >
-                <div
-                  className="h-full rounded-full bg-brand-600"
-                  style={{ width: `${mutabaahPercent}%` }}
-                />
-              </div>
             </div>
           </dl>
 
