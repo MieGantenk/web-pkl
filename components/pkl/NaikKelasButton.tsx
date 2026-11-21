@@ -53,7 +53,12 @@ export function NaikKelasButton({
             : "Tidak ada siswa kelas X atau XI yang perlu dinaikkan.",
         );
         dialogRef.current?.close();
-        router.push("/admin/siswa");
+
+        if (window.location.search) {
+          router.push("/admin/siswa");
+        } else {
+          router.refresh();
+        }
       } catch {
         setError("Tidak dapat memperbarui kelas. Coba lagi.");
       }
