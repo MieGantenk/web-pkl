@@ -5,7 +5,11 @@ import {
   getGuruStudents,
   type GuruContext,
 } from "@/lib/data/guru";
-import type { StatusPengajuan, StatusSurat } from "@/lib/status";
+import type {
+  JenisSurat,
+  StatusPengajuan,
+  StatusSurat,
+} from "@/lib/status";
 import { createClient } from "@/lib/supabase/server";
 
 export type GuruSuratStudent = {
@@ -40,76 +44,115 @@ export type GuruSuratData = {
   issuedCount: number;
 };
 
-export const getGuruSuratTugas = cache(
-  async (penggunaId: string): Promise<GuruSuratData> => {
-    await connection();
+const PENARIKAN_STATUSES: readonly StatusPengajuan[] = [
+  "berlangsung",
+  "penarikan_terbit",
+];
 
-    const { context, students } = await getGuruStudents(penggunaId);
+async function getGuruLetters(
+  penggunaId: string,
+  jenis: JenisSurat,
+  statuses: readonly StatusPengajuan[] | null,
+  errorMessage: string,
+): Promise<GuruSuratData> {
+  await connection();
 
-    if (!context || !students.length) {
-      return { context, placements: [], issuedCount: 0 };
+  const { context, students } = await getGuruStudents(penggunaId);
+
+  if (!context || !students.length) {
+    return { context, placements: [], issuedCount: 0 };
+  }
+
+  const byApplication = new Map<string, GuruSuratPlacement>();
+
+  for (const student of students) {
+    let placement = byApplication.get(student.pengajuanId);
+
+    if (!placement) {
+      placement = {
+        pengajuanId: student.pengajuanId,
+        status: student.pengajuanStatus,
+        perusahaan: student.perusahaan,
+        periode: student.periode,
+        tanggalMulai: student.tanggalMulai,
+        tanggalSelesai: student.tanggalSelesai,
+        students: [],
+        letter: null,
+      };
+      byApplication.set(student.pengajuanId, placement);
     }
 
-    const byApplication = new Map<string, GuruSuratPlacement>();
+    placement.students.push({
+      id: student.id,
+      nama: student.nama,
+      nis: student.nis,
+      kelas: student.kelas,
+      jurusan: student.jurusan,
+    });
+  }
 
-    for (const student of students) {
-      let placement = byApplication.get(student.pengajuanId);
+  const placements = Array.from(byApplication.values()).filter(
+    (placement) => !statuses || statuses.includes(placement.status),
+  );
 
-      if (!placement) {
-        placement = {
-          pengajuanId: student.pengajuanId,
-          status: student.pengajuanStatus,
-          perusahaan: student.perusahaan,
-          periode: student.periode,
-          tanggalMulai: student.tanggalMulai,
-          tanggalSelesai: student.tanggalSelesai,
-          students: [],
-          letter: null,
-        };
-        byApplication.set(student.pengajuanId, placement);
-      }
+  if (!placements.length) {
+    return { context, placements: [], issuedCount: 0 };
+  }
 
-      placement.students.push({
-        id: student.id,
-        nama: student.nama,
-        nis: student.nis,
-        kelas: student.kelas,
-        jurusan: student.jurusan,
-      });
+  const supabase = await createClient();
+  const { data: letters, error } = await supabase
+    .from("surat")
+    .select("id, pengajuan_id, nomor, tanggal_terbit")
+    .in(
+      "pengajuan_id",
+      placements.map((placement) => placement.pengajuanId),
+    )
+    .eq("jenis", jenis)
+    .eq("status", "terbit")
+    .order("tanggal_terbit", { ascending: false });
+
+  if (error) {
+    throw new Error(errorMessage);
+  }
+
+  const placementById = new Map(
+    placements.map((placement) => [placement.pengajuanId, placement]),
+  );
+
+  for (const letter of letters ?? []) {
+    const placement = placementById.get(letter.pengajuan_id);
+
+    if (placement && !placement.letter) {
+      placement.letter = {
+        id: letter.id,
+        nomor: letter.nomor,
+        tanggalTerbit: letter.tanggal_terbit,
+        status: "terbit",
+      };
     }
+  }
 
-    const supabase = await createClient();
-    const { data: letters, error } = await supabase
-      .from("surat")
-      .select("id, pengajuan_id, nomor, tanggal_terbit")
-      .in("pengajuan_id", Array.from(byApplication.keys()))
-      .eq("jenis", "tugas_monitoring")
-      .eq("status", "terbit")
-      .order("tanggal_terbit", { ascending: false });
+  return {
+    context,
+    placements,
+    issuedCount: placements.filter((placement) => placement.letter).length,
+  };
+}
 
-    if (error) {
-      throw new Error("Gagal memuat surat tugas monitoring.");
-    }
+export const getGuruSuratTugas = cache((penggunaId: string) =>
+  getGuruLetters(
+    penggunaId,
+    "tugas_monitoring",
+    null,
+    "Gagal memuat surat tugas monitoring.",
+  ),
+);
 
-    for (const letter of letters ?? []) {
-      const placement = byApplication.get(letter.pengajuan_id);
-
-      if (placement && !placement.letter) {
-        placement.letter = {
-          id: letter.id,
-          nomor: letter.nomor,
-          tanggalTerbit: letter.tanggal_terbit,
-          status: "terbit",
-        };
-      }
-    }
-
-    const placements = Array.from(byApplication.values());
-
-    return {
-      context,
-      placements,
-      issuedCount: placements.filter((placement) => placement.letter).length,
-    };
-  },
+export const getGuruPenarikan = cache((penggunaId: string) =>
+  getGuruLetters(
+    penggunaId,
+    "penarikan",
+    PENARIKAN_STATUSES,
+    "Gagal memuat surat penarikan.",
+  ),
 );

@@ -247,6 +247,7 @@ npm run build
 | Surat admin | Selesai (7 jenis, nomor otomatis, pratinjau/unduh PDF, cetak A4) |
 | Surat siswa | Selesai (izin, pengajuan, keberangkatan, penarikan; unduh PDF) |
 | Surat tugas guru | Selesai (daftar penempatan bimbingan, surat monitoring, unduh PDF) |
+| Penarikan guru | Selesai (daftar penempatan berjalan, surat penarikan, unduh PDF) |
 | Filter otomatis | Selesai (pilihan filter langsung memuat hasil) |
 | Dark/light mode | Selesai (toggle global, preferensi tersimpan per perangkat) |
 | Halaman modul lain | Belum diisi (bertahap) |
@@ -268,7 +269,7 @@ jalankan pada database produksi.
 
 ## 7. Langkah berikutnya
 
-1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, profil siswa, surat siswa, ringkasan admin, pengelolaan data siswa + akun, penempatan admin, surat admin + cetak A4, filter otomatis, beranda orang tua, profil orang tua, pengaturan admin, halaman guru inti + surat tugas, halaman instruktur inti, dan dark/light mode.
+1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, profil siswa, surat siswa, ringkasan admin, pengelolaan data siswa + akun, penempatan admin, surat admin + cetak A4, filter otomatis, beranda orang tua, profil orang tua, pengaturan admin, halaman guru inti + surat tugas + penarikan, halaman instruktur inti, dan dark/light mode.
 2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, dan jurnal.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Jalankan gate `design-taste-frontend` untuk halaman publik; halaman di balik auth diuji dengan Lighthouse dan review visual.
