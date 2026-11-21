@@ -423,7 +423,7 @@ export function JournalForm({
         )}
       </section>
 
-      <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
+      <div className="sticky bottom-[calc(64px+env(safe-area-inset-bottom))] z-20 -mx-4 flex flex-col-reverse gap-2 border-t border-border bg-surface px-4 py-3 sm:static sm:mx-0 sm:flex-row sm:justify-end sm:bg-transparent sm:p-0 sm:pt-5">
         <Link
           href="/siswa/jurnal"
           className={buttonVariants({ variant: "secondary", size: "md" })}
