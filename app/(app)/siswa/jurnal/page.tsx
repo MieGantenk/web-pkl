@@ -280,10 +280,10 @@ export default async function SiswaJurnalPage({
                   Belum diisi
                 </span>
                 <Link
-                  href="/siswa"
+                  href="/siswa/jurnal/baru"
                   className="mt-2 inline-flex min-h-11 items-center text-[13px] font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
                 >
-                  Buka beranda
+                  Isi jurnal
                 </Link>
               </>
             )}
@@ -358,10 +358,10 @@ export default async function SiswaJurnalPage({
                 </a>
               ) : (
                 <Link
-                  href="/siswa"
+                  href="/siswa/jurnal/baru"
                   className={buttonVariants({ variant: "primary" })}
                 >
-                  Buka beranda
+                  Isi jurnal
                 </Link>
               )
             }
