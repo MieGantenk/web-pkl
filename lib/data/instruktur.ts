@@ -48,10 +48,12 @@ export type InstrukturStudent = {
   tanggalSelesai: string | null;
   jurnal: {
     total: number;
-    menunggu: number;
+    siapVerifikasi: number;
+    menungguGuru: number;
     terverifikasi: number;
     revisi: number;
   };
+  pendingJournalId: string | null;
   mutabaah: { terisi: number; totalHari: number };
 };
 
@@ -309,6 +311,9 @@ const getInstrukturStudentsBase = cache(
       }
 
       const journals = journalsByStudent.get(siswa.id) ?? [];
+      const readyJournal = journals.find(
+        (journal) => journal.status === "terverifikasi_guru",
+      );
 
       seenStudents.add(siswa.id);
       students.push({
@@ -326,10 +331,11 @@ const getInstrukturStudentsBase = cache(
         tanggalSelesai: application.tanggal_selesai,
         jurnal: {
           total: journals.length,
-          menunggu: journals.filter(
-            (journal) =>
-              journal.status === "menunggu" ||
-              journal.status === "terverifikasi_guru",
+          siapVerifikasi: journals.filter(
+            (journal) => journal.status === "terverifikasi_guru",
+          ).length,
+          menungguGuru: journals.filter(
+            (journal) => journal.status === "menunggu",
           ).length,
           terverifikasi: journals.filter(
             (journal) => journal.status === "terverifikasi_instruktur",
@@ -337,6 +343,7 @@ const getInstrukturStudentsBase = cache(
           revisi: journals.filter((journal) => journal.status === "revisi")
             .length,
         },
+        pendingJournalId: readyJournal?.id ?? null,
         mutabaah: {
           terisi: mutabaahByStudent.get(siswa.id) ?? 0,
           totalHari: 7,
@@ -402,6 +409,8 @@ export const getInstrukturStudents = cache(
   async (
     penggunaId: string,
   ): Promise<{ context: InstrukturContext; students: InstrukturStudent[] }> => {
+    await connection();
+
     const base = await getInstrukturStudentsBase(penggunaId);
 
     return { context: base.context, students: base.students };
