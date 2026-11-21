@@ -1,19 +1,36 @@
 import { getCurrentProfile } from "@/lib/auth";
 import { getSuratPdfData } from "@/lib/data/admin-surat";
 import { renderSuratPdf } from "@/lib/letters/render-surat";
+import { createClient } from "@/lib/supabase/server";
 import { suratFileName } from "@/lib/surat";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const profile = await getCurrentProfile();
 
-  if (!profile || !profile.aktif || profile.peran !== "admin") {
+  if (!profile || !profile.aktif) {
     return new Response("Tidak berwenang.", { status: 403 });
   }
 
-  const { id } = await params;
+  // Admin boleh melihat semua surat. Peran lain hanya surat terbit yang
+  // lolos RLS surat_select (siswa sendiri, wali, guru/instruktur terkait).
+  if (profile.peran !== "admin") {
+    const supabase = await createClient();
+    const { data: surat, error } = await supabase
+      .from("surat")
+      .select("id")
+      .eq("id", id)
+      .eq("status", "terbit")
+      .maybeSingle();
+
+    if (error || !surat) {
+      return new Response("Tidak berwenang.", { status: 403 });
+    }
+  }
+
   const data = await getSuratPdfData(id);
 
   if (!data) {
