@@ -42,7 +42,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | Route | Halaman | Isi utama |
 |---|---|---|
 | `/admin` | Ringkasan | Antrean persetujuan, jurnal belum verifikasi, siswa belum dapat tempat, KPI, grafik |
-| `/admin/siswa` | Data siswa | Tabel, filter kelas/periode, pagination, tambah, nonaktifkan |
+| `/admin/siswa` | Data siswa | Tabel, filter kelas/periode, pagination, tambah, naik kelas, nonaktifkan |
 | `/admin/siswa/baru` | Tambah siswa | Form data siswa + akun login + kata sandi |
 | `/admin/siswa/[id]` | Detail siswa | Profil, akun, kata sandi, penempatan, jurnal terakhir |
 | `/admin/guru` | Data guru | CRUD, jurusan, akun |
@@ -156,7 +156,7 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 |---|---|---|
 | Auth | `loginAction`, `logoutAction`, `requestPasswordResetAction`, `setPasswordAction` | Publik/auth |
 | Profil | `updateProfileAction`, `changePasswordAction` | Semua |
-| Master siswa | `createSiswaAction`, `updateSiswaAction`, `resetSiswaPasswordAction`, `setSiswaAktifAction` | Admin |
+| Master siswa | `createSiswaAction`, `updateSiswaAction`, `resetSiswaPasswordAction`, `setSiswaAktifAction`, `promoteSiswaKelasAction` | Admin |
 | Master guru | `createGuruAction`, `updateGuruAction`, `deactivateGuruAction` | Admin |
 | Master perusahaan | `createPerusahaanAction`, `updatePerusahaanAction`, `setPerusahaanAktifAction` | Admin |
 | Master periode | `createPeriodeAction`, `updatePeriodeAction`, `setPeriodeAktifAction` | Admin |

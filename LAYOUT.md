@@ -323,6 +323,7 @@ Kelola data siswa, kelas, dan status PKL.
 ```
 
 - Header halaman: judul 32 + deskripsi 14 + aksi kanan.
+- Aksi **Naik kelas** di header memakai dialog konfirmasi dan berlaku global: X menjadi XI, XI menjadi XII; kelas XII tidak diubah.
 - Filter bar di card terpisah; di HP jadi tombol "Filter" + drawer.
 - Periode PKL tampil sebagai baris chip di atas filter bar; klik chip memfilter siswa pada periode itu.
 - Tabel: kolom utama selalu terlihat; kolom sekunder bisa disembunyikan.

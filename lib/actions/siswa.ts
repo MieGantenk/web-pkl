@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { assertAdminAction } from "@/lib/actions/admin-guard";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import {
   createSiswaSchema,
   fieldErrorsFrom,
@@ -16,6 +17,21 @@ import {
 export type SiswaActionResult =
   | { ok: true; id: string }
   | { ok: false; message: string; fieldErrors?: Record<string, string> };
+
+export type NaikKelasResult =
+  | {
+      ok: true;
+      updated: number;
+      groups: Array<{ dari: string; ke: string; jumlah: number }>;
+    }
+  | { ok: false; message: string };
+
+const KELAS_NAIK = {
+  "X DKV": "XI DKV",
+  "X RPL": "XI RPL",
+  "XI DKV": "XII DKV",
+  "XI RPL": "XII RPL",
+} as const;
 
 const idSchema = z
   .string()
@@ -428,4 +444,92 @@ export async function setSiswaAktifAction(input: {
 
   revalidateSiswa(current.id);
   return { ok: true, id: current.id };
+}
+
+export async function promoteSiswaKelasAction(): Promise<NaikKelasResult> {
+  const auth = await assertAdminAction();
+  if (auth) return auth;
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("siswa").select("id, kelas");
+
+  if (error) {
+    return { ok: false, message: "Data kelas belum dapat dimuat." };
+  }
+
+  const idsByKelas = new Map<string, string[]>();
+
+  for (const row of data ?? []) {
+    if (!row.kelas || !(row.kelas in KELAS_NAIK)) {
+      continue;
+    }
+
+    const ids = idsByKelas.get(row.kelas) ?? [];
+    ids.push(row.id);
+    idsByKelas.set(row.kelas, ids);
+  }
+
+  const groups: Array<{ dari: string; ke: string; jumlah: number }> = [];
+  const applied: Array<{ ids: string[]; dari: string }> = [];
+
+  for (const [dari, ke] of Object.entries(KELAS_NAIK)) {
+    const ids = idsByKelas.get(dari) ?? [];
+
+    if (!ids.length) {
+      continue;
+    }
+
+    const result = await admin
+      .from("siswa")
+      .update({ kelas: ke })
+      .in("id", ids);
+
+    if (result.error) {
+      for (const done of applied.reverse()) {
+        await admin
+          .from("siswa")
+          .update({ kelas: done.dari })
+          .in("id", done.ids);
+      }
+
+      revalidateSiswa();
+
+      return {
+        ok: false,
+        message:
+          "Kelas belum dapat diperbarui. Perubahan yang sempat tersimpan sudah dikembalikan. Coba lagi.",
+      };
+    }
+
+    applied.push({ ids, dari });
+    groups.push({ dari, ke, jumlah: ids.length });
+  }
+
+  if (!groups.length) {
+    return { ok: true, updated: 0, groups: [] };
+  }
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    await admin.from("log_aktivitas").insert({
+      pengguna_id: user?.id ?? null,
+      aksi: "naik_kelas_siswa",
+      entitas: "siswa",
+      detail: { groups },
+    });
+  } catch {
+    // Perubahan kelas tetap tersimpan meskipun log gagal ditulis.
+  }
+
+  revalidateSiswa();
+
+  return {
+    ok: true,
+    updated: groups.reduce((total, group) => total + group.jumlah, 0),
+    groups,
+  };
 }
