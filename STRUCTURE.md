@@ -246,6 +246,7 @@ npm run build
 | Surat admin | Selesai (7 jenis, nomor otomatis, pratinjau/unduh PDF, cetak A4) |
 | Surat siswa | Selesai (izin, pengajuan, keberangkatan, penarikan; unduh PDF) |
 | Surat orang tua | Selesai (pilih anak, surat terbit, unduh PDF) |
+| Jurnal orang tua | Selesai (pilih anak, filter, foto, status verifikasi, read-only) |
 | Surat tugas guru | Selesai (daftar penempatan bimbingan, surat monitoring, unduh PDF) |
 | Penarikan guru | Selesai (daftar penempatan berjalan, surat penarikan, unduh PDF) |
 | Filter otomatis | Selesai (pilihan filter langsung memuat hasil) |
