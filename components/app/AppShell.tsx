@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { Profile } from "@/lib/profile";
 
 import { BottomNav } from "./BottomNav";
+import { NavigationLoadingOverlay } from "./NavigationLoadingOverlay";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
@@ -34,6 +35,8 @@ export function AppShell({
         </main>
         <BottomNav role={profile.peran} />
       </div>
+
+      <NavigationLoadingOverlay />
     </div>
   );
 }
