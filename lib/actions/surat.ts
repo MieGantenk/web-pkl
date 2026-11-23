@@ -230,3 +230,112 @@ export async function issueSuratAction(
   revalidateSurat();
   return { ok: true, id: inserted.data.id, nomor };
 }
+
+const suratFileSchema = z.object({
+  surat_id: z.string().regex(postgresUuidPattern, "Surat tidak valid."),
+  file_path: z.string().trim().min(1, "Berkas tidak valid.").max(500),
+  file_name: z.string().trim().min(1, "Nama berkas tidak valid.").max(255),
+  mime_type: z.enum(["application/pdf", "image/jpeg", "image/png"]),
+  ukuran: z
+    .number()
+    .int()
+    .positive("Berkas tidak valid.")
+    .max(5 * 1024 * 1024, "Ukuran berkas maksimal 5 MB."),
+});
+
+export type SuratFileResult =
+  | { ok: true }
+  | { ok: false; message: string };
+
+export async function recordSuratFileAction(
+  input: unknown,
+): Promise<SuratFileResult> {
+  const auth = await assertAdminAction();
+  if (auth) return auth;
+
+  const parsed = suratFileSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message:
+        parsed.error.issues[0]?.message ?? "Berkas surat tidak valid.",
+    };
+  }
+
+  const data = parsed.data;
+  const admin = createAdminClient();
+  const { data: surat, error: suratError } = await admin
+    .from("surat")
+    .select("id, file_path")
+    .eq("id", data.surat_id)
+    .maybeSingle();
+
+  if (suratError || !surat) {
+    return { ok: false, message: "Surat tidak ditemukan." };
+  }
+
+  if (
+    !data.file_path.startsWith("surat/") ||
+    data.file_path.includes("..") ||
+    !data.file_path.includes(`/${data.surat_id}-`)
+  ) {
+    return { ok: false, message: "Lokasi berkas tidak valid." };
+  }
+
+  const slash = data.file_path.lastIndexOf("/");
+  const folder = slash > 0 ? data.file_path.slice(0, slash) : "";
+  const fileName = slash >= 0 ? data.file_path.slice(slash + 1) : "";
+
+  if (!folder || !fileName) {
+    return { ok: false, message: "Lokasi berkas tidak valid." };
+  }
+
+  const { data: stored, error: storedError } = await admin.storage
+    .from("surat")
+    .list(folder, { search: fileName, limit: 1 });
+
+  if (
+    storedError ||
+    !stored?.some((object) => object.name === fileName)
+  ) {
+    return { ok: false, message: "Berkas belum ditemukan di penyimpanan." };
+  }
+
+  const { data: updated, error: updateError } = await admin
+    .from("surat")
+    .update({ file_path: data.file_path })
+    .eq("id", data.surat_id)
+    .select("id")
+    .maybeSingle();
+
+  if (updateError || !updated) {
+    return { ok: false, message: "Berkas surat belum dapat disimpan." };
+  }
+
+  if (surat.file_path && surat.file_path !== data.file_path) {
+    await admin.storage.from("surat").remove([surat.file_path]);
+  }
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      await admin.from("log_aktivitas").insert({
+        pengguna_id: user.id,
+        aksi: "unggah_surat",
+        entitas: "surat",
+        entitas_id: data.surat_id,
+        detail: { file_name: data.file_name },
+      });
+    }
+  } catch {
+    // Audit log tidak boleh menggagalkan unggahan.
+  }
+
+  revalidateSurat();
+  return { ok: true };
+}

@@ -107,6 +107,116 @@ async function hasActiveApplication(
   };
 }
 
+async function resolvePerusahaan(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  penggunaId: string,
+  data: PengajuanFormInput,
+): Promise<
+  | { ok: false; message: string; fieldErrors?: Record<string, string> }
+  | { ok: true; id: string }
+> {
+  if (data.perusahaan_id !== "baru") {
+    const { data: company, error } = await supabase
+      .from("perusahaan")
+      .select("id, aktif")
+      .eq("id", data.perusahaan_id)
+      .maybeSingle();
+
+    if (error) {
+      return {
+        ok: false,
+        message: "Perusahaan belum dapat diperiksa.",
+      };
+    }
+
+    if (!company || !company.aktif) {
+      return {
+        ok: false,
+        message: "Periksa kembali data pengajuan.",
+        fieldErrors: {
+          perusahaan_id: "Perusahaan tidak aktif atau tidak ditemukan.",
+        },
+      };
+    }
+
+    return { ok: true, id: company.id };
+  }
+
+  const nama = data.perusahaan_nama.trim();
+  const alamat = data.perusahaan_alamat.trim();
+
+  if (!nama || !alamat) {
+    return {
+      ok: false,
+      message: "Periksa kembali data perusahaan.",
+      fieldErrors: {
+        ...(!nama ? { perusahaan_nama: "Nama perusahaan wajib diisi." } : {}),
+        ...(!alamat
+          ? { perusahaan_alamat: "Alamat perusahaan wajib diisi." }
+          : {}),
+      },
+    };
+  }
+
+  const admin = createAdminClient();
+  const { data: companies, error: companiesError } = await admin
+    .from("perusahaan")
+    .select("id, nama, aktif");
+
+  if (companiesError) {
+    return {
+      ok: false,
+      message: "Perusahaan belum dapat diperiksa.",
+    };
+  }
+
+  const existing = (companies ?? []).find(
+    (company) => company.nama.trim().toLowerCase() === nama.toLowerCase(),
+  );
+
+  if (existing) {
+    if (!existing.aktif) {
+      return {
+        ok: false,
+        message: "Periksa kembali data perusahaan.",
+        fieldErrors: {
+          perusahaan_nama:
+            "Perusahaan ini sedang nonaktif. Hubungi admin sekolah.",
+        },
+      };
+    }
+
+    return { ok: true, id: existing.id };
+  }
+
+  const { data: created, error: insertError } = await admin
+    .from("perusahaan")
+    .insert({ nama, alamat, aktif: true })
+    .select("id")
+    .single();
+
+  if (insertError || !created) {
+    return {
+      ok: false,
+      message: "Perusahaan baru belum dapat disimpan. Coba lagi.",
+    };
+  }
+
+  try {
+    await admin.from("log_aktivitas").insert({
+      pengguna_id: penggunaId,
+      aksi: "tambah_perusahaan",
+      entitas: "perusahaan",
+      entitas_id: created.id,
+      detail: { nama, sumber: "pengajuan_siswa" },
+    });
+  } catch {
+    // Audit log tidak boleh menggagalkan pengajuan.
+  }
+
+  return { ok: true, id: created.id };
+}
+
 async function getActiveOptions(
   supabase: Awaited<ReturnType<typeof createClient>>,
   perusahaanId: string,
@@ -169,6 +279,8 @@ async function getActiveOptions(
 function revalidatePengajuan() {
   revalidatePath("/siswa/pengajuan");
   revalidatePath("/siswa");
+  revalidatePath("/admin/perusahaan");
+  revalidatePath("/admin");
 }
 
 export async function createPengajuanAction(
@@ -201,9 +313,23 @@ export async function createPengajuanAction(
     };
   }
 
+  const perusahaan = await resolvePerusahaan(
+    session.supabase,
+    session.profileId,
+    data,
+  );
+
+  if (!perusahaan.ok) {
+    return {
+      ok: false,
+      message: perusahaan.message,
+      fieldErrors: perusahaan.fieldErrors,
+    };
+  }
+
   const options = await getActiveOptions(
     session.supabase,
-    data.perusahaan_id,
+    perusahaan.id,
     data.periode_id,
   );
 
@@ -218,7 +344,7 @@ export async function createPengajuanAction(
   const createResult = await createAdminClient()
     .from("pengajuan_pkl")
     .insert({
-      perusahaan_id: data.perusahaan_id,
+      perusahaan_id: perusahaan.id,
       periode_id: data.periode_id,
       dibuat_oleh: session.profileId,
       status: "draft",
@@ -286,9 +412,23 @@ export async function updatePengajuanDraftAction(
   }
 
   const data: PengajuanFormInput = parsed.data;
+  const perusahaan = await resolvePerusahaan(
+    session.supabase,
+    session.profileId,
+    data,
+  );
+
+  if (!perusahaan.ok) {
+    return {
+      ok: false,
+      message: perusahaan.message,
+      fieldErrors: perusahaan.fieldErrors,
+    };
+  }
+
   const options = await getActiveOptions(
     session.supabase,
-    data.perusahaan_id,
+    perusahaan.id,
     data.periode_id,
   );
 
@@ -303,7 +443,7 @@ export async function updatePengajuanDraftAction(
   const result = await createAdminClient()
     .from("pengajuan_pkl")
     .update({
-      perusahaan_id: data.perusahaan_id,
+      perusahaan_id: perusahaan.id,
       periode_id: data.periode_id,
       tanggal_mulai: options.periode.tanggal_mulai,
       tanggal_selesai: options.periode.tanggal_selesai,

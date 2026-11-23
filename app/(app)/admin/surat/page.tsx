@@ -14,6 +14,8 @@ import {
 import { EmptyState } from "@/components/pkl/EmptyState";
 import { FilterForm } from "@/components/pkl/FilterForm";
 import { IssueSuratButton } from "@/components/pkl/IssueSuratButton";
+import { SuratTabs } from "@/components/pkl/SuratTabs";
+import { UploadSuratButton } from "@/components/pkl/UploadSuratButton";
 import {
   PengajuanBadge,
   SuratBadge,
@@ -24,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { requireRole } from "@/lib/auth";
 import {
+  currentSuratYear,
   getSuratIssueOptions,
   getSuratList,
 } from "@/lib/data/admin-surat";
@@ -79,6 +82,7 @@ export default async function AdminSuratPage({
   ]);
 
   const hasFilter = Boolean(q || jenis || status);
+  const tahun = currentSuratYear();
   const from = data.total === 0 ? 0 : (data.page - 1) * data.pageSize + 1;
   const to = Math.min(data.page * data.pageSize, data.total);
 
@@ -104,8 +108,9 @@ export default async function AdminSuratPage({
             Surat
           </h1>
           <p className="mt-2 max-w-[68ch] text-base leading-[26px] text-ink-soft">
-            Terbitkan, pratinjau, dan unduh surat resmi PKL. Nomor surat dibuat
-            otomatis dari pengaturan sekolah.
+            Terbitkan surat resmi PKL, unggah berkas surat, dan pantau dokumen
+            yang dikirim siswa. Nomor surat dibuat otomatis dari pengaturan
+            sekolah.
           </p>
         </div>
 
@@ -116,6 +121,8 @@ export default async function AdminSuratPage({
           surat
         </p>
       </header>
+
+      <SuratTabs active="sekolah" />
 
       <FilterForm className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_220px_170px_auto] sm:items-end">
         <Field label="Cari" htmlFor="q">
@@ -281,7 +288,7 @@ export default async function AdminSuratPage({
         {data.rows.length ? (
           <>
             <div className="hidden overflow-x-auto rounded-md border border-border bg-surface shadow-xs md:block">
-              <table className="w-full min-w-[980px] border-collapse text-sm">
+              <table className="w-full min-w-[1120px] border-collapse text-sm">
                 <caption className="sr-only">Daftar surat PKL</caption>
                 <thead className="bg-surface-muted text-left text-[13px] font-semibold text-ink-soft">
                   <tr>
@@ -318,6 +325,9 @@ export default async function AdminSuratPage({
                         <p className="text-[13px] leading-[18px] text-muted">
                           {row.periode?.nama ?? "—"}
                         </p>
+                        <p className="text-[12px] leading-4 text-muted">
+                          {row.hasFile ? "File sekolah" : "PDF sistem"}
+                        </p>
                       </td>
                       <td className="px-4 py-3 text-ink-soft tabular-nums">
                         {row.nomor ?? "Nomor belum tersedia"}
@@ -339,8 +349,22 @@ export default async function AdminSuratPage({
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
+                          <UploadSuratButton
+                            suratId={row.id}
+                            jenis={row.jenis}
+                            jenisLabel={jenisSuratLabel[row.jenis]}
+                            nomor={row.nomor}
+                            hasFile={row.hasFile}
+                            tahun={tahun}
+                          />
                           <Link
-                            href={`/admin/surat/print/${row.id}`}
+                            href={
+                              row.hasFile
+                                ? `/api/surat/${row.id}/pdf`
+                                : `/admin/surat/print/${row.id}`
+                            }
+                            target={row.hasFile ? "_blank" : undefined}
+                            rel={row.hasFile ? "noreferrer" : undefined}
                             className={buttonVariants({
                               variant: "secondary",
                               size: "sm",
@@ -418,9 +442,26 @@ export default async function AdminSuratPage({
                     <p className="mt-1 text-[13px] leading-[18px] text-muted">
                       {formatDate(row.tanggalTerbit)}
                     </p>
-                    <div className="mt-3 flex gap-2 border-t border-border pt-3">
+                    <p className="text-[12px] leading-4 text-muted">
+                      {row.hasFile ? "File sekolah" : "PDF sistem"}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+                      <UploadSuratButton
+                        suratId={row.id}
+                        jenis={row.jenis}
+                        jenisLabel={jenisSuratLabel[row.jenis]}
+                        nomor={row.nomor}
+                        hasFile={row.hasFile}
+                        tahun={tahun}
+                      />
                       <Link
-                        href={`/admin/surat/print/${row.id}`}
+                        href={
+                          row.hasFile
+                            ? `/api/surat/${row.id}/pdf`
+                            : `/admin/surat/print/${row.id}`
+                        }
+                        target={row.hasFile ? "_blank" : undefined}
+                        rel={row.hasFile ? "noreferrer" : undefined}
                         className={cn(
                           buttonVariants({ variant: "secondary", size: "sm" }),
                           "flex-1",

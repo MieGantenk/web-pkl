@@ -2,14 +2,53 @@ import { z } from "zod";
 
 import { postgresUuidPattern } from "./common";
 
-export const pengajuanFormSchema = z.object({
-  perusahaan_id: z
-    .string()
-    .regex(postgresUuidPattern, "Pilih perusahaan terlebih dahulu."),
-  periode_id: z
-    .string()
-    .regex(postgresUuidPattern, "Pilih periode PKL terlebih dahulu."),
-});
+export const pengajuanFormSchema = z
+  .object({
+    perusahaan_id: z
+      .string()
+      .trim()
+      .min(1, "Pilih perusahaan atau tambahkan perusahaan baru."),
+    perusahaan_nama: z
+      .string()
+      .trim()
+      .max(200, "Nama perusahaan terlalu panjang."),
+    perusahaan_alamat: z
+      .string()
+      .trim()
+      .max(500, "Alamat perusahaan terlalu panjang."),
+    periode_id: z
+      .string()
+      .regex(postgresUuidPattern, "Pilih periode PKL terlebih dahulu."),
+  })
+  .superRefine((data, ctx) => {
+    if (data.perusahaan_id === "baru") {
+      if (data.perusahaan_nama.length < 2) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["perusahaan_nama"],
+          message: "Nama perusahaan wajib diisi.",
+        });
+      }
+
+      if (data.perusahaan_alamat.length < 5) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["perusahaan_alamat"],
+          message: "Alamat perusahaan wajib diisi.",
+        });
+      }
+
+      return;
+    }
+
+    if (!postgresUuidPattern.test(data.perusahaan_id)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["perusahaan_id"],
+        message: "Pilih perusahaan atau tambahkan perusahaan baru.",
+      });
+    }
+  });
 
 export const anggotaPengajuanSchema = z.object({
   nis: z
