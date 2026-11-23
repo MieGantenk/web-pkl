@@ -382,6 +382,16 @@ export default async function OrtuHomePage({ searchParams }: OrtuHomePageProps) 
                   />
                 </div>
               )}
+
+              <div className="mt-4 border-t border-border pt-3">
+                <Link
+                  href={`/ortu/surat?anak=${child.id}`}
+                  prefetch={false}
+                  className="text-sm font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
+                >
+                  Lihat semua surat
+                </Link>
+              </div>
             </div>
           </section>
         </>
