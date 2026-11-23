@@ -1,11 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { VerificationStamp } from "@/components/pkl/VerificationStamp";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import type { VerifyJurnalResult } from "@/lib/validators/verifikasi-jurnal";
 
 type VerificationAction = (input: unknown) => Promise<VerifyJurnalResult>;
@@ -15,22 +17,37 @@ export function VerificationPanel({
   canVerify,
   existingNote,
   unavailableMessage,
+  unavailableTone = "success",
   approveDescription,
+  verifierName,
   action,
 }: {
   jurnalId: string;
   canVerify: boolean;
   existingNote: string | null;
   unavailableMessage: string;
+  unavailableTone?: "success" | "warning" | "neutral";
   approveDescription?: string;
+  verifierName: string;
   action: VerificationAction;
 }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const stampTimerRef = useRef<number | null>(null);
   const [catatan, setCatatan] = useState(existingNote ?? "");
+  const [stampDate, setStampDate] = useState<string | null>(null);
   const [submittingAction, setSubmittingAction] = useState<
     "diterima" | "revisi" | null
   >(null);
+  const busy = submittingAction !== null || stampDate !== null;
+
+  useEffect(() => {
+    return () => {
+      if (stampTimerRef.current !== null) {
+        window.clearTimeout(stampTimerRef.current);
+      }
+    };
+  }, []);
 
   async function submit(status: "diterima" | "revisi") {
     if (status === "revisi" && !catatan.trim()) {
@@ -52,24 +69,61 @@ export function VerificationPanel({
         return false;
       }
 
-      toast.success(result.message);
-      router.refresh();
+      if (status === "diterima") {
+        const tanggal = new Intl.DateTimeFormat("id-ID", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }).format(new Date());
+
+        setStampDate(tanggal);
+        stampTimerRef.current = window.setTimeout(() => {
+          setStampDate(null);
+          toast.success(result.message);
+          router.refresh();
+        }, 380);
+      } else {
+        toast.success(result.message);
+        router.refresh();
+      }
+
       return true;
+    } catch {
+      toast.error("Tidak dapat menyimpan verifikasi. Coba lagi.");
+      return false;
     } finally {
       setSubmittingAction(null);
     }
   }
 
   if (!canVerify) {
+    const toneClass = {
+      success: "border-success-border bg-success-bg text-success",
+      warning: "border-warning-border bg-warning-bg text-warning",
+      neutral: "border-border bg-surface-muted text-ink-soft",
+    }[unavailableTone];
+
     return (
-      <div className="rounded-sm border border-success-border bg-success-bg px-3 py-2.5 text-sm leading-[22px] text-success">
+      <div
+        className={cn(
+          "rounded-sm border px-3 py-2.5 text-sm leading-[22px]",
+          toneClass,
+        )}
+      >
         {unavailableMessage}
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="relative">
+      {stampDate ? (
+        <VerificationStamp
+          tanggal={stampDate}
+          verifierName={verifierName}
+        />
+      ) : null}
+
       {existingNote ? (
         <div className="mb-4 rounded-sm border border-border bg-surface-muted px-3 py-2.5 text-sm leading-[22px] text-ink-soft">
           <span className="font-semibold text-ink">Catatan sebelumnya:</span>{" "}
@@ -102,14 +156,14 @@ export function VerificationPanel({
           variant="secondary"
           onClick={() => void submit("revisi")}
           loading={submittingAction === "revisi"}
-          disabled={submittingAction !== null}
+          disabled={busy}
         >
           Minta revisi
         </Button>
         <Button
           type="button"
           onClick={() => dialogRef.current?.showModal()}
-          disabled={submittingAction !== null}
+          disabled={busy}
         >
           Setujui jurnal
         </Button>
@@ -139,7 +193,7 @@ export function VerificationPanel({
           <Button
             variant="secondary"
             onClick={() => dialogRef.current?.close()}
-            disabled={submittingAction !== null}
+            disabled={busy}
           >
             Batal
           </Button>
@@ -150,6 +204,7 @@ export function VerificationPanel({
               }
             }}
             loading={submittingAction === "diterima"}
+            disabled={busy}
           >
             Setujui
           </Button>

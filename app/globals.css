@@ -215,6 +215,17 @@ html.theme-transition .theme-toggle-icon {
   }
 }
 
+@keyframes verification-stamp-enter {
+  from {
+    opacity: 0;
+    transform: scale(1.12) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-6deg);
+  }
+}
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -281,6 +292,10 @@ html.theme-transition .theme-toggle-icon {
 
   .app-dialog[open] {
     animation: dialog-enter var(--m-panel) var(--ease-enter) both;
+  }
+
+  .verification-stamp {
+    animation: verification-stamp-enter var(--m-stamp) var(--ease-enter) both;
   }
 
   body:has(.app-drawer[open]) .bottom-nav {

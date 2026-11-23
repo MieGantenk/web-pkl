@@ -390,7 +390,7 @@ Catat kegiatan hari ini. Jurnal diverifikasi pembimbing.
 - Setelah simpan: toast + redirect ke daftar jurnal.
 - Jangan memakai modal untuk form ini.
 
-### 3.8 Verifikasi — `/guru/verifikasi`
+### 3.8 Verifikasi — `/guru/verifikasi` dan `/instruktur/verifikasi`
 
 ```
 Verifikasi Jurnal                                  12 menunggu
@@ -406,6 +406,7 @@ Verifikasi Jurnal                                  12 menunggu
 
 - Desktop: split 360 + detail.
 - HP: daftar → detail (route terpisah), tombol back.
+- Instruktur hanya melihat jurnal siswa di perusahaannya; aksi verifikasi aktif setelah guru pembimbing menyetujui.
 - Setujui: dialog konfirmasi singkat → cap verifikasi 260 ms → badge berubah → toast.
 - Minta revisi: textarea catatan wajib.
 - Aksi massal hanya jika ada checkbox dan konfirmasi.

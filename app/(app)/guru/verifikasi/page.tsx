@@ -359,6 +359,7 @@ export default async function GuruVerificationPage({
                       ? "Jurnal ini sudah diverifikasi instruktur. Verifikasi tidak bisa diubah lagi."
                       : "Jurnal ini tidak dapat diverifikasi saat ini."
                   }
+                  verifierName={profile.nama_lengkap}
                   action={verifyJurnalAction}
                 />
               </div>
