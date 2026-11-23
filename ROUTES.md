@@ -113,7 +113,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | Route | Halaman | Isi utama |
 |---|---|---|
 | `/ortu` | Beranda | Ringkasan anak, status, jurnal, mutaba'ah, surat |
-| `/ortu/jurnal` | Jurnal anak | Daftar, foto, status verifikasi |
+| `/ortu/jurnal` | Jurnal anak | Daftar, foto, status verifikasi (read-only) |
 | `/ortu/mutabaah` | Mutaba'ah | Riwayat, ring progres |
 | `/ortu/surat` | Surat | Surat anak, unduh |
 | `/ortu/profil` | Profil | Data, anak terkait, kata sandi |

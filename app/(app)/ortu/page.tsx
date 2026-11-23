@@ -247,9 +247,13 @@ export default async function OrtuHomePage({ searchParams }: OrtuHomePageProps) 
                         <p className="text-[13px] leading-[18px] text-muted">
                           {formatDay(entry.tanggal)}
                         </p>
-                        <p className="mt-0.5 truncate text-base font-medium text-ink">
+                        <Link
+                          href={`/ortu/jurnal?anak=${child.id}#jurnal-${entry.id}`}
+                          prefetch={false}
+                          className="mt-0.5 block truncate text-base font-medium text-ink underline-offset-4 hover:text-brand-700 hover:underline"
+                        >
                           {entry.kegiatan}
-                        </p>
+                        </Link>
                         {formatTime(entry.waktu_mulai) &&
                         formatTime(entry.waktu_selesai) ? (
                           <p className="mt-0.5 text-sm text-muted tabular-nums">
@@ -271,6 +275,16 @@ export default async function OrtuHomePage({ searchParams }: OrtuHomePageProps) 
                   />
                 </div>
               )}
+
+              <div className="mt-4 border-t border-border pt-3">
+                <Link
+                  href={`/ortu/jurnal?anak=${child.id}`}
+                  prefetch={false}
+                  className="text-sm font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
+                >
+                  Lihat semua jurnal
+                </Link>
+              </div>
             </article>
 
             <article className={cn(card, "flex flex-col")}>

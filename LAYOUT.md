@@ -547,6 +547,30 @@ Form Mutaba'ah                             [+ Form baru]
 - **Guru**: halaman read-only `/guru/mutabaah` dengan filter siswa bimbingan.
 - **Di detail siswa**: cukup ringkasan + tautan "Lihat semua mutaba'ah".
 
+### 3.14 Jurnal Anak — `/ortu/jurnal`
+
+```
+Jurnal Anak                              Fauzi · Farel · NIS 20240001
+┌──────────────────┬──────────────────┬──────────────────┐
+│ Total jurnal     │ Jurnal final     │ Perlu revisi     │
+│ 6                │ 2/6              │ 1                │
+└──────────────────┴──────────────────┴──────────────────┘
+[Cari kegiatan] [Status ▾] [Bulan ▾] [Reset]
+┌──────────────────────────────────────────────────────────────┐
+│ Rabu, 18 November 2026                        [Terverifikasi] │
+│ Pendampingan administrasi pengiriman                         │
+│ PT MitraComm · 08:00–16:00                                   │
+│ [Foto jurnal]                                                │
+│ Verifikasi: guru · instruktur                                │
+└──────────────────────────────────────────────────────────────┘
+```
+
+- Read-only: orang tua tidak boleh menyetujui atau meminta revisi.
+- Filter anak jika akun terhubung ke lebih dari satu siswa.
+- Detail jurnal ditampilkan langsung di kartu: foto, kegiatan, catatan guru, catatan instruktur.
+- Foto dibuka di tab baru; jika tidak tersedia, tampilkan peringatan.
+- Di HP: satu kolom; kartu jurnal menjadi unit utama.
+
 ---
 
 ## 4. Responsif
