@@ -54,14 +54,8 @@ export type MutabaahHistoryDay = {
   entry: MutabaahEntry | null;
 };
 
-export type SiswaMutabaahData = {
+export type MutabaahData = {
   today: string;
-  student: {
-    id: string;
-    nis: string;
-    kelas: string | null;
-    jurusan: { nama: string } | null;
-  } | null;
   form: {
     id: string;
     nama: string;
@@ -74,6 +68,15 @@ export type SiswaMutabaahData = {
     total: number;
   };
   history: MutabaahHistoryDay[];
+};
+
+export type SiswaMutabaahData = MutabaahData & {
+  student: {
+    id: string;
+    nis: string;
+    kelas: string | null;
+    jurusan: { nama: string } | null;
+  } | null;
 };
 
 function startOfWeek(isoDate: string) {
@@ -91,6 +94,264 @@ function shiftDate(isoDate: string, days: number) {
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);
 }
+
+async function loadMutabaahData(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  siswaId: string,
+  today: string,
+): Promise<MutabaahData> {
+  const { data: form, error: formError } = await supabase
+    .from("mutabaah_form")
+    .select("id, nama, deskripsi")
+    .eq("status", "aktif")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (formError) {
+    throw new Error("Gagal memuat form mutaba'ah.");
+  }
+
+  if (!form) {
+    return {
+      today,
+      form: null,
+      questions: [],
+      todayEntry: null,
+      week: { filled: 0, total: 7 },
+      history: [],
+    };
+  }
+
+  const { data: questionRows, error: questionError } = await supabase
+    .from("mutabaah_pertanyaan")
+    .select(
+      "id, pertanyaan, deskripsi, tipe, wajib, urutan, min_angka, max_angka, satuan",
+    )
+    .eq("form_id", form.id)
+    .eq("aktif", true)
+    .order("urutan", { ascending: true });
+
+  if (questionError) {
+    throw new Error("Gagal memuat pertanyaan mutaba'ah.");
+  }
+
+  const questionsData = questionRows ?? [];
+  const questionIds = questionsData.map((question) => question.id);
+
+  let optionRows: Array<{
+    id: string;
+    pertanyaan_id: string;
+    label: string;
+  }> = [];
+
+  if (questionIds.length) {
+    const { data, error } = await supabase
+      .from("mutabaah_opsi")
+      .select("id, pertanyaan_id, label")
+      .in("pertanyaan_id", questionIds)
+      .eq("aktif", true)
+      .order("urutan", { ascending: true });
+
+    if (error) {
+      throw new Error("Gagal memuat pilihan mutaba'ah.");
+    }
+
+    optionRows = data ?? [];
+  }
+
+  const optionsByQuestion = new Map<string, MutabaahOption[]>();
+
+  for (const option of optionRows) {
+    const list = optionsByQuestion.get(option.pertanyaan_id) ?? [];
+    list.push({ id: option.id, label: option.label });
+    optionsByQuestion.set(option.pertanyaan_id, list);
+  }
+
+  const questions: MutabaahQuestion[] = questionsData.map((question) => ({
+    id: question.id,
+    pertanyaan: question.pertanyaan,
+    deskripsi: question.deskripsi,
+    tipe: question.tipe,
+    wajib: question.wajib,
+    urutan: question.urutan,
+    minAngka: question.min_angka,
+    maxAngka: question.max_angka,
+    satuan: question.satuan,
+    options: optionsByQuestion.get(question.id) ?? [],
+  }));
+
+  const weekStart = startOfWeek(today);
+  const historyStart = shiftDate(today, -6);
+  const rangeStart = weekStart < historyStart ? weekStart : historyStart;
+
+  const { data: entryRows, error: entryError } = await supabase
+    .from("mutabaah_harian")
+    .select("id, tanggal, catatan")
+    .eq("siswa_id", siswaId)
+    .gte("tanggal", rangeStart)
+    .lte("tanggal", today)
+    .order("tanggal", { ascending: false });
+
+  if (entryError) {
+    throw new Error("Gagal memuat riwayat mutaba'ah.");
+  }
+
+  const entries = entryRows ?? [];
+  const entryIds = entries.map((entry) => entry.id);
+
+  let answerRows: Array<{
+    id: string;
+    harian_id: string;
+    pertanyaan_id: string;
+    jawaban_teks: string | null;
+    jawaban_angka: number | null;
+    jawaban_boolean: boolean | null;
+    pertanyaan: {
+      pertanyaan: string;
+      tipe: TipePertanyaan;
+      satuan: string | null;
+      urutan: number;
+    } | null;
+  }> = [];
+
+  if (entryIds.length) {
+    const { data, error } = await supabase
+      .from("mutabaah_jawaban")
+      .select(
+        "id, harian_id, pertanyaan_id, jawaban_teks, jawaban_angka, jawaban_boolean, pertanyaan:pertanyaan_id(pertanyaan, tipe, satuan, urutan)",
+      )
+      .in("harian_id", entryIds)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      throw new Error("Gagal memuat jawaban mutaba'ah.");
+    }
+
+    answerRows = (data ?? []).sort(
+      (a, b) => (a.pertanyaan?.urutan ?? 0) - (b.pertanyaan?.urutan ?? 0),
+    );
+  }
+
+  const answerIds = answerRows.map((answer) => answer.id);
+
+  let optionAnswerRows: Array<{
+    jawaban_id: string;
+    opsi_id: string;
+    opsi: { label: string; urutan: number } | null;
+  }> = [];
+
+  if (answerIds.length) {
+    const { data, error } = await supabase
+      .from("mutabaah_jawaban_opsi")
+      .select("jawaban_id, opsi_id, opsi:opsi_id(label, urutan)")
+      .in("jawaban_id", answerIds);
+
+    if (error) {
+      throw new Error("Gagal memuat pilihan jawaban mutaba'ah.");
+    }
+
+    optionAnswerRows = (data ?? []).sort(
+      (a, b) => (a.opsi?.urutan ?? 0) - (b.opsi?.urutan ?? 0),
+    );
+  }
+
+  const optionsByAnswer = new Map<
+    string,
+    { ids: string[]; labels: string[] }
+  >();
+
+  for (const row of optionAnswerRows) {
+    const current = optionsByAnswer.get(row.jawaban_id) ?? {
+      ids: [],
+      labels: [],
+    };
+    current.ids.push(row.opsi_id);
+
+    if (row.opsi?.label) {
+      current.labels.push(row.opsi.label);
+    }
+
+    optionsByAnswer.set(row.jawaban_id, current);
+  }
+
+  const answersByEntry = new Map<string, MutabaahAnswer[]>();
+
+  for (const answer of answerRows) {
+    if (!answer.pertanyaan) continue;
+
+    const selected = optionsByAnswer.get(answer.id);
+    const teks = answer.jawaban_teks?.trim() || null;
+    const hasValue =
+      answer.jawaban_boolean !== null ||
+      answer.jawaban_angka !== null ||
+      Boolean(teks) ||
+      Boolean(selected?.ids.length);
+
+    if (!hasValue) continue;
+
+    const list = answersByEntry.get(answer.harian_id) ?? [];
+    list.push({
+      pertanyaanId: answer.pertanyaan_id,
+      label: answer.pertanyaan.pertanyaan,
+      tipe: answer.pertanyaan.tipe,
+      satuan: answer.pertanyaan.satuan,
+      jawabanTeks: teks,
+      jawabanAngka: answer.jawaban_angka,
+      jawabanBoolean: answer.jawaban_boolean,
+      opsiIds: selected?.ids ?? [],
+      opsiLabels: selected?.labels ?? [],
+    });
+    answersByEntry.set(answer.harian_id, list);
+  }
+
+  const entryByDate = new Map(
+    entries.map((entry) => [
+      entry.tanggal,
+      {
+        id: entry.id,
+        tanggal: entry.tanggal,
+        catatan: entry.catatan,
+        answers: answersByEntry.get(entry.id) ?? [],
+      } satisfies MutabaahEntry,
+    ]),
+  );
+
+  const weekDates = new Set(
+    entries
+      .filter(
+        (entry) => entry.tanggal >= weekStart && entry.tanggal <= today,
+      )
+      .map((entry) => entry.tanggal),
+  );
+
+  const history = Array.from({ length: 7 }, (_, index) => {
+    const tanggal = shiftDate(today, -index);
+
+    return {
+      tanggal,
+      entry: entryByDate.get(tanggal) ?? null,
+    };
+  });
+
+  return {
+    today,
+    form,
+    questions,
+    todayEntry: entryByDate.get(today) ?? null,
+    week: { filled: weekDates.size, total: 7 },
+    history,
+  };
+}
+
+export const getMutabaahBySiswaId = cache(
+  async (siswaId: string): Promise<MutabaahData> => {
+    await connection();
+
+    const supabase = await createClient();
+    return loadMutabaahData(supabase, siswaId, jakartaToday());
+  },
+);
 
 export const getSiswaMutabaah = cache(
   async (penggunaId: string): Promise<SiswaMutabaahData> => {
@@ -122,244 +383,8 @@ export const getSiswaMutabaah = cache(
       };
     }
 
-    const { data: form, error: formError } = await supabase
-      .from("mutabaah_form")
-      .select("id, nama, deskripsi")
-      .eq("status", "aktif")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const data = await loadMutabaahData(supabase, student.id, today);
 
-    if (formError) {
-      throw new Error("Gagal memuat form mutaba'ah.");
-    }
-
-    if (!form) {
-      return {
-        today,
-        student,
-        form: null,
-        questions: [],
-        todayEntry: null,
-        week: { filled: 0, total: 7 },
-        history: [],
-      };
-    }
-
-    const { data: questionRows, error: questionError } = await supabase
-      .from("mutabaah_pertanyaan")
-      .select(
-        "id, pertanyaan, deskripsi, tipe, wajib, urutan, min_angka, max_angka, satuan",
-      )
-      .eq("form_id", form.id)
-      .eq("aktif", true)
-      .order("urutan", { ascending: true });
-
-    if (questionError) {
-      throw new Error("Gagal memuat pertanyaan mutaba'ah.");
-    }
-
-    const questionsData = questionRows ?? [];
-    const questionIds = questionsData.map((question) => question.id);
-
-    let optionRows: Array<{
-      id: string;
-      pertanyaan_id: string;
-      label: string;
-    }> = [];
-
-    if (questionIds.length) {
-      const { data, error } = await supabase
-        .from("mutabaah_opsi")
-        .select("id, pertanyaan_id, label")
-        .in("pertanyaan_id", questionIds)
-        .eq("aktif", true)
-        .order("urutan", { ascending: true });
-
-      if (error) {
-        throw new Error("Gagal memuat pilihan mutaba'ah.");
-      }
-
-      optionRows = data ?? [];
-    }
-
-    const optionsByQuestion = new Map<string, MutabaahOption[]>();
-
-    for (const option of optionRows) {
-      const list = optionsByQuestion.get(option.pertanyaan_id) ?? [];
-      list.push({ id: option.id, label: option.label });
-      optionsByQuestion.set(option.pertanyaan_id, list);
-    }
-
-    const questions: MutabaahQuestion[] = questionsData.map((question) => ({
-      id: question.id,
-      pertanyaan: question.pertanyaan,
-      deskripsi: question.deskripsi,
-      tipe: question.tipe,
-      wajib: question.wajib,
-      urutan: question.urutan,
-      minAngka: question.min_angka,
-      maxAngka: question.max_angka,
-      satuan: question.satuan,
-      options: optionsByQuestion.get(question.id) ?? [],
-    }));
-
-    const weekStart = startOfWeek(today);
-    const historyStart = shiftDate(today, -6);
-    const rangeStart = weekStart < historyStart ? weekStart : historyStart;
-
-    const { data: entryRows, error: entryError } = await supabase
-      .from("mutabaah_harian")
-      .select("id, tanggal, catatan")
-      .eq("siswa_id", student.id)
-      .gte("tanggal", rangeStart)
-      .lte("tanggal", today)
-      .order("tanggal", { ascending: false });
-
-    if (entryError) {
-      throw new Error("Gagal memuat riwayat mutaba'ah.");
-    }
-
-    const entries = entryRows ?? [];
-    const entryIds = entries.map((entry) => entry.id);
-
-    let answerRows: Array<{
-      id: string;
-      harian_id: string;
-      pertanyaan_id: string;
-      jawaban_teks: string | null;
-      jawaban_angka: number | null;
-      jawaban_boolean: boolean | null;
-      pertanyaan: {
-        pertanyaan: string;
-        tipe: TipePertanyaan;
-        satuan: string | null;
-      } | null;
-    }> = [];
-
-    if (entryIds.length) {
-      const { data, error } = await supabase
-        .from("mutabaah_jawaban")
-        .select(
-          "id, harian_id, pertanyaan_id, jawaban_teks, jawaban_angka, jawaban_boolean, pertanyaan:pertanyaan_id(pertanyaan, tipe, satuan)",
-        )
-        .in("harian_id", entryIds)
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        throw new Error("Gagal memuat jawaban mutaba'ah.");
-      }
-
-      answerRows = data ?? [];
-    }
-
-    const answerIds = answerRows.map((answer) => answer.id);
-
-    let optionAnswerRows: Array<{
-      jawaban_id: string;
-      opsi_id: string;
-      opsi: { label: string } | null;
-    }> = [];
-
-    if (answerIds.length) {
-      const { data, error } = await supabase
-        .from("mutabaah_jawaban_opsi")
-        .select("jawaban_id, opsi_id, opsi:opsi_id(label)")
-        .in("jawaban_id", answerIds);
-
-      if (error) {
-        throw new Error("Gagal memuat pilihan jawaban mutaba'ah.");
-      }
-
-      optionAnswerRows = data ?? [];
-    }
-
-    const optionsByAnswer = new Map<
-      string,
-      { ids: string[]; labels: string[] }
-    >();
-
-    for (const row of optionAnswerRows) {
-      const current = optionsByAnswer.get(row.jawaban_id) ?? {
-        ids: [],
-        labels: [],
-      };
-      current.ids.push(row.opsi_id);
-
-      if (row.opsi?.label) {
-        current.labels.push(row.opsi.label);
-      }
-
-      optionsByAnswer.set(row.jawaban_id, current);
-    }
-
-    const answersByEntry = new Map<string, MutabaahAnswer[]>();
-
-    for (const answer of answerRows) {
-      if (!answer.pertanyaan) continue;
-
-      const selected = optionsByAnswer.get(answer.id);
-      const teks = answer.jawaban_teks?.trim() || null;
-      const hasValue =
-        answer.jawaban_boolean !== null ||
-        answer.jawaban_angka !== null ||
-        Boolean(teks) ||
-        Boolean(selected?.ids.length);
-
-      if (!hasValue) continue;
-
-      const list = answersByEntry.get(answer.harian_id) ?? [];
-      list.push({
-        pertanyaanId: answer.pertanyaan_id,
-        label: answer.pertanyaan.pertanyaan,
-        tipe: answer.pertanyaan.tipe,
-        satuan: answer.pertanyaan.satuan,
-        jawabanTeks: teks,
-        jawabanAngka: answer.jawaban_angka,
-        jawabanBoolean: answer.jawaban_boolean,
-        opsiIds: selected?.ids ?? [],
-        opsiLabels: selected?.labels ?? [],
-      });
-      answersByEntry.set(answer.harian_id, list);
-    }
-
-    const entryByDate = new Map(
-      entries.map((entry) => [
-        entry.tanggal,
-        {
-          id: entry.id,
-          tanggal: entry.tanggal,
-          catatan: entry.catatan,
-          answers: answersByEntry.get(entry.id) ?? [],
-        } satisfies MutabaahEntry,
-      ]),
-    );
-
-    const weekDates = new Set(
-      entries
-        .filter(
-          (entry) => entry.tanggal >= weekStart && entry.tanggal <= today,
-        )
-        .map((entry) => entry.tanggal),
-    );
-
-    const history = Array.from({ length: 7 }, (_, index) => {
-      const tanggal = shiftDate(today, -index);
-
-      return {
-        tanggal,
-        entry: entryByDate.get(tanggal) ?? null,
-      };
-    });
-
-    return {
-      today,
-      student,
-      form,
-      questions,
-      todayEntry: entryByDate.get(today) ?? null,
-      week: { filled: weekDates.size, total: 7 },
-      history,
-    };
+    return { student, ...data };
   },
 );
