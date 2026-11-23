@@ -99,6 +99,16 @@ export async function verifyInstrukturJurnalAction(
     };
   }
 
+  if (journal.status !== "terverifikasi_guru") {
+    return {
+      ok: false,
+      message:
+        journal.status === "revisi"
+          ? "Jurnal sedang diperbaiki siswa."
+          : "Jurnal masih menunggu verifikasi guru pembimbing.",
+    };
+  }
+
   const { data: verifications, error: verificationError } = await supabase
     .from("verifikasi_jurnal")
     .select("peran, status, verifikator_id")
@@ -173,7 +183,13 @@ export async function verifyInstrukturJurnalAction(
   revalidatePath("/instruktur/siswa");
   revalidatePath("/guru/verifikasi");
   revalidatePath("/guru/siswa");
+  revalidatePath(`/guru/siswa/${journal.siswa_id}`);
+  revalidatePath("/guru");
+  revalidatePath("/siswa/jurnal");
+  revalidatePath("/siswa");
+  revalidatePath("/admin/jurnal");
   revalidatePath("/admin");
+  revalidatePath("/ortu");
 
   return {
     ok: true,

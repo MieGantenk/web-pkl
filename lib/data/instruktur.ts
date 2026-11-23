@@ -423,13 +423,17 @@ export type InstrukturVerificationData = {
   journals: Array<
     InstrukturJournalSummary & {
       nama: string;
+      nis: string | null;
       kelas: string | null;
       perusahaan: string | null;
     }
   >;
   pending: number;
+  total: number;
+  counts: Record<StatusJurnal, number>;
   selected: (InstrukturJournalSummary & {
     nama: string;
+    nis: string | null;
     kelas: string | null;
     perusahaan: string | null;
     deskripsi: string | null;
@@ -450,22 +454,33 @@ export type InstrukturVerificationData = {
 export const getInstrukturVerificationQueue = cache(
   async (
     penggunaId: string,
-    selectedJurnalId?: string,
+    options: {
+      jurnalId?: string;
+      q?: string;
+      status?: StatusJurnal | "";
+    } = {},
   ): Promise<InstrukturVerificationData> => {
     await connection();
 
     const supabase = await createClient();
     const base = await getInstrukturStudentsBase(penggunaId);
+    const counts: Record<StatusJurnal, number> = {
+      menunggu: 0,
+      terverifikasi_guru: 0,
+      terverifikasi_instruktur: 0,
+      revisi: 0,
+    };
     const studentById = new Map(
       base.students.map((student) => [student.id, student]),
     );
-    const journals = base.journals
+    const allJournals = base.journals
       .map((journal) => {
         const student = studentById.get(journal.siswaId);
 
         return {
           ...journal,
           nama: student?.nama ?? "Siswa",
+          nis: student?.nis ?? null,
           kelas: student?.kelas ?? null,
           perusahaan: student?.perusahaan?.nama ?? null,
         };
@@ -484,8 +499,25 @@ export const getInstrukturVerificationQueue = cache(
         );
       });
 
+    for (const journal of allJournals) {
+      counts[journal.status] += 1;
+    }
+
+    const term = (options.q ?? "").trim().toLowerCase();
+    const journals = allJournals.filter((journal) => {
+      const matchesStatus =
+        !options.status || journal.status === options.status;
+      const matchesQuery =
+        !term ||
+        journal.nama.toLowerCase().includes(term) ||
+        (journal.nis ?? "").toLowerCase().includes(term) ||
+        journal.kegiatan.toLowerCase().includes(term);
+
+      return matchesStatus && matchesQuery;
+    });
+
     const selectedSummary =
-      journals.find((journal) => journal.id === selectedJurnalId) ??
+      journals.find((journal) => journal.id === options.jurnalId) ??
       journals.find((journal) => journal.status === "terverifikasi_guru") ??
       journals[0] ??
       null;
@@ -533,17 +565,25 @@ export const getInstrukturVerificationQueue = cache(
           journal.status === "terverifikasi_instruktur" ||
           instrukturVerification?.status === "diterima";
         const guruAccepted = guruVerification?.status === "diterima";
-        const canVerify = guruAccepted && !alreadyFinal;
+        const canVerify =
+          journal.status === "terverifikasi_guru" &&
+          guruAccepted &&
+          !alreadyFinal;
 
         let unavailableMessage =
           "Jurnal ini tidak dapat diverifikasi saat ini.";
 
-        if (!guruAccepted) {
-          unavailableMessage =
-            "Jurnal harus disetujui guru pembimbing terlebih dahulu.";
-        } else if (alreadyFinal) {
+        if (alreadyFinal) {
           unavailableMessage =
             "Jurnal ini sudah diverifikasi instruktur. Verifikasi tidak bisa diubah lagi.";
+        } else if (journal.status === "revisi") {
+          unavailableMessage = "Jurnal sedang diperbaiki siswa.";
+        } else if (journal.status === "menunggu") {
+          unavailableMessage =
+            "Jurnal masih menunggu verifikasi guru pembimbing.";
+        } else if (!guruAccepted) {
+          unavailableMessage =
+            "Jurnal harus disetujui guru pembimbing terlebih dahulu.";
         }
 
         selected = {
@@ -567,9 +607,9 @@ export const getInstrukturVerificationQueue = cache(
       today: jakartaToday(),
       context: base.context,
       journals,
-      pending: journals.filter(
-        (journal) => journal.status === "terverifikasi_guru",
-      ).length,
+      pending: counts.terverifikasi_guru,
+      total: allJournals.length,
+      counts,
       selected,
     };
   },
