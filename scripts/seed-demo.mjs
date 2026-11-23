@@ -744,13 +744,26 @@ must(
   "upsert opsi mutabaah",
 );
 
-for (const offset of [0, -1, -2]) {
+const mutabaahAnswers = [];
+const mutabaahAnswerOptions = [];
+const mutabaahPattern = [
+  { boolean: true, angka: 3, options: [ids.o1, ids.o2] },
+  { boolean: false, angka: 2, options: [ids.o3] },
+  { boolean: true, angka: 4, options: [ids.o1] },
+];
+
+for (const [index, offset] of [0, -1, -2].entries()) {
   const date = addDays(today, offset);
+  const harianId = uuidFor(`demo-mutabaah-${date}`);
+  const answerQ1 = uuidFor(`demo-mutabaah-jawaban-${date}-q1`);
+  const answerQ2 = uuidFor(`demo-mutabaah-jawaban-${date}-q2`);
+  const answerQ3 = uuidFor(`demo-mutabaah-jawaban-${date}-q3`);
+  const pattern = mutabaahPattern[index];
 
   must(
     await admin.from("mutabaah_harian").upsert(
       {
-        id: uuidFor(`demo-mutabaah-${date}`),
+        id: harianId,
         siswa_id: ids.siswa,
         form_id: ids.form,
         tanggal: date,
@@ -759,7 +772,49 @@ for (const offset of [0, -1, -2]) {
     ),
     `upsert mutabaah ${date}`,
   );
+
+  mutabaahAnswers.push(
+    {
+      id: answerQ1,
+      harian_id: harianId,
+      pertanyaan_id: ids.q1,
+      jawaban_boolean: pattern.boolean,
+    },
+    {
+      id: answerQ2,
+      harian_id: harianId,
+      pertanyaan_id: ids.q2,
+      jawaban_angka: pattern.angka,
+    },
+    {
+      id: answerQ3,
+      harian_id: harianId,
+      pertanyaan_id: ids.q3,
+    },
+  );
+
+  pattern.options.forEach((opsiId, optionIndex) => {
+    mutabaahAnswerOptions.push({
+      id: uuidFor(`demo-mutabaah-jawaban-${date}-opsi-${optionIndex + 1}`),
+      jawaban_id: answerQ3,
+      opsi_id: opsiId,
+    });
+  });
 }
+
+must(
+  await admin.from("mutabaah_jawaban").upsert(mutabaahAnswers, {
+    onConflict: "id",
+  }),
+  "upsert jawaban mutabaah",
+);
+
+must(
+  await admin.from("mutabaah_jawaban_opsi").upsert(mutabaahAnswerOptions, {
+    onConflict: "id",
+  }),
+  "upsert opsi jawaban mutabaah",
+);
 
 must(
   await admin.from("log_aktivitas").upsert(

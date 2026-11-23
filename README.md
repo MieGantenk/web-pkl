@@ -93,3 +93,16 @@ Kalau masih bertentangan, berhenti dan minta keputusan. Jangan menebak.
 2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, dan jurnal.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Untuk data demo pengembangan: `npm run seed:demo` (jangan dijalankan di produksi).
+
+### Akun demo
+
+Jalankan `npm run seed:demo` lebih dulu, lalu gunakan akun berikut:
+
+| Peran | ID / username | Email | Kata sandi |
+|---|---|---|---|
+| Admin | `admin` | `admin.demo@example.com` | `DemoPKL2026!` |
+| Siswa | `20240001` | `siswa.demo@example.com` | `DemoPKL2026!` |
+| Guru | `guru.sandi` | `guru.sandi@example.com` | `DemoPKL2026!` |
+| Instruktur | `instruktur.mitra` | `instruktur.mitra@example.com` | `DemoPKL2026!` |
+| Instruktur | `instruktur.karya` | `instruktur.karya@example.com` | `DemoPKL2026!` |
+| Orang tua | `ortu` | `ortu.demo@example.com` | `DemoPKL2026!` |
