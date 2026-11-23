@@ -326,6 +326,16 @@ export default async function OrtuHomePage({ searchParams }: OrtuHomePageProps) 
                   )}
                 </div>
               </div>
+
+              <div className="mt-auto pt-5">
+                <Link
+                  href={`/ortu/mutabaah?anak=${child.id}`}
+                  prefetch={false}
+                  className="text-sm font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
+                >
+                  Lihat riwayat mutaba&apos;ah
+                </Link>
+              </div>
             </article>
           </section>
 
