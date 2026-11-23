@@ -226,6 +226,12 @@ html.theme-transition .theme-toggle-icon {
   }
 }
 
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -298,6 +304,36 @@ html.theme-transition .theme-toggle-icon {
     animation: verification-stamp-enter var(--m-stamp) var(--ease-enter) both;
   }
 
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--color-surface-muted);
+  }
+
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.48),
+      transparent
+    );
+    animation: skeleton-shimmer 1.4s var(--ease-out) infinite;
+  }
+
+  .dark .skeleton::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.08),
+      transparent
+    );
+  }
+
   body:has(.app-drawer[open]) .bottom-nav {
     visibility: hidden;
   }
@@ -318,6 +354,11 @@ html.theme-transition .theme-toggle-icon {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .skeleton::after {
+    animation: none !important;
+    opacity: 0;
   }
 }
 

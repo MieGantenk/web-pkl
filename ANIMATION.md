@@ -249,7 +249,7 @@ Hanya untuk `(hover: hover) and (pointer: fine)`. Di HP tidak ada hover.
 
 ### 5.12 Skeleton
 
-- Pulse opacity 0,5→1, 1,2 detik, **hanya saat memuat**.
+- Shimmer halus dari kiri ke kanan, 1,4 detik, **hanya saat memuat**.
 - Bentuk mengikuti konten (judul, baris, tombol).
 - Berhenti begitu data tampil.
 - Reduced motion: static.

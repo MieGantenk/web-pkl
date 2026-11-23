@@ -277,8 +277,7 @@ export async function recordSuratFileAction(
 
   if (
     !data.file_path.startsWith("surat/") ||
-    data.file_path.includes("..") ||
-    !data.file_path.includes(`/${data.surat_id}-`)
+    data.file_path.includes("..")
   ) {
     return { ok: false, message: "Lokasi berkas tidak valid." };
   }
@@ -338,4 +337,72 @@ export async function recordSuratFileAction(
 
   revalidateSurat();
   return { ok: true };
+}
+
+const uploadSuratSchema = suratFileSchema.omit({ surat_id: true }).extend({
+  pengajuan_id: z.string().regex(postgresUuidPattern, "Pengajuan tidak valid."),
+  jenis: jenisSchema,
+});
+
+export type UploadSuratResult =
+  | { ok: true; id: string }
+  | { ok: false; message: string };
+
+export async function uploadSuratForPengajuanAction(
+  input: unknown,
+): Promise<UploadSuratResult> {
+  const auth = await assertAdminAction();
+  if (auth) return auth;
+
+  const parsed = uploadSuratSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message:
+        parsed.error.issues[0]?.message ?? "Berkas surat tidak valid.",
+    };
+  }
+
+  const data = parsed.data;
+  const admin = createAdminClient();
+  const { data: existing, error: existingError } = await admin
+    .from("surat")
+    .select("id")
+    .eq("pengajuan_id", data.pengajuan_id)
+    .eq("jenis", data.jenis)
+    .maybeSingle();
+
+  if (existingError) {
+    return { ok: false, message: "Surat belum dapat diperiksa." };
+  }
+
+  let suratId = existing?.id;
+
+  if (!suratId) {
+    const issued = await issueSuratAction({
+      pengajuan_id: data.pengajuan_id,
+      jenis: data.jenis,
+    });
+
+    if (!issued.ok) {
+      return { ok: false, message: issued.message };
+    }
+
+    suratId = issued.id;
+  }
+
+  const recorded = await recordSuratFileAction({
+    surat_id: suratId,
+    file_path: data.file_path,
+    file_name: data.file_name,
+    mime_type: data.mime_type,
+    ukuran: data.ukuran,
+  });
+
+  if (!recorded.ok) {
+    return { ok: false, message: recorded.message };
+  }
+
+  return { ok: true, id: suratId };
 }

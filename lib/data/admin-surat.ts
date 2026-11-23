@@ -52,6 +52,14 @@ export type SuratIssueOption = {
   existingSurat: { id: string; nomor: string | null } | null;
 };
 
+export type SuratUploadOption = {
+  pengajuanId: string;
+  status: StatusPengajuan;
+  perusahaan: { nama: string; kota: string | null } | null;
+  periode: { nama: string } | null;
+  students: SuratStudent[];
+};
+
 export type SuratPdfData = {
   surat: {
     id: string;
@@ -379,6 +387,40 @@ export const getSuratIssueOptions = cache(
       periode: row.periode,
       students: members.get(row.id) ?? [],
       existingSurat: existingByApplication.get(row.id) ?? null,
+    }));
+  },
+);
+
+export const getSuratUploadOptions = cache(
+  async (): Promise<SuratUploadOption[]> => {
+    await connection();
+
+    const admin = createAdminClient();
+    const statuses = Array.from(
+      new Set(Object.values(suratEligibleStatuses).flat()),
+    );
+    const { data, error } = await admin
+      .from("pengajuan_pkl")
+      .select(
+        "id, status, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
+      )
+      .in("status", statuses)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error) {
+      throw new Error("Gagal memuat pilihan pengajuan surat.");
+    }
+
+    const rows = data ?? [];
+    const members = await getMembers(rows.map((row) => row.id));
+
+    return rows.map((row) => ({
+      pengajuanId: row.id,
+      status: row.status,
+      perusahaan: row.perusahaan,
+      periode: row.periode,
+      students: members.get(row.id) ?? [],
     }));
   },
 );

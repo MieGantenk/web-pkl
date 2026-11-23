@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/pkl/EmptyState";
 import { FilterForm } from "@/components/pkl/FilterForm";
 import { IssueSuratButton } from "@/components/pkl/IssueSuratButton";
 import { SuratTabs } from "@/components/pkl/SuratTabs";
+import { UploadSuratBaruButton } from "@/components/pkl/UploadSuratBaruButton";
 import { UploadSuratButton } from "@/components/pkl/UploadSuratButton";
 import {
   PengajuanBadge,
@@ -29,6 +30,7 @@ import {
   currentSuratYear,
   getSuratIssueOptions,
   getSuratList,
+  getSuratUploadOptions,
 } from "@/lib/data/admin-surat";
 import {
   jenisSuratLabel,
@@ -76,9 +78,10 @@ export default async function AdminSuratPage({
       : "";
   const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
 
-  const [data, issueOptions] = await Promise.all([
+  const [data, issueOptions, uploadOptions] = await Promise.all([
     getSuratList({ q, jenis, status, page }),
     jenis ? getSuratIssueOptions(jenis) : Promise.resolve([]),
+    getSuratUploadOptions(),
   ]);
 
   const hasFilter = Boolean(q || jenis || status);
@@ -114,12 +117,18 @@ export default async function AdminSuratPage({
           </p>
         </div>
 
-        <p className="text-sm text-muted lg:text-right">
-          <span className="font-display text-2xl font-semibold text-ink tabular-nums">
-            {data.total}
-          </span>{" "}
-          surat
-        </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <p className="text-sm text-muted lg:text-right">
+            <span className="font-display text-2xl font-semibold text-ink tabular-nums">
+              {data.total}
+            </span>{" "}
+            surat
+          </p>
+          <UploadSuratBaruButton
+            options={uploadOptions}
+            tahun={tahun}
+          />
+        </div>
       </header>
 
       <SuratTabs active="sekolah" />

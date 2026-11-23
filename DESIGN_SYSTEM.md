@@ -489,9 +489,9 @@ Contoh: "Belum ada jurnal hari ini. Isi jurnal sebelum pukul 23.59." + tombol "I
 ### 8.19 Skeleton
 
 - Latar `surface-muted`, radius 6.
-- Pulse opacity 0,5→1, 1,2 detik, hanya saat memuat.
+- Shimmer halus dari kiri ke kanan, 1,4 detik, hanya saat memuat.
 - Bentuk mengikuti konten (bukan kotak acak).
-- Jangan shimmer terang.
+- Jangan shimmer terang atau berkedip.
 
 ### 8.20 Cap verifikasi (khusus)
 
