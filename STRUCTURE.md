@@ -243,7 +243,7 @@ npm run build
 | Halaman instruktur | Selesai (ringkasan, siswa PKL, verifikasi langkah 2, profil) |
 | Profil orang tua | Selesai (data diri, anak terkait, kata sandi) |
 | Penempatan admin | Selesai (daftar, filter, guru/instruktur, tanggal, mulai PKL) |
-| Surat admin | Selesai (7 jenis, nomor otomatis, pratinjau/unduh PDF, cetak A4) |
+| Surat admin | Selesai (7 jenis, nomor otomatis, unggah berkas, pratinjau/unduh PDF, cetak A4, daftar surat dari siswa) |
 | Surat siswa | Selesai (izin, pengajuan, keberangkatan, penarikan; unduh PDF) |
 | Surat orang tua | Selesai (pilih anak, surat terbit, unduh PDF) |
 | Jurnal orang tua | Selesai (pilih anak, filter, foto, status verifikasi, read-only) |

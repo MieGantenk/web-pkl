@@ -32,6 +32,7 @@ export type SuratListItem = {
   perusahaan: { nama: string; kota: string | null } | null;
   periode: { nama: string } | null;
   students: SuratStudent[];
+  hasFile: boolean;
 };
 
 export type SuratListResult = {
@@ -58,6 +59,7 @@ export type SuratPdfData = {
     nomor: string | null;
     tanggalTerbit: string | null;
     status: StatusSurat;
+    filePath: string | null;
   };
   application: {
     id: string;
@@ -284,7 +286,7 @@ export async function getSuratList(params: {
   let query = admin
     .from("surat")
     .select(
-      "id, jenis, nomor, tanggal_terbit, status, pengajuan_id, pengajuan:pengajuan_id(id, status, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama))",
+      "id, jenis, nomor, tanggal_terbit, status, file_path, pengajuan_id, pengajuan:pengajuan_id(id, status, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama))",
       { count: "exact" },
     )
     .order("tanggal_terbit", { ascending: false, nullsFirst: false })
@@ -319,6 +321,7 @@ export async function getSuratList(params: {
       perusahaan: row.pengajuan?.perusahaan ?? null,
       periode: row.pengajuan?.periode ?? null,
       students: members.get(row.pengajuan_id) ?? [],
+      hasFile: Boolean(row.file_path),
     })),
     total,
     page,
@@ -402,7 +405,7 @@ export async function getSuratPdfData(
       admin
         .from("surat")
         .select(
-          "id, jenis, nomor, tanggal_terbit, status, pengajuan_id, pengajuan:pengajuan_id(id, status, tanggal_mulai, tanggal_selesai, perusahaan:perusahaan_id(nama, alamat, kota), periode:periode_id(nama), guru:guru_pembimbing_id(pengguna:pengguna_id(nama_lengkap)), instruktur:instruktur_id(pengguna:pengguna_id(nama_lengkap)))",
+          "id, jenis, nomor, tanggal_terbit, status, file_path, pengajuan_id, pengajuan:pengajuan_id(id, status, tanggal_mulai, tanggal_selesai, perusahaan:perusahaan_id(nama, alamat, kota), periode:periode_id(nama), guru:guru_pembimbing_id(pengguna:pengguna_id(nama_lengkap)), instruktur:instruktur_id(pengguna:pengguna_id(nama_lengkap)))",
         )
         .eq("id", id)
         .maybeSingle(),
@@ -436,6 +439,7 @@ export async function getSuratPdfData(
         nomor: surat.nomor,
         tanggalTerbit: surat.tanggal_terbit,
         status: surat.status,
+        filePath: surat.file_path,
       },
       application: {
         id: application.id,

@@ -91,8 +91,7 @@ export default async function SiswaPengajuanPage() {
     !pengajuan ||
     pengajuan.status === "ditolak" ||
     pengajuan.status === "dibatalkan";
-  const hasOptions =
-    data.options.perusahaan.length > 0 && data.options.periode.length > 0;
+  const hasOptions = data.options.periode.length > 0;
   const canEditDraft = isDraft && isOwner;
   const canUploadIzin = pengajuan?.status === "izin_ortu_terbit";
   const canUploadBalasan = pengajuan?.status === "pengajuan_terbit";
@@ -103,10 +102,14 @@ export default async function SiswaPengajuanPage() {
 
   const createDefaults = {
     perusahaan_id: "",
+    perusahaan_nama: "",
+    perusahaan_alamat: "",
     periode_id: data.options.periode[0]?.id ?? "",
   };
   const editDefaults = {
     perusahaan_id: pengajuan?.perusahaan?.id ?? "",
+    perusahaan_nama: "",
+    perusahaan_alamat: "",
     periode_id: pengajuan?.periode?.id ?? "",
   };
 
@@ -250,8 +253,9 @@ export default async function SiswaPengajuanPage() {
             {pengajuan ? "Ajukan ulang" : "Ajukan tempat PKL"}
           </h2>
           <p className="mt-1 max-w-[60ch] text-sm leading-[22px] text-muted">
-            Pilih perusahaan dan periode PKL. Pengajuan akan disimpan sebagai
-            draft terlebih dahulu.
+            Pilih perusahaan yang sudah terdaftar atau tambahkan perusahaan
+            baru, lalu pilih periode PKL. Pengajuan disimpan sebagai draft
+            terlebih dahulu.
           </p>
 
           {hasOptions ? (
@@ -267,11 +271,7 @@ export default async function SiswaPengajuanPage() {
               <EmptyState
                 icon={CircleAlert}
                 title="Pengajuan belum bisa dibuat"
-                description={
-                  data.options.perusahaan.length
-                    ? "Belum ada periode PKL aktif. Hubungi admin sekolah."
-                    : "Belum ada perusahaan aktif. Hubungi admin sekolah."
-                }
+                description="Belum ada periode PKL aktif. Hubungi admin sekolah."
               />
             </div>
           )}

@@ -2,10 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
   createPengajuanAction,
@@ -42,6 +44,9 @@ export function PengajuanForm({
     defaultValues,
   });
   const submit = handleSubmit(onSubmit);
+  const [isNewCompany, setIsNewCompany] = useState(
+    defaultValues.perusahaan_id === "baru",
+  );
 
   async function onSubmit(values: PengajuanFormInput) {
     try {
@@ -113,7 +118,10 @@ export function PengajuanForm({
             id="perusahaan_id"
             aria-invalid={invalid("perusahaan_id")}
             aria-describedby={describedBy("perusahaan_id")}
-            {...register("perusahaan_id")}
+            {...register("perusahaan_id", {
+              onChange: (event) =>
+                setIsNewCompany(event.target.value === "baru"),
+            })}
           >
             <option value="">Pilih perusahaan</option>
             {options.perusahaan.map((perusahaan) => (
@@ -122,6 +130,7 @@ export function PengajuanForm({
                 {perusahaan.kota ? ` · ${perusahaan.kota}` : ""}
               </option>
             ))}
+            <option value="baru">Perusahaan baru…</option>
           </Select>
         </Field>
 
@@ -147,8 +156,49 @@ export function PengajuanForm({
         </Field>
       </div>
 
+      {isNewCompany ? (
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field
+            label="Nama perusahaan"
+            htmlFor="perusahaan_nama"
+            required
+            error={errors.perusahaan_nama?.message}
+          >
+            <Input
+              id="perusahaan_nama"
+              autoComplete="organization"
+              aria-invalid={invalid("perusahaan_nama")}
+              aria-describedby={describedBy("perusahaan_nama")}
+              {...register("perusahaan_nama")}
+            />
+          </Field>
+
+          <Field
+            label="Alamat perusahaan"
+            htmlFor="perusahaan_alamat"
+            required
+            hint="Dipakai di surat pengajuan."
+            error={errors.perusahaan_alamat?.message}
+          >
+            <Input
+              id="perusahaan_alamat"
+              autoComplete="street-address"
+              aria-invalid={invalid("perusahaan_alamat")}
+              aria-describedby={describedBy(
+                "perusahaan_alamat",
+                "Dipakai di surat pengajuan.",
+              )}
+              {...register("perusahaan_alamat")}
+            />
+          </Field>
+        </div>
+      ) : null}
+
       <div className="rounded-sm border border-border bg-surface-muted px-3 py-2.5 text-[13px] leading-[18px] text-muted">
         Tanggal PKL akan mengikuti periode yang dipilih.
+        {isNewCompany
+          ? " Perusahaan baru akan ditambahkan ke data master setelah draft disimpan."
+          : ""}
       </div>
 
       <div className="flex justify-end">
