@@ -52,12 +52,39 @@ export type SuratIssueOption = {
   existingSurat: { id: string; nomor: string | null } | null;
 };
 
+export type SuratUploadLetter = {
+  id: string;
+  nomor: string | null;
+  hasFile: boolean;
+};
+
 export type SuratUploadOption = {
   pengajuanId: string;
   status: StatusPengajuan;
   perusahaan: { nama: string; kota: string | null } | null;
   periode: { nama: string } | null;
   students: SuratStudent[];
+  letters: Partial<Record<JenisSurat, SuratUploadLetter>>;
+};
+
+export type SuratKelengkapanCell = {
+  jenis: JenisSurat;
+  state: "terbit" | "siap" | "terkunci";
+  surat: SuratUploadLetter | null;
+};
+
+export type SuratKelengkapanRow = {
+  pengajuanId: string;
+  status: StatusPengajuan;
+  perusahaan: { nama: string; kota: string | null } | null;
+  periode: { nama: string } | null;
+  students: SuratStudent[];
+  cells: Record<JenisSurat, SuratKelengkapanCell>;
+};
+
+export type SuratKelengkapanData = {
+  rows: SuratKelengkapanRow[];
+  total: number;
 };
 
 export type SuratPdfData = {
@@ -413,7 +440,36 @@ export const getSuratUploadOptions = cache(
     }
 
     const rows = data ?? [];
-    const members = await getMembers(rows.map((row) => row.id));
+    const applicationIds = rows.map((row) => row.id);
+    const [members, lettersResult] = await Promise.all([
+      getMembers(applicationIds),
+      applicationIds.length
+        ? admin
+            .from("surat")
+            .select("id, jenis, nomor, file_path, pengajuan_id")
+            .in("pengajuan_id", applicationIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (lettersResult.error) {
+      throw new Error("Gagal memuat surat yang sudah terbit.");
+    }
+
+    const lettersByApplication = new Map<
+      string,
+      Partial<Record<JenisSurat, SuratUploadLetter>>
+    >();
+
+    for (const letter of lettersResult.data ?? []) {
+      const letters =
+        lettersByApplication.get(letter.pengajuan_id) ?? {};
+      letters[letter.jenis] = {
+        id: letter.id,
+        nomor: letter.nomor,
+        hasFile: Boolean(letter.file_path),
+      };
+      lettersByApplication.set(letter.pengajuan_id, letters);
+    }
 
     return rows.map((row) => ({
       pengajuanId: row.id,
@@ -421,7 +477,112 @@ export const getSuratUploadOptions = cache(
       perusahaan: row.perusahaan,
       periode: row.periode,
       students: members.get(row.id) ?? [],
+      letters: lettersByApplication.get(row.id) ?? {},
     }));
+  },
+);
+
+export const getSuratKelengkapan = cache(
+  async (params: {
+    q: string;
+    status: string;
+  }): Promise<SuratKelengkapanData> => {
+    await connection();
+
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("pengajuan_pkl")
+      .select(
+        "id, status, created_at, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error) {
+      throw new Error("Gagal memuat kelengkapan surat.");
+    }
+
+    const applications = data ?? [];
+    const applicationIds = applications.map((row) => row.id);
+    const [members, lettersResult] = await Promise.all([
+      getMembers(applicationIds),
+      applicationIds.length
+        ? admin
+            .from("surat")
+            .select("id, jenis, nomor, file_path, pengajuan_id")
+            .in("pengajuan_id", applicationIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (lettersResult.error) {
+      throw new Error("Gagal memuat surat yang sudah terbit.");
+    }
+
+    const lettersByApplication = new Map<
+      string,
+      Partial<Record<JenisSurat, SuratUploadLetter>>
+    >();
+
+    for (const letter of lettersResult.data ?? []) {
+      const letters =
+        lettersByApplication.get(letter.pengajuan_id) ?? {};
+      letters[letter.jenis] = {
+        id: letter.id,
+        nomor: letter.nomor,
+        hasFile: Boolean(letter.file_path),
+      };
+      lettersByApplication.set(letter.pengajuan_id, letters);
+    }
+
+    const term = params.q.trim().toLowerCase();
+    const rows = applications
+      .map((application): SuratKelengkapanRow => {
+        const students = members.get(application.id) ?? [];
+        const letters = lettersByApplication.get(application.id) ?? {};
+        const cells = Object.fromEntries(
+          jenisSuratList.map((jenis) => {
+            const surat = letters[jenis] ?? null;
+            const state = surat
+              ? "terbit"
+              : suratEligibleStatuses[jenis].includes(application.status)
+                ? "siap"
+                : "terkunci";
+
+            return [
+              jenis,
+              {
+                jenis,
+                state,
+                surat,
+              } satisfies SuratKelengkapanCell,
+            ];
+          }),
+        ) as Record<JenisSurat, SuratKelengkapanCell>;
+
+        return {
+          pengajuanId: application.id,
+          status: application.status,
+          perusahaan: application.perusahaan,
+          periode: application.periode,
+          students,
+          cells,
+        };
+      })
+      .filter((row) => {
+        const matchesStatus =
+          !params.status || row.status === params.status;
+        const haystack = [
+          ...row.students.map((student) => student.nama),
+          ...row.students.map((student) => student.nis),
+          row.perusahaan?.nama ?? "",
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return matchesStatus && (!term || haystack.includes(term));
+      });
+
+    return { rows, total: rows.length };
   },
 );
 

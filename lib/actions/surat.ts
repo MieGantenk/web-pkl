@@ -264,7 +264,12 @@ const suratFileSchema = z.object({
   surat_id: z.string().regex(postgresUuidPattern, "Surat tidak valid."),
   file_path: z.string().trim().min(1, "Berkas tidak valid.").max(500),
   file_name: z.string().trim().min(1, "Nama berkas tidak valid.").max(255),
-  mime_type: z.enum(["application/pdf", "image/jpeg", "image/png"]),
+  mime_type: z.enum([
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/jpeg",
+    "image/png",
+  ]),
   ukuran: z
     .number()
     .int()
@@ -409,16 +414,48 @@ export async function uploadSuratForPengajuanAction(
   let suratId = existing?.id;
 
   if (!suratId) {
-    const issued = await issueSuratAction({
-      pengajuan_id: data.pengajuan_id,
-      jenis: data.jenis,
-    });
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!issued.ok) {
-      return { ok: false, message: issued.message };
+    if (!user) {
+      return { ok: false, message: "Sesi Anda berakhir. Silakan masuk lagi." };
     }
 
-    suratId = issued.id;
+    let nomor: string;
+
+    try {
+      nomor = await nextSuratNumber(data.jenis);
+    } catch (error) {
+      return {
+        ok: false,
+        message:
+          error instanceof Error ? error.message : "Nomor surat gagal dibuat.",
+      };
+    }
+
+    const inserted = await admin
+      .from("surat")
+      .insert({
+        pengajuan_id: data.pengajuan_id,
+        jenis: data.jenis,
+        nomor,
+        tanggal_terbit: jakartaToday(),
+        status: "terbit",
+        dibuat_oleh: user.id,
+      })
+      .select("id")
+      .single();
+
+    if (inserted.error) {
+      return {
+        ok: false,
+        message: "Surat belum dapat disimpan. Coba lagi.",
+      };
+    }
+
+    suratId = inserted.data.id;
   }
 
   const recorded = await recordSuratFileAction({

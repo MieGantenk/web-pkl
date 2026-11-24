@@ -345,8 +345,9 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 | SUR-03 | Pratinjau, unduh, cetak | Tombol berfungsi; print rapi |
 | SUR-04 | QR verifikasi (opsional) | URL verifikasi valid |
 | SUR-05 | Daftar surat + filter | Per siswa, jenis, status |
-| SUR-06 | Unggah berkas surat sekolah | Admin dapat mengunggah PDF/JPG/PNG; berkas muncul di role siswa |
+| SUR-06 | Unggah berkas surat sekolah | Admin dapat mengunggah PDF/DOCX/JPG/PNG; berkas muncul di role siswa |
 | SUR-07 | Daftar surat dari siswa | Dokumen unggahan siswa tampil dengan status, tautan berkas, dan tautan tinjau pengajuan |
+| SUR-08 | Kelengkapan surat per siswa | Matriks surat per pengajuan dengan status terbit, siap, dan terkunci sesuai alur PKL |
 | PNR-01 | Terbitkan surat penarikan | Hanya setelah `berlangsung` |
 | PNR-02 | Tandai selesai | Status `selesai`; data read-only |
 

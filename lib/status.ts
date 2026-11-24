@@ -150,13 +150,13 @@ export type JenisSurat =
   | "penarikan";
 
 export const jenisSuratLabel: Record<JenisSurat, string> = {
-  izin_orang_tua: "Izin Orang Tua",
-  pernyataan: "Surat Pernyataan",
-  pengajuan: "Surat Pengajuan",
-  keberangkatan: "Surat Keberangkatan",
-  tugas_monitoring: "Surat Tugas Monitoring",
-  perjanjian: "Surat Perjanjian",
-  penarikan: "Surat Penarikan",
+  izin_orang_tua: "Surat Izin Orang Tua",
+  pernyataan: "Surat Pernyataan Siswa",
+  pengajuan: "Surat Pengajuan ke Perusahaan",
+  keberangkatan: "Surat Pengantar PKL",
+  tugas_monitoring: "Surat Tugas Monitoring Guru",
+  perjanjian: "Perjanjian Kerja Sama PKL",
+  penarikan: "Surat Penarikan PKL",
 };
 
 export const jenisSuratList: readonly JenisSurat[] = [

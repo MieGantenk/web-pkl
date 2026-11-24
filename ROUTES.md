@@ -12,13 +12,13 @@ Versi 1.0 · 17 November 2026
 | Kelompok | MVP | v1.1 |
 |---|---:|---:|
 | Auth & status | 1 login + 3 halaman status | — |
-| Admin | 20 | — |
+| Admin | 21 | — |
 | Guru | 8 | — |
 | Siswa | 8 | — |
 | Instruktur | 4 | 1 |
 | Orang tua | 5 | — |
 | Print | 1 | 1 |
-| **Total halaman** | **47** | **2** |
+| **Total halaman** | **48** | **2** |
 
 Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 
@@ -37,7 +37,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 
 ---
 
-## 3. Admin — 20 halaman
+## 3. Admin — 21 halaman
 
 | Route | Halaman | Isi utama |
 |---|---|---|
@@ -57,6 +57,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/mutabaah` | Mutaba'ah | Riwayat semua siswa, filter tanggal/kelas/kelengkapan, rekap |
 | `/admin/mutabaah/pertanyaan` | Form builder | Form, versi, pertanyaan, opsi, publish/arsip |
 | `/admin/surat` | Surat sekolah | 7 jenis, terbitkan, nomor, pratinjau, unduh, unggah berkas surat |
+| `/admin/surat/kelengkapan` | Kelengkapan surat | Matriks surat per siswa, status terbit/siap/terkunci |
 | `/admin/surat/siswa` | Surat dari siswa | Dokumen unggahan siswa, filter, lihat/unduh, tinjau pengajuan |
 | `/admin/surat/print/[id]` | Cetak surat | Pratinjau A4, cetak, unduh PDF |
 | `/admin/laporan` | Laporan | Rekap periode/perusahaan/kelas, ekspor v1.1 |

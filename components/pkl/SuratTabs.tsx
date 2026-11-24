@@ -2,7 +2,11 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-export function SuratTabs({ active }: { active: "sekolah" | "siswa" }) {
+export function SuratTabs({
+  active,
+}: {
+  active: "sekolah" | "kelengkapan" | "siswa";
+}) {
   return (
     <nav
       aria-label="Bagian surat"
@@ -19,6 +23,18 @@ export function SuratTabs({ active }: { active: "sekolah" | "siswa" }) {
         )}
       >
         Surat Sekolah
+      </Link>
+      <Link
+        href="/admin/surat/kelengkapan"
+        aria-current={active === "kelengkapan" ? "page" : undefined}
+        className={cn(
+          "-mb-px inline-flex min-h-11 items-center border-b-2 px-3 text-sm font-semibold transition-colors duration-[var(--m-fast)]",
+          active === "kelengkapan"
+            ? "border-brand-700 text-brand-700"
+            : "border-transparent text-muted hover:text-ink",
+        )}
+      >
+        Kelengkapan
       </Link>
       <Link
         href="/admin/surat/siswa"
