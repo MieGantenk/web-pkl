@@ -37,6 +37,21 @@ export const studentSuratTypes: readonly JenisSurat[] = [
   "penarikan",
 ];
 
+/** Surat utama sesuai alur PKL. */
+export const alurSuratTypes: readonly JenisSurat[] = [
+  "izin_orang_tua",
+  "pengajuan",
+  "keberangkatan",
+  "tugas_monitoring",
+  "penarikan",
+];
+
+/** Surat tambahan di luar alur utama. */
+export const suratTambahanTypes: readonly JenisSurat[] = [
+  "pernyataan",
+  "perjanjian",
+];
+
 export const suratKode: Record<JenisSurat, string> = {
   izin_orang_tua: "IZIN",
   pernyataan: "PERNYATAAN",

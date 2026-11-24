@@ -22,16 +22,36 @@ import { suratEligibleStatuses } from "@/lib/surat";
 import { cn } from "@/lib/utils";
 
 const MAX_SIZE = 5 * 1024 * 1024;
-const allowedTypes = ["application/pdf", "image/jpeg", "image/png"] as const;
+const allowedTypes = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+] as const;
 const extensionByType: Record<(typeof allowedTypes)[number], string> = {
   "application/pdf": "pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    "docx",
   "image/jpeg": "jpg",
   "image/png": "png",
 };
 
-function eligibleTypes(status: SuratUploadOption["status"]) {
-  return jenisSuratList.filter((jenis) =>
-    suratEligibleStatuses[jenis].includes(status),
+function isEligibleJenis(option: SuratUploadOption, jenis: JenisSurat) {
+  return suratEligibleStatuses[jenis].includes(option.status);
+}
+
+function firstJenisFor(option: SuratUploadOption | null) {
+  if (!option) {
+    return "";
+  }
+
+  return (
+    jenisSuratList.find(
+      (jenis) =>
+        !option.letters[jenis] && isEligibleJenis(option, jenis),
+    ) ??
+    jenisSuratList.find((jenis) => Boolean(option.letters[jenis])) ??
+    jenisSuratList[0]
   );
 }
 
@@ -56,22 +76,18 @@ export function UploadSuratBaruButton({
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const firstApplication = options[0] ?? null;
-  const firstJenis = firstApplication
-    ? (eligibleTypes(firstApplication.status)[0] ?? "")
-    : "";
   const [pengajuanId, setPengajuanId] = useState(
     firstApplication?.pengajuanId ?? "",
   );
-  const [jenis, setJenis] = useState<JenisSurat | "">(firstJenis);
+  const [jenis, setJenis] = useState<JenisSurat | "">(
+    firstJenisFor(firstApplication),
+  );
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const selectedApplication =
     options.find((option) => option.pengajuanId === pengajuanId) ?? null;
-  const availableJenis = selectedApplication
-    ? eligibleTypes(selectedApplication.status)
-    : [];
 
   function chooseFile(nextFile: File | null) {
     setError(null);
@@ -86,7 +102,7 @@ export function UploadSuratBaruButton({
         nextFile.type as (typeof allowedTypes)[number],
       )
     ) {
-      setError("Gunakan berkas PDF, JPG, atau PNG.");
+      setError("Gunakan berkas PDF, DOCX, JPG, atau PNG.");
       setFile(null);
       return;
     }
@@ -101,9 +117,10 @@ export function UploadSuratBaruButton({
   }
 
   function chooseApplication(nextId: string) {
-    const next = options.find((option) => option.pengajuanId === nextId);
+    const next =
+      options.find((option) => option.pengajuanId === nextId) ?? null;
     setPengajuanId(nextId);
-    setJenis(next ? (eligibleTypes(next.status)[0] ?? "") : "");
+    setJenis(firstJenisFor(next));
     setError(null);
   }
 
@@ -250,20 +267,33 @@ export function UploadSuratBaruButton({
               onChange={(event) =>
                 setJenis(event.target.value as JenisSurat | "")
               }
-              disabled={!availableJenis.length}
             >
               <option value="">Pilih jenis surat</option>
-              {availableJenis.map((value) => (
-                <option key={value} value={value}>
-                  {jenisSuratLabel[value]}
-                </option>
-              ))}
+              {jenisSuratList.map((value) => {
+                const existing = selectedApplication?.letters[value];
+                const eligible = selectedApplication
+                  ? isEligibleJenis(selectedApplication, value)
+                  : false;
+                const suffix = existing
+                  ? ` · sudah terbit${existing.hasFile ? " · file sekolah" : ""}`
+                  : eligible
+                    ? " · siap diterbitkan"
+                    : " · belum diterbitkan";
+
+                return (
+                  <option key={value} value={value}>
+                    {jenisSuratLabel[value]}
+                    {suffix}
+                  </option>
+                );
+              })}
             </Select>
           </Field>
 
-          {pengajuanId && !availableJenis.length ? (
-            <p className="text-[13px] leading-[18px] text-warning">
-              Belum ada jenis surat yang bisa diterbitkan untuk pengajuan ini.
+          {pengajuanId ? (
+            <p className="text-[13px] leading-[18px] text-muted">
+              Mengunggah berkas tidak mengubah status pengajuan. Jenis surat
+              yang belum waktunya tetap dapat diunggah manual.
             </p>
           ) : null}
 
@@ -284,12 +314,12 @@ export function UploadSuratBaruButton({
                 {file ? file.name : "Pilih berkas"}
               </span>
               <span className="mt-1 text-[12px] leading-4 text-muted">
-                PDF, JPG, atau PNG · maksimal 5 MB
+                PDF, DOCX, JPG, atau PNG · maksimal 5 MB
               </span>
               <input
                 id="unggah-surat-baru-file"
                 type="file"
-                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                accept=".pdf,.docx,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
                 className="sr-only"
                 onChange={(event) => {
                   chooseFile(event.target.files?.[0] ?? null);

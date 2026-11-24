@@ -416,14 +416,15 @@ Verifikasi Jurnal                                  12 menunggu
 ```
 Surat
 ┌──────────────────────────────────────────────────────────────┐
-│ Tabs: Surat Sekolah · Surat dari Siswa                       │
+│ Tabs: Surat Sekolah · Kelengkapan · Surat dari Siswa         │
 ├──────────────────────────────────────────────────────────────┤
 │ Nama            Kelas    Nomor      Tanggal     Status  Aksi │
 │ Ahmad Fairuz    XI RPL   001/PKL…   12 Sep      Diterima ⋯   │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-- **Surat Sekolah**: terbitkan surat per pengajuan; admin dapat mengunggah PDF/JPG/PNG pengganti. Berkas yang diunggah tampil di role siswa.
+- **Surat Sekolah**: terbitkan surat per pengajuan; admin dapat mengunggah PDF/DOCX/JPG/PNG pengganti. Berkas yang diunggah tampil di role siswa.
+- **Kelengkapan**: matriks siswa × jenis surat. Status: terbit, siap, atau terkunci; jenis surat mengikuti alur PKL dan status pengajuan.
 - **Surat dari Siswa**: daftar dokumen unggahan siswa, filter jenis/status, lihat/unduh, dan tautan tinjau pengajuan.
 - Jenis surat menjadi filter di tab Surat Sekolah, bukan tab terpisah.
 

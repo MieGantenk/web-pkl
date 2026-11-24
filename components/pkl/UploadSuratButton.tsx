@@ -12,9 +12,16 @@ import type { JenisSurat } from "@/lib/status";
 import { cn } from "@/lib/utils";
 
 const MAX_SIZE = 5 * 1024 * 1024;
-const allowedTypes = ["application/pdf", "image/jpeg", "image/png"] as const;
+const allowedTypes = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+] as const;
 const extensionByType: Record<(typeof allowedTypes)[number], string> = {
   "application/pdf": "pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    "docx",
   "image/jpeg": "jpg",
   "image/png": "png",
 };
@@ -53,7 +60,7 @@ export function UploadSuratButton({
         nextFile.type as (typeof allowedTypes)[number],
       )
     ) {
-      setError("Gunakan berkas PDF, JPG, atau PNG.");
+      setError("Gunakan berkas PDF, DOCX, JPG, atau PNG.");
       setFile(null);
       return;
     }
@@ -172,12 +179,12 @@ export function UploadSuratButton({
             {file ? file.name : "Pilih berkas"}
           </span>
           <span className="mt-1 text-[12px] leading-4 text-muted">
-            PDF, JPG, atau PNG · maksimal 5 MB
+            PDF, DOCX, JPG, atau PNG · maksimal 5 MB
           </span>
           <input
             id={`surat-file-${suratId}`}
             type="file"
-            accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+            accept=".pdf,.docx,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
             className="sr-only"
             onChange={(event) => {
               chooseFile(event.target.files?.[0] ?? null);

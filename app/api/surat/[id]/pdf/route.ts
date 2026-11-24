@@ -52,21 +52,25 @@ export async function GET(
       const contentType =
         extension === "pdf"
           ? "application/pdf"
-          : extension === "png"
-            ? "image/png"
-            : extension === "jpg" || extension === "jpeg"
-              ? "image/jpeg"
-              : "application/octet-stream";
+          : extension === "docx"
+            ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            : extension === "png"
+              ? "image/png"
+              : extension === "jpg" || extension === "jpeg"
+                ? "image/jpeg"
+                : "application/octet-stream";
       const baseName = suratFileName(
         data.surat.jenis,
         data.surat.nomor,
       ).replace(/\.pdf$/i, "");
       const filename = `${baseName}.${extension}`;
 
+      const forceDownload = extension === "docx";
+
       return new Response(await file.arrayBuffer(), {
         headers: {
           "Content-Type": contentType,
-          "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${filename}"`,
+          "Content-Disposition": `${download || forceDownload ? "attachment" : "inline"}; filename="${filename}"`,
           "Cache-Control": "private, no-store",
         },
       });
