@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { notifyAdmins } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -506,6 +507,14 @@ export async function submitPengajuanAction(
     return { ok: false, message: "Pengajuan belum dapat dikirim. Coba lagi." };
   }
 
+  await notifyAdmins(
+    {
+      judul: "Pengajuan PKL baru",
+      pesan: "Ada pengajuan PKL baru yang menunggu verifikasi admin.",
+    },
+    "/admin/pengajuan",
+  );
+
   revalidatePengajuan();
   return { ok: true, id: current.id };
 }
@@ -819,6 +828,20 @@ export async function recordDokumenAction(
       message: "Dokumen tersimpan, tetapi status pengajuan belum berubah. Hubungi admin.",
     };
   }
+
+  await notifyAdmins(
+    {
+      judul:
+        data.jenis === "izin_orang_tua_ttd"
+          ? "Izin orang tua diunggah"
+          : "Balasan perusahaan diunggah",
+      pesan:
+        data.jenis === "izin_orang_tua_ttd"
+          ? "Dokumen izin orang tua sudah diunggah dan menunggu pemeriksaan admin."
+          : "Balasan perusahaan sudah diunggah dan menunggu pemeriksaan admin.",
+    },
+    "/admin/pengajuan",
+  );
 
   revalidatePengajuan();
   return { ok: true, id: insertResult.data.id };

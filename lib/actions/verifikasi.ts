@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { notifyPengajuan } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -140,6 +141,43 @@ export async function verifyJurnalAction(
     });
   } catch {
     // Audit log tidak boleh menggagalkan verifikasi.
+  }
+
+  if (journal.pengajuan_id) {
+    if (parsed.data.status === "diterima") {
+      await notifyPengajuan(
+        journal.pengajuan_id,
+        {
+          siswa: "/siswa/jurnal",
+          ortu: "/ortu/jurnal",
+          instruktur: "/instruktur/verifikasi",
+        },
+        {
+          judul: "Jurnal diverifikasi guru",
+          pesan:
+            "Jurnal siswa sudah diverifikasi guru dan menunggu verifikasi instruktur.",
+        },
+      );
+    } else {
+      await notifyPengajuan(
+        journal.pengajuan_id,
+        { siswa: "/siswa/jurnal", ortu: "/ortu/jurnal" },
+        {
+          judul:
+            parsed.data.status === "revisi"
+              ? "Jurnal perlu revisi"
+              : "Jurnal ditolak",
+          pesan:
+            parsed.data.status === "revisi"
+              ? catatan
+                ? `Jurnal perlu diperbaiki: ${catatan}`
+                : "Jurnal perlu diperbaiki."
+              : catatan
+                ? `Jurnal ditolak: ${catatan}`
+                : "Jurnal ditolak oleh guru pembimbing.",
+        },
+      );
+    }
   }
 
   revalidatePath("/guru/verifikasi");

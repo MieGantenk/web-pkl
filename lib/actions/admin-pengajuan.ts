@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { assertAdminAction } from "@/lib/actions/admin-guard";
+import { notifyPengajuan } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -200,6 +201,62 @@ export async function reviewPengajuanAction(
         catatan,
       },
     });
+  }
+
+  if (data.jenis === "izin") {
+    await notifyPengajuan(
+      pengajuan.id,
+      { siswa: "/siswa/pengajuan", ortu: "/ortu" },
+      data.action === "setujui"
+        ? {
+            judul: "Izin orang tua disetujui",
+            pesan:
+              "Izin orang tua sudah disetujui. Sekolah akan menerbitkan surat pengajuan PKL.",
+          }
+        : {
+            judul: "Izin orang tua perlu diperbaiki",
+            pesan: catatan
+              ? `Izin orang tua perlu diperbaiki: ${catatan}`
+              : "Izin orang tua perlu diperbaiki sebelum diproses lagi.",
+          },
+    );
+  } else if (data.action === "setujui") {
+    await notifyPengajuan(
+      pengajuan.id,
+      {
+        siswa: "/siswa",
+        ortu: "/ortu",
+        guru: "/guru/siswa",
+        instruktur: "/instruktur/siswa",
+      },
+      {
+        judul: "Pengajuan PKL diterima",
+        pesan:
+          "Pengajuan PKL sudah diterima. Sekolah akan mengatur penempatan dan pembimbing PKL.",
+      },
+    );
+  } else if (data.action === "revisi") {
+    await notifyPengajuan(
+      pengajuan.id,
+      { siswa: "/siswa/pengajuan", ortu: "/ortu" },
+      {
+        judul: "Balasan perusahaan perlu diperbaiki",
+        pesan: catatan
+          ? `Balasan perusahaan perlu diperbaiki: ${catatan}`
+          : "Balasan perusahaan perlu diperbaiki sebelum diproses lagi.",
+      },
+    );
+  } else {
+    await notifyPengajuan(
+      pengajuan.id,
+      { siswa: "/siswa/pengajuan", ortu: "/ortu" },
+      {
+        judul: "Pengajuan PKL ditolak",
+        pesan: catatan
+          ? `Pengajuan PKL ditolak: ${catatan}`
+          : "Pengajuan PKL ditolak oleh sekolah.",
+      },
+    );
   }
 
   revalidatePengajuan();

@@ -248,6 +248,7 @@ npm run build
 | Mutaba'ah siswa | Selesai (form dinamis, checklist, ring mingguan, riwayat 7 hari) |
 | Mutaba'ah orang tua | Selesai (pilih anak, ring mingguan, riwayat 7 hari) |
 | Mutaba'ah admin | Selesai (riwayat, filter, form builder, versi, publikasi, arsip) |
+| Notifikasi | Selesai (lonceng global, badge unread, tandai dibaca, tautan per role) |
 | Surat orang tua | Selesai (pilih anak, surat terbit, unduh PDF) |
 | Jurnal orang tua | Selesai (pilih anak, filter, foto, status verifikasi, read-only) |
 | Surat tugas guru | Selesai (daftar penempatan bimbingan, surat monitoring, unduh PDF) |
@@ -273,7 +274,7 @@ jalankan pada database produksi.
 
 ## 7. Langkah berikutnya
 
-1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, profil siswa, surat siswa, mutaba'ah siswa, ringkasan admin, pengelolaan data siswa + akun, penempatan admin, surat admin + cetak A4, filter otomatis, beranda orang tua, profil orang tua, surat orang tua, mutaba'ah orang tua, mutaba'ah admin, pengaturan admin, halaman guru inti + surat tugas + penarikan, halaman instruktur inti, dan dark/light mode.
+1. Selesai: fondasi, AppShell, login, role guard, beranda siswa, profil siswa, surat siswa, mutaba'ah siswa, ringkasan admin, pengelolaan data siswa + akun, penempatan admin, surat admin + cetak A4, filter otomatis, beranda orang tua, profil orang tua, surat orang tua, mutaba'ah orang tua, mutaba'ah admin, notifikasi, pengaturan admin, halaman guru inti + surat tugas + penarikan, halaman instruktur inti, dan dark/light mode.
 2. Vertical slice berikutnya: pengajuan PKL, verifikasi dokumen, dan jurnal.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Jalankan gate `design-taste-frontend` untuk halaman publik; halaman di balik auth diuji dengan Lighthouse dan review visual.

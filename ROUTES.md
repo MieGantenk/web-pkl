@@ -136,6 +136,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 |---|---|---|---|
 | `GET` | `/auth/callback` | Publik | Tukar `code` Supabase menjadi sesi |
 | `GET` | `/api/health` | Internal | Health check deployment |
+| `GET` | `/api/notifikasi` | Auth | Daftar notifikasi dan jumlah belum dibaca |
 | `GET` | `/api/surat/[id]/pdf` | Role berhak | Generate/unduh PDF surat (Node runtime) |
 | `GET` | `/api/verifikasi/surat/[kode]` | Publik | Halaman verifikasi QR (v1.1) |
 | `GET` | `/api/sertifikat/[id]/pdf` | Role berhak | Generate/unduh sertifikat (v1.1) |

@@ -6,7 +6,9 @@ import { z } from "zod";
 import { assertAdminAction } from "@/lib/actions/admin-guard";
 import { currentSuratYear } from "@/lib/data/admin-surat";
 import { jakartaToday } from "@/lib/date";
+import { notifyPengajuan } from "@/lib/notifications";
 import {
+  jenisSuratLabel,
   jenisSuratList,
   type JenisSurat,
 } from "@/lib/status";
@@ -226,6 +228,33 @@ export async function issueSuratAction(
   } catch {
     // Audit log tidak boleh menggagalkan penerbitan.
   }
+
+  const links =
+    data.jenis === "tugas_monitoring"
+      ? { guru: "/guru/surat-tugas" }
+      : data.jenis === "penarikan"
+        ? {
+            siswa: "/siswa/surat",
+            ortu: "/ortu/surat",
+            guru: "/guru/penarikan",
+            instruktur: "/instruktur/siswa",
+          }
+        : data.jenis === "keberangkatan"
+          ? {
+              siswa: "/siswa/surat",
+              ortu: "/ortu/surat",
+              guru: "/guru/siswa",
+              instruktur: "/instruktur/siswa",
+            }
+          : { siswa: "/siswa/surat", ortu: "/ortu/surat" };
+
+  await notifyPengajuan(application.id, links, {
+    judul:
+      data.jenis === "tugas_monitoring"
+        ? "Surat tugas monitoring terbit"
+        : `${jenisSuratLabel[data.jenis]} terbit`,
+    pesan: `${jenisSuratLabel[data.jenis]} dengan nomor ${nomor} sudah diterbitkan.`,
+  });
 
   revalidateSurat();
   return { ok: true, id: inserted.data.id, nomor };

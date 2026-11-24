@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { jakartaToday } from "@/lib/date";
+import { notifyUsers } from "@/lib/notifications";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { fieldErrorsFrom } from "@/lib/validators/common";
 import { saveMutabaahSchema } from "@/lib/validators/mutabaah";
@@ -380,6 +382,27 @@ export async function saveMutabaahAction(
           };
         }
       }
+    }
+  }
+
+  if (!existingEntry) {
+    try {
+      const admin = createAdminClient();
+      const { data: parents } = await admin
+        .from("orang_tua_siswa")
+        .select("pengguna_id")
+        .eq("siswa_id", session.siswaId);
+
+      await notifyUsers(
+        (parents ?? []).map((parent) => parent.pengguna_id),
+        {
+          judul: "Mutaba'ah hari ini terisi",
+          pesan: "Anak Anda sudah mengisi mutaba'ah hari ini.",
+        },
+        "/ortu/mutabaah",
+      );
+    } catch {
+      // Notifikasi tidak boleh menggagalkan penyimpanan mutaba'ah.
     }
   }
 

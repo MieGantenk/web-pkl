@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { jakartaToday } from "@/lib/date";
+import { notifyPengajuan } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { fieldErrorsFrom } from "@/lib/validators/common";
 import { createJurnalSchema } from "@/lib/validators/jurnal";
@@ -207,6 +208,18 @@ export async function createJurnalAction(
       message: "Jurnal belum dapat disimpan. Coba lagi.",
     };
   }
+
+  await notifyPengajuan(
+    placement.id,
+    {
+      guru: "/guru/verifikasi",
+      instruktur: "/instruktur/verifikasi",
+    },
+    {
+      judul: "Jurnal baru menunggu verifikasi",
+      pesan: "Siswa bimbingan mengirim jurnal harian baru.",
+    },
+  );
 
   revalidateJurnal();
   return { ok: true, id: inserted.id };

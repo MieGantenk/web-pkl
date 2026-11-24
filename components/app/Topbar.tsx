@@ -8,6 +8,7 @@ import { getPageTitle } from "@/lib/nav-utils";
 import { roleLabels, type Role } from "@/lib/navigation";
 import type { Profile } from "@/lib/profile";
 
+import { NotificationBell } from "./NotificationBell";
 import { SidebarContent } from "./SidebarContent";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -72,6 +73,7 @@ export function Topbar({
       </div>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <NotificationBell />
         <ThemeToggle />
         <div className="flex items-center gap-2.5">
           <span className="flex size-9 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700">

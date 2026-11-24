@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { assertAdminAction } from "@/lib/actions/admin-guard";
+import { notifyPengajuan } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { fieldErrorsFrom, postgresUuidPattern } from "@/lib/validators/common";
@@ -147,6 +148,20 @@ export async function updatePenempatanAction(
     return { ok: false, message: "Penempatan belum dapat disimpan. Coba lagi." };
   }
 
+  await notifyPengajuan(
+    application.id,
+    {
+      siswa: "/siswa",
+      ortu: "/ortu",
+      guru: "/guru/siswa",
+      instruktur: "/instruktur/siswa",
+    },
+    {
+      judul: "Penempatan PKL diperbarui",
+      pesan: "Admin memperbarui data penempatan dan pembimbing PKL.",
+    },
+  );
+
   revalidatePenempatan();
   return { ok: true, message: "Data penempatan diperbarui." };
 }
@@ -243,6 +258,20 @@ export async function startPklAction(
   } catch {
     // Audit log tidak boleh menggagalkan proses utama.
   }
+
+  await notifyPengajuan(
+    application.id,
+    {
+      siswa: "/siswa/jurnal",
+      ortu: "/ortu/jurnal",
+      guru: "/guru/siswa",
+      instruktur: "/instruktur/siswa",
+    },
+    {
+      judul: "PKL dimulai",
+      pesan: "PKL sudah dimulai. Jurnal harian siswa sudah aktif.",
+    },
+  );
 
   revalidatePenempatan();
   return { ok: true, message: "PKL dimulai. Jurnal siswa sudah aktif." };
