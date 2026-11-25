@@ -106,3 +106,19 @@ Jalankan `npm run seed:demo` lebih dulu, lalu gunakan akun berikut:
 | Instruktur | `instruktur.mitra` | `instruktur.mitra@example.com` | `DemoPKL2026!` |
 | Instruktur | `instruktur.karya` | `instruktur.karya@example.com` | `DemoPKL2026!` |
 | Orang tua | `ortu` | `ortu.demo@example.com` | `DemoPKL2026!` |
+
+### Simulasi notifikasi
+
+Buat contoh notifikasi untuk semua akun demo:
+
+```bash
+npm run notif:test
+```
+
+Hapus kembali notifikasi simulasi:
+
+```bash
+npm run notif:clear
+```
+
+Notifikasi simulasi memakai awalan `[SIMULASI]` agar mudah dibedakan dan dibersihkan.

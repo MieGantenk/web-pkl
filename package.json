@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:demo": "node scripts/seed-demo.mjs"
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "notif:test": "node scripts/simulate-notifikasi.mjs",
+    "notif:clear": "node scripts/simulate-notifikasi.mjs --clear"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.7",
