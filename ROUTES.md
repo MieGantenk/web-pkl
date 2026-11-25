@@ -147,6 +147,7 @@ Catatan:
 
 - Supabase REST (`/rest/v1/...`) **tidak** dipakai langsung oleh client. Semua baca/tulis lewat Server Component, Server Action, atau Route Handler + RLS.
 - Semua route `(app)` wajib cek sesi + role di server.
+- API mutasi (`POST`/`PUT`/`PATCH`/`DELETE`) wajib memakai `verifyCsrfAndOrigin`; client memakai `fetchWithCsrf`. Detail di `SECURITY.md`. Route `GET` tidak perlu token.
 - PDF memakai `@react-pdf/renderer` dan `export const runtime = "nodejs"`.
 - Login dengan username: cari email lewat service role di server, lalu `signInWithPassword`. Jangan ekspos email ke client.
 

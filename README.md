@@ -19,6 +19,7 @@ Stack: Next.js App Router + TypeScript + Tailwind CSS + Supabase.
 | [`LAYOUT.md`](./LAYOUT.md) | App shell, halaman, responsif, route Next.js | Sebelum membuat halaman |
 | [`ANIMATION.md`](./ANIMATION.md) | Gerak, durasi, momen, implementasi `motion` | Sebelum menambah animasi |
 | [`ROUTES.md`](./ROUTES.md) | Daftar halaman, endpoint, Server Actions | Sebelum membuat route/action |
+| [`SECURITY.md`](./SECURITY.md) | CSRF API mutasi, same-origin, security headers | Sebelum membuat API mutasi |
 | [`STRUCTURE.md`](./STRUCTURE.md) | Struktur folder & status proyek | Sebelum menulis kode |
 | [`AGENTS.md`](./AGENTS.md) | Aturan kerja AI agent/developer | Sebelum menulis kode |
 
