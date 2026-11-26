@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { updateSchoolSettingsAction } from "@/lib/actions/school-settings";
+import { compressImage } from "@/lib/image-compression";
 import {
   jenisSuratLabel,
   jenisSuratList,
@@ -257,6 +258,27 @@ export function SchoolSettingsForm({
     formData.set("akreditasi", values.akreditasi ?? "");
     formData.set("format_nomor_surat", values.format_nomor_surat);
     formData.set("penomoran", JSON.stringify(values.penomoran));
+
+    try {
+      for (const name of ["logo", "kop", "footer"] as const) {
+        const entry = formData.get(name);
+
+        if (entry instanceof File && entry.size > 0) {
+          formData.set(
+            name,
+            await compressImage(entry, {
+              maxSizeMB: 2,
+              maxWidthOrHeight: 2400,
+            }),
+          );
+        }
+      }
+    } catch {
+      toast.error(
+        "Gambar belum dapat diproses. Pilih gambar lain lalu coba lagi.",
+      );
+      return;
+    }
 
     const result = await updateSchoolSettingsAction(formData);
 

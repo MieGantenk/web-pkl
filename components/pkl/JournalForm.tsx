@@ -13,6 +13,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createJurnalAction } from "@/lib/actions/jurnal";
+import { compressImage } from "@/lib/image-compression";
 import { createClient } from "@/lib/supabase/client";
 import { jurnalFormSchema, type JurnalFormInput } from "@/lib/validators/jurnal";
 import { cn } from "@/lib/utils";
@@ -107,15 +108,7 @@ export function JournalForm({
     setProcessingPhoto(true);
 
     try {
-      const { default: imageCompression } = await import(
-        "browser-image-compression"
-      );
-      const compressed = await imageCompression(file, {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1600,
-        useWebWorker: true,
-        initialQuality: 0.82,
-      });
+      const compressed = await compressImage(file);
 
       if (compressed.size > MAX_UPLOAD) {
         setPhotoError("Foto masih terlalu besar. Pilih foto lain.");
