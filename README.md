@@ -119,11 +119,13 @@ mengembalikan kata sandi demo ke nilai di tabel, jalankan
 | Peran | ID / username | Email | Kata sandi |
 |---|---|---|---|
 | Admin | `admin` | `admin.demo@example.com` | `DemoPKL2026!` |
-| Siswa | `20240001` | `siswa.demo@example.com` | `DemoPKL2026!` |
-| Guru | `guru.sandi` | `guru.sandi@example.com` | `DemoPKL2026!` |
 | Instruktur | `instruktur.mitra` | `instruktur.mitra@example.com` | `DemoPKL2026!` |
 | Instruktur | `instruktur.karya` | `instruktur.karya@example.com` | `DemoPKL2026!` |
 | Orang tua | `ortu` | `ortu.demo@example.com` | `DemoPKL2026!` |
+
+Akun demo siswa/guru lama sudah dihapus. Menjalankan `seed:demo`
+akan membuatnya kembali; jangan jalankan seed jika akun lama tidak
+diinginkan.
 
 ### Simulasi notifikasi
 

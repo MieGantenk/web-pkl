@@ -259,10 +259,9 @@ npm run build
 | Halaman modul lain | Belum diisi (bertahap) |
 
 Data demo pengembangan: `npm run seed:demo` membuat akun admin `admin`,
-siswa `20240001`, guru `guru.sandi`, instruktur `instruktur.mitra` dan
-`instruktur.karya`, serta orang tua `ortu` beserta contoh siswa, guru,
-perusahaan, pengajuan, jurnal, mutaba'ah, tugas, dan log aktivitas. Jangan
-jalankan pada database produksi.
+instruktur `instruktur.mitra` dan `instruktur.karya`, serta orang tua `ortu`
+beserta contoh data. Akun demo siswa/guru lama sudah dihapus; seed akan
+membuatnya kembali jika dijalankan. Jangan jalankan pada database produksi.
 
 ### Known advisors
 
