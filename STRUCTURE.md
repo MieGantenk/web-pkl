@@ -255,6 +255,8 @@ npm run build
 | Surat tugas guru | Selesai (daftar penempatan bimbingan, surat monitoring, unduh PDF) |
 | Penarikan guru | Selesai (daftar penempatan berjalan, surat penarikan, unduh PDF) |
 | Filter otomatis | Selesai (pilihan filter langsung memuat hasil) |
+| Laporan admin | Selesai (rekap periode/perusahaan/kelas, ringkasan, rincian siswa, ekspor CSV) |
+| Audit admin | Selesai (log aksi, filter pengguna/aksi/entitas/tanggal, detail) |
 | Dark/light mode | Selesai (toggle global, preferensi tersimpan per perangkat) |
 | Halaman modul lain | Belum diisi (bertahap) |
 
