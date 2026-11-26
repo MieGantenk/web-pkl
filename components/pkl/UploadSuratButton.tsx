@@ -7,11 +7,13 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { recordSuratFileAction } from "@/lib/actions/surat";
+import { compressImage } from "@/lib/image-compression";
 import { createClient } from "@/lib/supabase/client";
 import type { JenisSurat } from "@/lib/status";
 import { cn } from "@/lib/utils";
 
 const MAX_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 15 * 1024 * 1024;
 const allowedTypes = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -45,9 +47,10 @@ export function UploadSuratButton({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  function chooseFile(nextFile: File | null) {
+  async function chooseFile(nextFile: File | null) {
     setError(null);
 
     if (!nextFile) {
@@ -65,16 +68,44 @@ export function UploadSuratButton({
       return;
     }
 
-    if (nextFile.size > MAX_SIZE) {
-      setError("Ukuran berkas maksimal 5 MB. Kompres atau pilih berkas lain.");
+    const isImage = nextFile.type.startsWith("image/");
+    const maxOriginal = isImage ? MAX_IMAGE_SIZE : MAX_SIZE;
+
+    if (nextFile.size > maxOriginal) {
+      setError(
+        isImage
+          ? "Ukuran foto asli maksimal 15 MB."
+          : "Ukuran berkas maksimal 5 MB.",
+      );
       setFile(null);
       return;
     }
 
-    setFile(nextFile);
+    setProcessing(true);
+
+    try {
+      const compressed = await compressImage(nextFile);
+
+      if (compressed.size > MAX_SIZE) {
+        setError("Berkas masih terlalu besar setelah dikompres. Pilih berkas lain.");
+        setFile(null);
+        return;
+      }
+
+      setFile(compressed);
+    } catch {
+      setError("Berkas belum dapat diproses. Pilih berkas lain.");
+      setFile(null);
+    } finally {
+      setProcessing(false);
+    }
   }
 
   async function upload() {
+    if (processing || uploading) {
+      return;
+    }
+
     if (!file) {
       setError("Pilih berkas terlebih dahulu.");
       return;
@@ -179,21 +210,26 @@ export function UploadSuratButton({
             {file ? file.name : "Pilih berkas"}
           </span>
           <span className="mt-1 text-[12px] leading-4 text-muted">
-            PDF, DOCX, JPG, atau PNG · maksimal 5 MB
+            PDF/DOCX maksimal 5 MB · JPG/PNG dikompres otomatis
           </span>
           <input
             id={`surat-file-${suratId}`}
             type="file"
             accept=".pdf,.docx,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
             className="sr-only"
+            disabled={processing || uploading}
             onChange={(event) => {
-              chooseFile(event.target.files?.[0] ?? null);
+              void chooseFile(event.target.files?.[0] ?? null);
               event.target.value = "";
             }}
           />
         </label>
 
-        {file ? (
+        {processing ? (
+          <p aria-live="polite" className="mt-2 text-[12px] leading-4 text-muted">
+            Mengompres gambar…
+          </p>
+        ) : file ? (
           <p className="mt-2 text-[12px] leading-4 text-muted tabular-nums">
             {Math.max(1, Math.round(file.size / 1024))} KB
           </p>
@@ -213,7 +249,7 @@ export function UploadSuratButton({
             type="button"
             variant="secondary"
             onClick={() => dialogRef.current?.close()}
-            disabled={uploading}
+            disabled={uploading || processing}
           >
             Batal
           </Button>
@@ -221,7 +257,7 @@ export function UploadSuratButton({
             type="button"
             onClick={upload}
             loading={uploading}
-            disabled={!file || uploading}
+            disabled={!file || uploading || processing}
           >
             Unggah surat
           </Button>

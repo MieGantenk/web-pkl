@@ -8,7 +8,7 @@ Versi 1.1 · 16 November 2026
 **Catatan verifikasi:** file `TECH_STACK.md` yang ada sudah sesuai arah proyek — tidak ada Prisma, NextAuth, Firebase, Redux, Express, atau MongoDB. Yang ditambahkan di versi ini hanya:
 - `motion` untuk animasi (kebutuhan baru, diatur di `ANIMATION.md`),
 - `@hookform/resolvers` sebagai penghubung resmi React Hook Form + Zod,
-- `browser-image-compression` (opsional) untuk kompresi foto jurnal sebelum upload.
+- `browser-image-compression` untuk kompresi gambar sebelum upload (jurnal, dokumen pengajuan, surat, aset sekolah).
 
 Tidak ada teknologi di luar pembicaraan proyek yang dimasukkan.
 
@@ -58,7 +58,7 @@ Jangan membuat database, autentikasi, atau penyimpanan file kedua jika Supabase 
 | PDF | `@react-pdf/renderer` | Surat & sertifikat |
 | QR Code | `qrcode` | Verifikasi surat (opsional) |
 | Animasi | `motion` | Hanya 5 kasus di `ANIMATION.md` |
-| Kompresi foto | `browser-image-compression` | Opsional; foto jurnal sebelum upload |
+| Kompresi gambar | `browser-image-compression` | Sebelum upload gambar ke Storage |
 | CLI | `supabase` (dev) | Migrasi & generate tipe |
 
 Catatan:
@@ -177,7 +177,7 @@ Role:
 | Tugas sekolah | Tabel `tugas` + `tugas_siswa` + form |
 | Toast | Sonner |
 | Animasi | CSS transition + `motion` |
-| Kompresi foto | `browser-image-compression` (opsional) |
+| Kompresi gambar | `browser-image-compression` |
 | Mutaba'ah | Form builder + `mutabaah_form` / `mutabaah_pertanyaan` / `mutabaah_opsi` + jawaban dinamis |
 
 Catatan: builder pertanyaan memakai tombol naik/turun, bukan library drag-and-drop. Tidak ada dependency baru untuk fitur ini.
@@ -395,7 +395,7 @@ Jika instruksi lain bertentangan dengan dokumen ini, jangan menebak — jelaskan
 - **PDF:** `@react-pdf/renderer`
 - **QR:** `qrcode` (opsional)
 - **Animasi:** CSS transition + `motion`
-- **Kompresi foto:** `browser-image-compression` (opsional)
+- **Kompresi gambar:** `browser-image-compression`
 - **CLI:** Supabase CLI
 - **Deployment:** Vercel + Supabase
 

@@ -7,10 +7,12 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { recordDokumenAction } from "@/lib/actions/pengajuan";
+import { compressImage } from "@/lib/image-compression";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const MAX_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 15 * 1024 * 1024;
 const allowedTypes = ["application/pdf", "image/jpeg", "image/png"] as const;
 const extensionByType: Record<(typeof allowedTypes)[number], string> = {
   "application/pdf": "pdf",
@@ -32,10 +34,11 @@ export function PengajuanUpload({
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const inputId = `dokumen-${jenis}`;
 
-  function chooseFile(nextFile: File | null) {
+  async function chooseFile(nextFile: File | null) {
     setError(null);
 
     if (!nextFile) {
@@ -53,16 +56,44 @@ export function PengajuanUpload({
       return;
     }
 
-    if (nextFile.size > MAX_SIZE) {
-      setError("Ukuran berkas maksimal 5 MB. Kompres atau pilih berkas lain.");
+    const isImage = nextFile.type.startsWith("image/");
+    const maxOriginal = isImage ? MAX_IMAGE_SIZE : MAX_SIZE;
+
+    if (nextFile.size > maxOriginal) {
+      setError(
+        isImage
+          ? "Ukuran foto asli maksimal 15 MB."
+          : "Ukuran berkas maksimal 5 MB.",
+      );
       setFile(null);
       return;
     }
 
-    setFile(nextFile);
+    setProcessing(true);
+
+    try {
+      const compressed = await compressImage(nextFile);
+
+      if (compressed.size > MAX_SIZE) {
+        setError("Berkas masih terlalu besar setelah dikompres. Pilih berkas lain.");
+        setFile(null);
+        return;
+      }
+
+      setFile(compressed);
+    } catch {
+      setError("Berkas belum dapat diproses. Pilih berkas lain.");
+      setFile(null);
+    } finally {
+      setProcessing(false);
+    }
   }
 
   async function upload() {
+    if (processing || uploading) {
+      return;
+    }
+
     if (!file) {
       setError("Pilih berkas terlebih dahulu.");
       return;
@@ -136,21 +167,26 @@ export function PengajuanUpload({
           {file ? file.name : "Pilih berkas"}
         </span>
         <span className="mt-1 text-[12px] leading-4 text-muted">
-          PDF, JPG, atau PNG · maksimal 5 MB
+          PDF maksimal 5 MB · JPG/PNG dikompres otomatis
         </span>
         <input
           id={inputId}
           type="file"
           accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
           className="sr-only"
+          disabled={processing || uploading}
           onChange={(event) => {
-            chooseFile(event.target.files?.[0] ?? null);
+            void chooseFile(event.target.files?.[0] ?? null);
             event.target.value = "";
           }}
         />
       </label>
 
-      {file ? (
+      {processing ? (
+        <p aria-live="polite" className="mt-2 text-[12px] leading-4 text-muted">
+          Mengompres gambar…
+        </p>
+      ) : file ? (
         <p className="mt-2 text-[12px] leading-4 text-muted tabular-nums">
           {Math.max(1, Math.round(file.size / 1024))} KB
         </p>
@@ -170,7 +206,7 @@ export function PengajuanUpload({
           type="button"
           onClick={upload}
           loading={uploading}
-          disabled={!file}
+          disabled={!file || processing}
         >
           Unggah dokumen
         </Button>
