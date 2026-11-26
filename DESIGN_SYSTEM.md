@@ -60,6 +60,9 @@ Stack acuan: Next.js (App Router) · Tailwind CSS v4 · shadcn/ui · Lucide · `
 | `sidebar-muted` | `#8FB3AE` | Label grup, ikon nonaktif |
 | `sidebar-line` | `#1C4A46` | Garis pemisah |
 
+Item aktif memakai pill `sidebar-text` dengan teks `sidebar`. Brand dan footer
+memakai kartu kaca: border putih transparan, gradient tipis, dan aksen gold.
+
 ### 1.4 Gold (dari logo)
 
 | Token | Hex | Kontras | Pakai |
@@ -503,10 +506,11 @@ Contoh: "Belum ada jurnal hari ini. Isi jurnal sebelum pukul 23.59." + tombol "I
 
 ### 8.21 AppShell nav item
 
-- Tinggi 44; padding 10×12; radius 8; gap 12.
-- Default: teks `sidebar-muted`; hover: latar `sidebar-hover`, teks putih.
-- Aktif: latar `sidebar-active`, teks putih, indikator gold 3 px di kiri.
-- Ikon 20 px.
+- Tinggi 44; padding 8; radius 16; gap 12.
+- Default: teks `sidebar-muted`; hover: latar putih transparan, teks putih.
+- Aktif: pill `sidebar-text`, teks `sidebar`, indikator gold 3 px di kiri.
+- Ikon 18 px di dalam tile 32 px.
+- Brand: kapsul kaca dengan logo sekolah. Footer: kartu kaca dengan avatar gold.
 - Indikator aktif meluncur 240 ms (`layoutId`).
 
 ### 8.22 Question builder (mutaba'ah)

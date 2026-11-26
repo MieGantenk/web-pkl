@@ -83,12 +83,13 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 **Sidebar:**
 
 - Latar `#0B2F2D`; teks `#EAF4F2`; label grup `#8FB3AE` 11/16 600 (tracking 0,04em).
-- Item 44 px, radius 8, ikon 20, gap 12.
-- Aktif: latar `#14524E`, indikator gold 3 px di kiri, teks putih.
-- Hover: latar `#123D3A`.
+- Brand: kapsul kaca di atas berisi logo sekolah, nama sekolah, dan "Sistem PKL".
+- Item 44 px, radius 16, ikon 18 di dalam tile 32, gap 12.
+- Aktif: pill terang `#EAF4F2`, teks `#0B2F2D`, indikator gold 3 px di kiri.
+- Hover: latar putih transparan.
 - Submenu dibuka dengan chevron; maksimal satu submenu terbuka.
 - Collapse: tombol di bawah; label hilang, ikon tetap; tooltip saat hover.
-- Footer sidebar: kartu kecil berisi nama role + tombol keluar.
+- Footer sidebar: kartu kaca berisi avatar gold, nama, role, dan tombol keluar.
 
 **Topbar:**
 
