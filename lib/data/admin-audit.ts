@@ -30,6 +30,7 @@ export type AuditRow = {
   detail: Json | null;
   createdAt: string;
   pengguna: AuditUser | null;
+  target: AuditUser | null;
 };
 
 export type AuditListResult = {
@@ -46,6 +47,24 @@ export type AuditListResult = {
     actions: number;
   };
 };
+
+type RawAuditRow = {
+  id: string;
+  aksi: string;
+  entitas: string;
+  entitas_id: string | null;
+  detail: Json | null;
+  created_at: string;
+  pengguna: {
+    id: string;
+    nama_lengkap: string;
+    username: string;
+    peran: string;
+  } | null;
+};
+
+const logSelect =
+  "id, aksi, entitas, entitas_id, detail, created_at, pengguna:pengguna_id(id, nama_lengkap, username, peran)";
 
 export function normalizeAuditDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -70,6 +89,76 @@ function dayEnd(value: string) {
 
 function cleanSearch(value: string) {
   return value.replace(/[%_,()]/g, " ").trim();
+}
+
+function mapUser(row: RawAuditRow["pengguna"]): AuditUser | null {
+  return row
+    ? {
+        id: row.id,
+        nama: row.nama_lengkap,
+        username: row.username,
+        peran: row.peran,
+      }
+    : null;
+}
+
+async function loadTargets(
+  admin: ReturnType<typeof createAdminClient>,
+  rows: RawAuditRow[],
+) {
+  const ids = Array.from(
+    new Set(
+      rows
+        .filter(
+          (row) => row.entitas === "pengguna" && Boolean(row.entitas_id),
+        )
+        .map((row) => row.entitas_id as string),
+    ),
+  );
+  const targets = new Map<string, AuditUser>();
+
+  if (!ids.length) {
+    return targets;
+  }
+
+  const { data, error } = await admin
+    .from("pengguna")
+    .select("id, nama_lengkap, username, peran")
+    .in("id", ids);
+
+  if (error) {
+    throw new Error("Gagal memuat akun target audit.");
+  }
+
+  for (const user of data ?? []) {
+    targets.set(user.id, {
+      id: user.id,
+      nama: user.nama_lengkap,
+      username: user.username,
+      peran: user.peran,
+    });
+  }
+
+  return targets;
+}
+
+function mapRow(
+  row: RawAuditRow,
+  targets: Map<string, AuditUser>,
+): AuditRow {
+  return {
+    id: row.id,
+    aksi: row.aksi,
+    entitas: row.entitas,
+    entitasId: row.entitas_id,
+    detail: row.detail,
+    createdAt: row.created_at,
+    pengguna: mapUser(row.pengguna),
+    target:
+      row.entitas === "pengguna" && row.entitas_id
+        ? (targets.get(row.entitas_id) ?? null)
+        : null,
+  };
 }
 
 export async function getAuditList(
@@ -147,10 +236,7 @@ export async function getAuditList(
 
   let query = admin
     .from("log_aktivitas")
-    .select(
-      "id, aksi, entitas, entitas_id, detail, created_at, pengguna:pengguna_id(id, nama_lengkap, username, peran)",
-      { count: "exact" },
-    )
+    .select(logSelect, { count: "exact" })
     .order("created_at", { ascending: false })
     .range((page - 1) * pageSize, page * pageSize - 1);
 
@@ -180,25 +266,12 @@ export async function getAuditList(
     throw new Error("Gagal memuat log audit.");
   }
 
+  const rows = (data ?? []) as RawAuditRow[];
+  const targets = await loadTargets(admin, rows);
   const total = count ?? 0;
 
   return {
-    rows: (data ?? []).map((row) => ({
-      id: row.id,
-      aksi: row.aksi,
-      entitas: row.entitas,
-      entitasId: row.entitas_id,
-      detail: row.detail,
-      createdAt: row.created_at,
-      pengguna: row.pengguna
-        ? {
-            id: row.pengguna.id,
-            nama: row.pengguna.nama_lengkap,
-            username: row.pengguna.username,
-            peran: row.pengguna.peran,
-          }
-        : null,
-    })),
+    rows: rows.map((row) => mapRow(row, targets)),
     total,
     page,
     pageSize,
@@ -207,4 +280,30 @@ export async function getAuditList(
     entitasOptions,
     stats,
   };
+}
+
+export async function getAuditDetail(
+  id: string,
+): Promise<AuditRow | null> {
+  await connection();
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("log_aktivitas")
+    .select(logSelect)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Gagal memuat detail audit.");
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const row = data as RawAuditRow;
+  const targets = await loadTargets(admin, [row]);
+
+  return mapRow(row, targets);
 }

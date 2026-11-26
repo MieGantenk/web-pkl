@@ -121,6 +121,16 @@ const detailLabels: Record<string, string> = {
   status_sesudah: "Status sesudah",
 };
 
+const passwordActions = new Set([
+  "atur_ulang_kata_sandi",
+  "reset_sandi_mandiri",
+  "ganti_kata_sandi",
+]);
+
+export function isPasswordAuditAction(action: string) {
+  return passwordActions.has(action);
+}
+
 export function getAuditActionMeta(action: string): AuditActionMeta {
   return (
     actions[action] ?? {

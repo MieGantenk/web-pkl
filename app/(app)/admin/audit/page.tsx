@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { History, Search, ShieldCheck } from "lucide-react";
+import { History, KeyRound, Search, ShieldCheck } from "lucide-react";
 
+import { AccountPasswordPanel } from "@/components/pkl/AccountPasswordPanel";
 import { EmptyState } from "@/components/pkl/EmptyState";
 import { FilterForm } from "@/components/pkl/FilterForm";
 import { StatusBadge } from "@/components/pkl/StatusBadge";
@@ -13,11 +14,18 @@ import {
   getAuditDetailLabel,
   getAuditActionMeta,
   getAuditEntityLabel,
+  isPasswordAuditAction,
 } from "@/lib/audit";
 import { requireRole } from "@/lib/auth";
-import { getAuditList, normalizeAuditDate } from "@/lib/data/admin-audit";
+import {
+  getAuditDetail,
+  getAuditList,
+  normalizeAuditDate,
+  type AuditRow,
+} from "@/lib/data/admin-audit";
 import { roleLabels, type Role } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { postgresUuidPattern } from "@/lib/validators/common";
 import type { Json } from "@/types/database";
 
 export const metadata: Metadata = {
@@ -61,35 +69,203 @@ function detailEntries(detail: Json | null) {
   return Object.entries(detail);
 }
 
-function AuditDetails({ detail }: { detail: Json | null }) {
-  const entries = detailEntries(detail);
+const sensitiveDetailPattern = /(password|sandi|token|secret)/i;
 
-  if (!entries.length) {
-    return <span className="text-[13px] text-muted">—</span>;
-  }
+function isSensitiveDetailKey(key: string) {
+  return sensitiveDetailPattern.test(key);
+}
+
+function roleLabel(value: string | null | undefined) {
+  return value
+    ? (roleLabels[value as Role] ?? value)
+    : "Sistem";
+}
+
+function AuditDetailPanel({
+  row,
+  closeHref,
+}: {
+  row: AuditRow;
+  closeHref: string;
+}) {
+  const meta = getAuditActionMeta(row.aksi);
+  const entries = detailEntries(row.detail);
+  const passwordAction = isPasswordAuditAction(row.aksi);
 
   return (
-    <details className="group">
-      <summary className="cursor-pointer list-none text-[12px] font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline">
-        <span className="group-open:hidden">Lihat detail</span>
-        <span className="hidden group-open:inline">Tutup</span>
-      </summary>
-      <dl className="mt-2 grid gap-1.5 rounded-sm border border-border bg-surface-muted p-2.5 text-[12px]">
-        {entries.map(([key, value]) => (
-          <div
-            key={key}
-            className="grid gap-0.5 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-2"
-          >
-            <dt className="font-medium text-muted">
-              {getAuditDetailLabel(key)}
-            </dt>
-            <dd className="break-words text-ink-soft">
-              {displayValue(value)}
-            </dd>
+    <section
+      id="log-detail"
+      className="mt-4 scroll-mt-24 overflow-hidden rounded-md border border-border bg-surface shadow-xs"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium text-muted">Detail log</p>
+          <div className="mt-1.5">
+            <StatusBadge
+              label={meta.label}
+              tone={meta.tone}
+              icon={meta.icon}
+            />
           </div>
-        ))}
-      </dl>
-    </details>
+          <p className="mt-1.5 text-[13px] leading-[18px] text-muted">
+            {formatDateTime(row.createdAt)}
+          </p>
+        </div>
+
+        <Link
+          href={closeHref}
+          prefetch={false}
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "sm" }),
+            "shrink-0",
+          )}
+        >
+          Tutup detail
+        </Link>
+      </div>
+
+      <div
+        className={cn(
+          "grid gap-5 p-4 sm:p-5",
+          passwordAction &&
+            "lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]",
+        )}
+      >
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-ink">Ringkasan</h2>
+
+          <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div>
+              <dt className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
+                Pelaku
+              </dt>
+              <dd className="mt-1 text-[13px] leading-5 text-ink">
+                {row.pengguna ? (
+                  <>
+                    <span className="font-medium">{row.pengguna.nama}</span>
+                    <span className="block text-[12px] text-muted">
+                      @{row.pengguna.username} ·{" "}
+                      {roleLabel(row.pengguna.peran)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="font-medium">Sistem</span>
+                )}
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
+                Waktu
+              </dt>
+              <dd className="mt-1 text-[13px] leading-5 text-ink">
+                {formatDateTime(row.createdAt)}
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
+                Entitas
+              </dt>
+              <dd className="mt-1 text-[13px] leading-5 text-ink">
+                {getAuditEntityLabel(row.entitas)}
+                <span className="mt-0.5 block break-all font-mono text-[11px] text-muted">
+                  {row.entitasId ?? "—"}
+                </span>
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
+                Akun target
+              </dt>
+              <dd className="mt-1 text-[13px] leading-5 text-ink">
+                {row.target ? (
+                  <>
+                    <span className="font-medium">{row.target.nama}</span>
+                    <span className="block text-[12px] text-muted">
+                      @{row.target.username} ·{" "}
+                      {roleLabel(row.target.peran)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-muted">Tidak ada akun target</span>
+                )}
+              </dd>
+            </div>
+          </dl>
+
+          <div className="mt-5 border-t border-border pt-4">
+            <h3 className="text-sm font-semibold text-ink">
+              Detail teknis
+            </h3>
+
+            {entries.length ? (
+              <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                {entries.map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="rounded-sm border border-border bg-surface-muted px-3 py-2"
+                  >
+                    <dt className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
+                      {getAuditDetailLabel(key)}
+                    </dt>
+                    <dd className="mt-1 break-words text-[13px] leading-5 text-ink-soft">
+                      {isSensitiveDetailKey(key)
+                        ? "Tidak ditampilkan (data sensitif)"
+                        : displayValue(value)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="mt-2 text-[13px] leading-5 text-muted">
+                Log ini tidak menyimpan detail tambahan.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {passwordAction ? (
+          <div className="min-w-0">
+            <div className="rounded-sm border border-info-border bg-info-bg px-3 py-3 text-[13px] leading-5 text-info">
+              <div className="flex gap-2">
+                <KeyRound
+                  className="mt-0.5 size-4 shrink-0"
+                  strokeWidth={1.75}
+                  aria-hidden
+                />
+                <div>
+                  <p className="font-semibold">
+                    Kata sandi tidak dapat ditampilkan
+                  </p>
+                  <p className="mt-1">
+                    Supabase Auth menyimpan kata sandi sebagai hash. Kata sandi
+                    lama dan baru tidak dapat dibaca, termasuk oleh admin.
+                    Gunakan panel di bawah untuk membuat kata sandi baru.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {row.target ? (
+              <div className="mt-4">
+                <AccountPasswordPanel
+                  penggunaId={row.target.id}
+                  nama={row.target.nama}
+                  username={row.target.username}
+                />
+              </div>
+            ) : (
+              <p className="mt-4 rounded-sm border border-warning-border bg-warning-bg px-3 py-2.5 text-[13px] leading-[18px] text-warning">
+                Akun target tidak ditemukan. Kata sandi tidak dapat direset
+                dari log ini.
+              </p>
+            )}
+          </div>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
@@ -100,6 +276,7 @@ type SearchParams = Promise<{
   dari?: string;
   sampai?: string;
   page?: string;
+  log?: string;
 }>;
 
 export default async function AdminAuditPage({
@@ -122,20 +299,30 @@ export default async function AdminAuditPage({
       ? normalizeAuditDate(params.sampai)
       : "";
   const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
+  const selectedId =
+    typeof params.log === "string" && postgresUuidPattern.test(params.log)
+      ? params.log
+      : "";
 
-  const data = await getAuditList({ q, aksi, entitas, dari, sampai, page });
+  const [data, selected] = await Promise.all([
+    getAuditList({ q, aksi, entitas, dari, sampai, page }),
+    selectedId ? getAuditDetail(selectedId) : Promise.resolve(null),
+  ]);
   const hasFilter = Boolean(q || aksi || entitas || dari || sampai);
   const from = data.total === 0 ? 0 : (data.page - 1) * data.pageSize + 1;
   const to = Math.min(data.page * data.pageSize, data.total);
 
-  function auditHref(targetPage: number) {
+  function auditHref(overrides: { page?: number; log?: string } = {}) {
     const next = new URLSearchParams();
     if (q) next.set("q", q);
     if (aksi) next.set("aksi", aksi);
     if (entitas) next.set("entitas", entitas);
     if (dari) next.set("dari", dari);
     if (sampai) next.set("sampai", sampai);
+
+    const targetPage = overrides.page ?? page;
     if (targetPage > 1) next.set("page", String(targetPage));
+    if (overrides.log) next.set("log", overrides.log);
 
     const query = next.toString();
     return query ? `/admin/audit?${query}` : "/admin/audit";
@@ -264,6 +451,26 @@ export default async function AdminAuditPage({
         </p>
       ) : null}
 
+      {selected ? (
+        <AuditDetailPanel row={selected} closeHref={auditHref()} />
+      ) : selectedId ? (
+        <section className={cn(card, "mt-4")}>
+          <EmptyState
+            icon={History}
+            title="Log tidak ditemukan"
+            description="Log mungkin sudah dihapus atau tautannya tidak valid."
+            action={
+              <Link
+                href={auditHref()}
+                className={buttonVariants({ variant: "secondary" })}
+              >
+                Tutup detail
+              </Link>
+            }
+          />
+        </section>
+      ) : null}
+
       {!data.rows.length ? (
         <section className={cn(card, "mt-4")}>
           <EmptyState
@@ -361,17 +568,37 @@ export default async function AdminAuditPage({
                           />
                         </td>
                         <td className="px-4 py-3">
-                          <p className="font-medium text-ink">
-                            {getAuditEntityLabel(row.entitas)}
-                          </p>
-                          <p className="mt-0.5 font-mono text-[11px] text-muted">
-                            {row.entitasId
-                              ? `${row.entitasId.slice(0, 8)}…`
-                              : "—"}
-                          </p>
+                          {row.entitas === "pengguna" && row.target ? (
+                            <>
+                              <p className="font-medium text-ink">
+                                {row.target.nama}
+                              </p>
+                              <p className="mt-0.5 text-[12px] leading-4 text-muted">
+                                @{row.target.username} ·{" "}
+                                {roleLabel(row.target.peran)}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="font-medium text-ink">
+                                {getAuditEntityLabel(row.entitas)}
+                              </p>
+                              <p className="mt-0.5 font-mono text-[11px] text-muted">
+                                {row.entitasId
+                                  ? `${row.entitasId.slice(0, 8)}…`
+                                  : "—"}
+                              </p>
+                            </>
+                          )}
                         </td>
                         <td className="px-4 py-3">
-                          <AuditDetails detail={row.detail} />
+                          <Link
+                            href={`${auditHref({ log: row.id })}#log-detail`}
+                            prefetch={false}
+                            className="inline-flex h-8 items-center text-[12px] font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
+                          >
+                            Lihat detail
+                          </Link>
                         </td>
                       </tr>
                     );
@@ -411,16 +638,23 @@ export default async function AdminAuditPage({
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[12px] text-muted">
                       <span>{formatDateTime(row.createdAt)}</span>
                       <span className="font-medium text-ink-soft">
-                        {getAuditEntityLabel(row.entitas)}
-                        {row.entitasId
-                          ? ` · ${row.entitasId.slice(0, 8)}…`
-                          : ""}
+                        {row.entitas === "pengguna" && row.target
+                          ? `Pengguna · ${row.target.nama}`
+                          : `${getAuditEntityLabel(row.entitas)}${
+                              row.entitasId
+                                ? ` · ${row.entitasId.slice(0, 8)}…`
+                                : ""
+                            }`}
                       </span>
                     </div>
 
-                    <div className="mt-3">
-                      <AuditDetails detail={row.detail} />
-                    </div>
+                    <Link
+                      href={`${auditHref({ log: row.id })}#log-detail`}
+                      prefetch={false}
+                      className="mt-3 inline-flex h-8 items-center text-[12px] font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
+                    >
+                      Lihat detail
+                    </Link>
                   </li>
                 );
               })}
@@ -443,7 +677,7 @@ export default async function AdminAuditPage({
             <div className="flex flex-wrap items-center gap-2">
               {data.page > 1 ? (
                 <Link
-                  href={auditHref(data.page - 1)}
+                  href={auditHref({ page: data.page - 1 })}
                   className={buttonVariants({
                     variant: "secondary",
                     size: "sm",
@@ -469,7 +703,7 @@ export default async function AdminAuditPage({
 
               {data.page < data.pageCount ? (
                 <Link
-                  href={auditHref(data.page + 1)}
+                  href={auditHref({ page: data.page + 1 })}
                   className={buttonVariants({
                     variant: "secondary",
                     size: "sm",

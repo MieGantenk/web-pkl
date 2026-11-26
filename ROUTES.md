@@ -62,7 +62,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/surat/print/[id]` | Cetak surat | Pratinjau A4, cetak, unduh PDF |
 | `/admin/laporan` | Laporan | Rekap periode/perusahaan/kelas, ringkasan, rincian siswa, ekspor CSV |
 | `/admin/pengaturan` | Pengaturan | Profil sekolah, akreditasi, kop/footer, nomor surat, item mutaba'ah |
-| `/admin/audit` | Audit | Log aksi, filter pengguna/aksi/entitas/tanggal, detail |
+| `/admin/audit` | Audit | Log aksi, filter pengguna/aksi/entitas/tanggal, detail + reset kata sandi akun target |
 
 > Periode PKL tidak punya halaman sendiri. Periode ditetapkan dari tingkat kelas: XI → 2026/2027, X → 2027/2028. Filter periode tersedia di halaman data siswa dan data orang tua.
 
