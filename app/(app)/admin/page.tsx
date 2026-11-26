@@ -27,7 +27,6 @@ import { ApplicationsChart } from "@/components/pkl/ApplicationsChart";
 import { EmptyState } from "@/components/pkl/EmptyState";
 import { requireRole } from "@/lib/auth";
 import { getAdminDashboard } from "@/lib/data/admin-dashboard";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Ringkasan",
@@ -35,9 +34,6 @@ export const metadata: Metadata = {
 
 // Sama seperti /siswa: rute memblokir, tanpa loading.tsx/Suspense.
 export const instant = false;
-
-const card =
-  "rounded-md border border-border bg-surface p-4 shadow-xs sm:p-6";
 
 const activityLabels: Record<string, string> = {
   approve_pengajuan: "menyetujui pengajuan",
@@ -133,28 +129,37 @@ export default async function AdminHomePage() {
   ];
 
   return (
-    <div>
-      <header className="mb-6 flex flex-col gap-4 sm:mb-8 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-[13px] font-medium leading-[18px] text-muted">
+    <div className="mx-auto w-full max-w-[1120px]">
+      <header className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-muted">
             {format(parseISO(data.today), "EEEE, d MMMM yyyy", {
               locale: localeId,
             })}
           </p>
-          <h1 className="mt-1 font-display text-[32px] font-semibold leading-10 tracking-[-0.02em] text-ink">
+          <h1 className="mt-1.5 font-display text-[26px] font-semibold leading-8 tracking-[-0.02em] text-ink sm:text-[28px] sm:leading-9">
             Halo, {firstName}.
           </h1>
-          <p className="mt-2 max-w-[60ch] text-base leading-[26px] text-ink-soft">
+          <p className="mt-1.5 text-sm leading-6 text-ink-soft">
             {totalTasks > 0
-              ? `Hari ini ${totalTasks} hal menunggu tindakan.`
+              ? `${totalTasks} hal menunggu tindakan hari ini.`
               : "Tidak ada antrean hari ini."}
           </p>
         </div>
 
         {data.period ? (
-          <div className="text-sm lg:text-right">
-            <p className="font-medium text-ink-soft">{data.period.nama}</p>
-            <p className="mt-1 text-[13px] leading-[18px] text-muted tabular-nums">
+          <div className="flex w-fit flex-wrap items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-xs">
+            <span
+              className="size-1.5 rounded-full bg-brand-500"
+              aria-hidden
+            />
+            <span className="font-medium text-ink-soft">
+              {data.period.nama}
+            </span>
+            <span className="text-border-strong" aria-hidden>
+              /
+            </span>
+            <span className="text-muted tabular-nums">
               {format(parseISO(data.period.tanggal_mulai), "d MMM yyyy", {
                 locale: localeId,
               })}{" "}
@@ -162,115 +167,127 @@ export default async function AdminHomePage() {
               {format(parseISO(data.period.tanggal_selesai), "d MMM yyyy", {
                 locale: localeId,
               })}
-            </p>
+            </span>
           </div>
         ) : null}
       </header>
 
-      <section aria-labelledby="antrean-title">
-        <h2 id="antrean-title" className="sr-only">
-          Antrean hari ini
-        </h2>
+      <section className="mt-6" aria-labelledby="antrean-title">
+        <div className="overflow-hidden rounded-md border border-border bg-surface">
+          <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
+            <div>
+              <h2
+                id="antrean-title"
+                className="text-sm font-semibold text-ink"
+              >
+                Antrean hari ini
+              </h2>
+              <p className="mt-0.5 text-xs text-muted">
+                Perlu tindakan admin
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full border border-border bg-canvas px-2 py-0.5 text-[11px] font-medium text-muted">
+              Hari ini
+            </span>
+          </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          {queueCards.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              prefetch={false}
-              className="group flex flex-col justify-between rounded-md border border-border bg-surface p-5 shadow-xs transition-[border-color,transform] duration-[var(--m-base)] ease-[var(--ease-out)] hover:border-border-strong motion-safe:hover:-translate-y-0.5"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-sm bg-brand-50 text-brand-700">
+          <ul className="divide-y divide-border">
+            {queueCards.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  prefetch={false}
+                  className="group flex items-center gap-3 px-4 py-3 transition-colors duration-[var(--m-fast)] hover:bg-surface-muted sm:px-5"
+                >
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border bg-canvas text-muted">
                     <item.icon
-                      className="size-5"
+                      className="size-4"
                       strokeWidth={1.75}
                       aria-hidden
                     />
                   </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium text-ink">
+                      {item.label}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-muted">
+                      {item.action}
+                    </span>
+                  </span>
+
+                  <span className="text-lg font-semibold tabular-nums text-ink">
+                    {item.count}
+                  </span>
                   <ArrowRight
-                    className="size-4 text-muted transition-transform duration-[var(--m-base)] group-hover:translate-x-0.5"
+                    className="size-4 shrink-0 text-muted transition-transform duration-[var(--m-fast)] group-hover:translate-x-0.5"
                     strokeWidth={1.75}
                     aria-hidden
                   />
-                </div>
-
-                <p className="mt-5 text-[13px] font-medium leading-[18px] text-muted">
-                  {item.label}
-                </p>
-                <p className="mt-1 font-display text-[40px] font-semibold leading-[44px] tracking-[-0.02em] text-ink tabular-nums">
-                  {item.count}
-                </p>
-              </div>
-
-              <p className="mt-4 text-sm font-semibold text-brand-700">
-                {item.action}
-              </p>
-            </Link>
-          ))}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      <section className="mt-6 sm:mt-8" aria-labelledby="statistik-title">
+      <section className="mt-4" aria-labelledby="statistik-title">
         <h2 id="statistik-title" className="sr-only">
           Statistik
         </h2>
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {stats.map((item) => (
-            <div
-              key={item.key}
-              className="rounded-md border border-border bg-surface p-4 shadow-xs sm:p-5"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[13px] font-medium leading-[18px] text-muted">
-                  {item.label}
+        <div className="overflow-hidden rounded-md border border-border bg-border">
+          <div className="grid grid-cols-2 gap-px lg:grid-cols-4">
+            {stats.map((item) => (
+              <div
+                key={item.key}
+                className="bg-surface px-4 py-4 sm:px-5"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-medium text-muted">
+                    {item.label}
+                  </p>
+                  <item.icon
+                    className="size-4 shrink-0 text-muted"
+                    strokeWidth={1.75}
+                    aria-hidden
+                  />
+                </div>
+                <p className="mt-1 text-2xl font-semibold leading-8 tracking-[-0.02em] text-ink tabular-nums">
+                  <CountUp value={item.value} storageKey={item.key} />
                 </p>
-                <item.icon
-                  className="size-5 shrink-0 text-brand-600"
-                  strokeWidth={1.75}
-                  aria-hidden
-                />
+                <p className="mt-0.5 text-xs text-muted">{item.sublabel}</p>
               </div>
-              <p className="mt-2 font-display text-[40px] font-semibold leading-[44px] tracking-[-0.02em] text-ink">
-                <CountUp value={item.value} storageKey={item.key} />
-              </p>
-              <p className="mt-1 text-[13px] leading-[18px] text-muted">
-                {item.sublabel}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="mt-6 grid items-start gap-4 sm:mt-8 xl:grid-cols-[1.5fr_1fr]">
-        <div className={cn(card, "min-w-0")}>
-          <div className="flex items-start justify-between gap-3">
+      <section className="mt-6 grid items-start gap-4 xl:grid-cols-[1.55fr_1fr]">
+        <div className="min-w-0 overflow-hidden rounded-md border border-border bg-surface">
+          <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
             <div>
-              <h2 className="text-xl font-semibold text-ink">
+              <h2 className="text-sm font-semibold text-ink">
                 Pengajuan per bulan
               </h2>
-              <p className="mt-1 text-sm text-muted">6 bulan terakhir</p>
+              <p className="mt-0.5 text-xs text-muted">6 bulan terakhir</p>
             </div>
-            <BarChart3
-              className="size-5 shrink-0 text-brand-600"
-              strokeWidth={1.75}
-              aria-hidden
-            />
+            <span className="shrink-0 text-xs font-medium tabular-nums text-muted">
+              {chartTotal} total
+            </span>
           </div>
 
-          <p className="sr-only">
-            6 bulan terakhir:{" "}
-            {data.chart
-              .map((item) => `${item.label} ${item.total} pengajuan`)
-              .join(", ")}
-            .
-          </p>
+          <div className="p-4 sm:p-5">
+            <p className="sr-only">
+              6 bulan terakhir:{" "}
+              {data.chart
+                .map((item) => `${item.label} ${item.total} pengajuan`)
+                .join(", ")}
+              .
+            </p>
 
-          <div className="mt-5">
             {chartTotal > 0 ? (
-              <div className="h-[260px]">
+              <div className="h-[220px] sm:h-[240px]">
                 <ApplicationsChart data={data.chart} />
               </div>
             ) : (
@@ -285,46 +302,37 @@ export default async function AdminHomePage() {
           </div>
         </div>
 
-        <div className={cn(card, "min-w-0")}>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold text-ink">
-                Aktivitas terbaru
-              </h2>
-              <p className="mt-1 text-sm text-muted">5 aksi terakhir</p>
-            </div>
-            <History
-              className="size-5 shrink-0 text-brand-600"
-              strokeWidth={1.75}
-              aria-hidden
-            />
+        <div className="min-w-0 overflow-hidden rounded-md border border-border bg-surface">
+          <div className="border-b border-border px-4 py-3 sm:px-5">
+            <h2 className="text-sm font-semibold text-ink">
+              Aktivitas terbaru
+            </h2>
+            <p className="mt-0.5 text-xs text-muted">5 aksi terakhir</p>
           </div>
 
           {data.activities.length ? (
-            <ul className="mt-4 divide-y divide-border">
+            <ul className="divide-y divide-border">
               {data.activities.map((activity) => {
                 const Icon = activityIcons[activity.aksi] ?? History;
 
                 return (
                   <li
                     key={activity.id}
-                    className="flex gap-3 py-3 first:pt-0 last:pb-0"
+                    className="flex gap-3 px-4 py-3 sm:px-5"
                   >
-                    <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-ink-soft">
-                      <Icon
-                        className="size-4"
-                        strokeWidth={1.75}
-                        aria-hidden
-                      />
-                    </span>
+                    <Icon
+                      className="mt-0.5 size-4 shrink-0 text-muted"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
                     <div className="min-w-0">
-                      <p className="text-sm leading-[22px] text-ink-soft">
-                        <span className="font-semibold text-ink">
+                      <p className="text-[13px] leading-5 text-ink-soft">
+                        <span className="font-medium text-ink">
                           {activity.nama}
                         </span>{" "}
                         {activityLabel(activity.aksi)}
                       </p>
-                      <p className="mt-0.5 text-[12px] leading-4 text-muted">
+                      <p className="mt-0.5 text-[11px] leading-4 text-muted">
                         {formatDistanceToNow(parseISO(activity.created_at), {
                           addSuffix: true,
                           locale: localeId,
@@ -336,7 +344,7 @@ export default async function AdminHomePage() {
               })}
             </ul>
           ) : (
-            <div className="mt-5">
+            <div className="px-4 py-5 sm:px-5">
               <EmptyState
                 icon={History}
                 title="Belum ada aktivitas"

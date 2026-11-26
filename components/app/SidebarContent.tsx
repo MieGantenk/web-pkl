@@ -41,27 +41,23 @@ export function SidebarContent({
   const visibleGroup = openGroup ?? activeGroup;
   const initial =
     profile.nama_lengkap.trim().charAt(0).toUpperCase() || "S";
+  const showTabNotch = scope === "desktop";
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.05] via-transparent to-black/20"
-      />
-
-      <div className="relative flex h-full flex-col px-3 py-4">
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex h-full flex-col px-3 py-4">
         <div className="flex items-center gap-2">
           <Link
             href={roleHome[role]}
             onClick={onNavigate}
-            className="group relative flex min-w-0 flex-1 items-center gap-2.5 rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.11] via-white/[0.05] to-white/[0.02] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_10px_24px_-18px_rgba(0,0,0,0.9)] backdrop-blur-sm transition-colors duration-[var(--m-fast)] hover:border-gold-400/35"
+            className="group relative flex min-w-0 flex-1 items-center gap-2.5 rounded-lg border border-sidebar-accent/45 bg-gradient-to-br from-sidebar-accent/[0.2] via-white/[0.04] to-transparent p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-colors duration-[var(--m-fast)] hover:border-sidebar-accent/70"
           >
             <span
               aria-hidden
-              className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/70 to-transparent"
+              className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-sidebar-accent/80 to-transparent"
             />
 
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white p-0.5 shadow-sm ring-1 ring-gold-400/70">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white p-0.5 shadow-sm ring-1 ring-sidebar-accent/70">
               <Image
                 src="/brand/smk-logo.jpg"
                 alt=""
@@ -76,7 +72,10 @@ export function SidebarContent({
                 SMK-IT As-Syifa
               </span>
               <span className="mt-1 flex items-center gap-1.5">
-                <span className="h-px w-3.5 shrink-0 bg-gold-400" aria-hidden />
+                <span
+                  className="h-px w-3.5 shrink-0 bg-sidebar-accent"
+                  aria-hidden
+                />
                 <span className="truncate text-[9px] font-semibold uppercase leading-none tracking-[0.17em] text-sidebar-muted">
                   Sistem PKL
                 </span>
@@ -89,7 +88,7 @@ export function SidebarContent({
               type="button"
               onClick={onClose}
               aria-label="Tutup menu"
-              className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-sidebar-muted backdrop-blur-sm transition-colors duration-[var(--m-fast)] hover:border-white/20 hover:bg-white/[0.12] hover:text-sidebar-text"
+              className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-sidebar-muted transition-colors duration-[var(--m-fast)] hover:border-sidebar-accent/40 hover:bg-white/[0.1] hover:text-sidebar-text"
             >
               <X className="size-5" strokeWidth={1.75} aria-hidden />
             </button>
@@ -101,13 +100,19 @@ export function SidebarContent({
           className="mx-2 mt-4 h-px bg-gradient-to-r from-transparent via-sidebar-line to-transparent"
         />
 
-        <nav aria-label="Navigasi utama" className="mt-4 flex-1 overflow-y-auto">
-          <p className="flex items-center gap-2 px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-sidebar-muted">
-            <span className="size-1 rounded-full bg-gold-400" aria-hidden />
+        <nav
+          aria-label="Navigasi utama"
+          className="-mx-3 mt-4 flex-1 overflow-y-auto"
+        >
+          <p className="flex items-center gap-2 px-5 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-sidebar-muted">
+            <span
+              className="size-1 rounded-full bg-sidebar-accent"
+              aria-hidden
+            />
             {roleLabels[role]}
           </p>
 
-          <ul className="space-y-1">
+          <ul className="space-y-1 pb-3">
             {navigation[role].map((item) => {
               const hasChildren = Boolean(item.children?.length);
               const hasActiveChild =
@@ -132,17 +137,17 @@ export function SidebarContent({
                       aria-expanded={groupOpen}
                       aria-controls={groupId}
                       className={cn(
-                        "group flex h-11 w-full items-center gap-3 rounded-lg px-2 text-sm font-medium transition-colors duration-[var(--m-fast)]",
+                        "group flex h-11 w-full items-center gap-3 rounded-l-lg pl-5 pr-3 text-sm font-medium transition-colors duration-[var(--m-fast)]",
                         hasActiveChild
-                          ? "bg-white/[0.06] text-sidebar-text ring-1 ring-inset ring-white/[0.06]"
-                          : "text-sidebar-muted hover:bg-white/[0.06] hover:text-sidebar-text",
+                          ? "bg-white/[0.05] text-sidebar-text"
+                          : "text-sidebar-muted hover:bg-white/[0.05] hover:text-sidebar-text",
                       )}
                     >
                       <span
                         className={cn(
                           "flex size-8 shrink-0 items-center justify-center rounded-md border transition-colors duration-[var(--m-fast)]",
                           hasActiveChild
-                            ? "border-primary/20 bg-primary/15 text-brand-300"
+                            ? "border-sidebar-accent/20 bg-sidebar-accent/10 text-sidebar-accent"
                             : "border-white/[0.06] bg-white/[0.04] text-sidebar-muted group-hover:border-white/10 group-hover:bg-white/[0.08] group-hover:text-sidebar-text",
                         )}
                       >
@@ -166,7 +171,7 @@ export function SidebarContent({
                     <ul
                       id={groupId}
                       hidden={!groupOpen}
-                      className="ml-[30px] mt-1 space-y-0.5 border-l border-sidebar-line/80 pl-3"
+                      className="ml-[30px] mt-1 space-y-0.5 border-l border-sidebar-line/80 pb-1 pl-3"
                     >
                       {item.children?.map((child) => {
                         const childActive = isNavActive(
@@ -185,15 +190,15 @@ export function SidebarContent({
                               className={cn(
                                 "flex h-9 items-center gap-2.5 rounded-md px-2.5 text-[12.5px] font-medium transition-colors duration-[var(--m-fast)]",
                                 childActive
-                                  ? "bg-sidebar-text text-sidebar shadow-sm"
-                                  : "text-sidebar-muted hover:bg-white/[0.06] hover:text-sidebar-text",
+                                  ? "bg-white/[0.07] text-sidebar-text"
+                                  : "text-sidebar-muted hover:bg-white/[0.05] hover:text-sidebar-text",
                               )}
                             >
                               <child.icon
                                 className={cn(
                                   "size-4 shrink-0",
                                   childActive
-                                    ? "text-primary"
+                                    ? "text-sidebar-accent"
                                     : "text-sidebar-muted",
                                 )}
                                 strokeWidth={1.75}
@@ -217,37 +222,44 @@ export function SidebarContent({
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "group relative flex h-11 items-center gap-3 rounded-lg px-2 text-sm font-medium transition-colors duration-[var(--m-fast)]",
+                      "group relative flex h-11 w-full items-center gap-3 rounded-l-lg pl-5 pr-3 text-sm font-medium transition-colors duration-[var(--m-fast)]",
                       active
-                        ? "text-sidebar"
-                        : "text-sidebar-muted hover:bg-white/[0.06] hover:text-sidebar-text",
+                        ? "z-10 text-ink"
+                        : "text-sidebar-muted hover:bg-white/[0.05] hover:text-sidebar-text",
                     )}
                   >
                     {active ? (
-                      <>
-                        <motion.span
-                          layoutId={`nav-active-${scope}-0`}
-                          className="absolute inset-0 rounded-lg bg-sidebar-text shadow-sm"
-                          transition={
-                            reduce
-                              ? { duration: 0 }
-                              : {
-                                  duration: 0.24,
-                                  ease: [0.2, 0.8, 0.2, 1],
-                                }
-                          }
-                        />
-                        <span
-                          className="absolute left-1 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-gold-400"
-                          aria-hidden
-                        />
-                      </>
+                      <motion.span
+                        layoutId={`nav-active-${scope}-0`}
+                        className="absolute inset-0 rounded-l-lg bg-canvas"
+                        transition={
+                          reduce
+                            ? { duration: 0 }
+                            : {
+                                duration: 0.24,
+                                ease: [0.2, 0.8, 0.2, 1],
+                              }
+                        }
+                      >
+                        {showTabNotch ? (
+                          <>
+                            <span
+                              aria-hidden
+                              className="absolute -top-4 right-0 size-4 rounded-tl-full bg-canvas"
+                            />
+                            <span
+                              aria-hidden
+                              className="absolute -bottom-4 right-0 size-4 rounded-bl-full bg-canvas"
+                            />
+                          </>
+                        ) : null}
+                      </motion.span>
                     ) : null}
                     <span
                       className={cn(
                         "relative z-10 flex size-8 shrink-0 items-center justify-center rounded-md border transition-colors duration-[var(--m-fast)]",
                         active
-                          ? "border-primary/15 bg-primary/10 text-primary"
+                          ? "border-transparent bg-transparent text-brand-600"
                           : "border-white/[0.06] bg-white/[0.04] text-sidebar-muted group-hover:border-white/10 group-hover:bg-white/[0.08] group-hover:text-sidebar-text",
                       )}
                     >
@@ -265,10 +277,10 @@ export function SidebarContent({
           </ul>
         </nav>
 
-        <div className="mt-4 rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.09] to-white/[0.02] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+        <div className="mt-4 border-t border-white/10 pt-3">
           <div className="flex items-center gap-2.5 px-1 py-1">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gold-400 to-gold-700 p-px shadow-sm">
-              <span className="flex size-full items-center justify-center rounded-full bg-sidebar text-[13px] font-semibold text-gold-400">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sidebar-accent to-sidebar-accent-strong p-px shadow-sm">
+              <span className="flex size-full items-center justify-center rounded-full bg-sidebar text-[12px] font-semibold text-sidebar-accent">
                 {initial}
               </span>
             </span>
@@ -285,7 +297,7 @@ export function SidebarContent({
           <form action={logoutAction}>
             <button
               type="submit"
-              className="mt-2 flex h-10 w-full items-center gap-2 rounded-md border border-white/[0.06] bg-black/10 px-2.5 text-[12px] font-medium text-sidebar-muted transition-colors duration-[var(--m-fast)] hover:border-white/15 hover:bg-white/[0.08] hover:text-sidebar-text"
+              className="mt-1 flex h-9 w-full items-center gap-2 rounded-md px-2 text-[12px] font-medium text-sidebar-muted transition-colors duration-[var(--m-fast)] hover:bg-white/[0.05] hover:text-sidebar-text"
             >
               <LogOut className="size-4" strokeWidth={1.75} aria-hidden />
               Keluar
