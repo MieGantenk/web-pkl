@@ -54,14 +54,17 @@ Stack acuan: Next.js (App Router) · Tailwind CSS v4 · shadcn/ui · Lucide · `
 | Token | Hex | Pakai |
 |---|---|---|
 | `sidebar` | `#0B2F2D` | Latar sidebar |
-| `sidebar-hover` | `#123D3A` | Hover item |
-| `sidebar-active` | `#14524E` | Item aktif |
+| `sidebar-hover` | `#123D3A` | Cadangan komponen lama |
+| `sidebar-active` | `#14524E` | Cadangan komponen lama |
 | `sidebar-text` | `#EAF4F2` | Teks item |
 | `sidebar-muted` | `#8FB3AE` | Label grup, ikon nonaktif |
 | `sidebar-line` | `#1C4A46` | Garis pemisah |
+| `sidebar-accent` | `#7CC4FF` | Aksen biru kapsul, ikon submenu aktif |
+| `sidebar-accent-strong` | `#2F81F7` | Border/ring kapsul, avatar |
 
-Item aktif memakai pill `sidebar-text` dengan teks `sidebar`. Brand dan footer
-memakai kartu kaca: border putih transparan, gradient tipis, dan aksen gold.
+Item aktif memakai tab `canvas` yang menyatu ke tepi kanan sidebar. Brand
+memakai kapsul kaca dengan aksen biru. Footer memakai baris profil sederhana
+dengan avatar biru.
 
 ### 1.4 Gold (dari logo)
 
@@ -391,6 +394,8 @@ Helper / error (12/16)
 - Padding 24/20/16; radius 12; border 1 px; shadow-xs.
 - Hover hanya untuk card yang bisa diklik: naik 2 px, border `border-strong`.
 - Card tidak bersarang lebih dari 2 level.
+- Varian panel dashboard: border 1 px, **tanpa shadow**, header 44 px dengan
+  `border-b`, padding isi 16–20, angka stat 24–28. Dipakai untuk Ringkasan.
 
 ### 8.8 Table
 
@@ -506,12 +511,13 @@ Contoh: "Belum ada jurnal hari ini. Isi jurnal sebelum pukul 23.59." + tombol "I
 
 ### 8.21 AppShell nav item
 
-- Tinggi 44; padding 8; radius 16; gap 12.
+- Tinggi 44; padding kiri 20, kanan 12; radius kiri 16; gap 12.
 - Default: teks `sidebar-muted`; hover: latar putih transparan, teks putih.
-- Aktif: pill `sidebar-text`, teks `sidebar`, indikator gold 3 px di kiri.
-- Ikon 18 px di dalam tile 32 px.
-- Brand: kapsul kaca dengan logo sekolah. Footer: kartu kaca dengan avatar gold.
-- Indikator aktif meluncur 240 ms (`layoutId`).
+- Aktif: tab `canvas` selebar sidebar, menyatu ke tepi kanan, teks `ink`.
+- Fillet 16 px di kanan atas/bawah tab aktif (desktop), warna `canvas`.
+- Ikon 18 px di dalam tile 32 px; ikon submenu aktif memakai `sidebar-accent`.
+- Brand: kapsul kaca biru dengan logo. Footer: baris profil + avatar biru.
+- Tab aktif meluncur 240 ms (`layoutId`).
 
 ### 8.22 Question builder (mutaba'ah)
 

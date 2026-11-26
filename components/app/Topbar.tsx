@@ -46,7 +46,7 @@ export function Topbar({
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border bg-surface px-4 sm:px-6 md:h-16 lg:px-8">
+    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border bg-canvas px-4 sm:px-6 md:h-16 lg:px-8">
       <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"

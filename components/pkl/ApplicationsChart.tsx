@@ -19,8 +19,8 @@ export function ApplicationsChart({
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
         data={data}
-        margin={{ top: 8, right: 4, bottom: 0, left: -18 }}
-        barCategoryGap="28%"
+        margin={{ top: 8, right: 4, bottom: 0, left: -20 }}
+        barCategoryGap="30%"
       >
         <CartesianGrid
           vertical={false}
@@ -31,7 +31,7 @@ export function ApplicationsChart({
           dataKey="label"
           tickLine={false}
           axisLine={false}
-          tick={{ fill: "var(--color-muted)", fontSize: 12 }}
+          tick={{ fill: "var(--color-muted)", fontSize: 11 }}
           dy={8}
         />
         <YAxis
@@ -39,16 +39,16 @@ export function ApplicationsChart({
           domain={[0, (dataMax: number) => Math.max(2, dataMax)]}
           tickLine={false}
           axisLine={false}
-          tick={{ fill: "var(--color-muted)", fontSize: 12 }}
-          width={32}
+          tick={{ fill: "var(--color-muted)", fontSize: 11 }}
+          width={28}
         />
         <Tooltip
-          cursor={{ fill: "var(--color-brand-50)" }}
+          cursor={{ fill: "var(--color-surface-muted)" }}
           contentStyle={{
-            borderRadius: 8,
+            borderRadius: 6,
             border: "1px solid var(--color-border)",
             background: "var(--color-surface)",
-            fontSize: 13,
+            fontSize: 12,
             color: "var(--color-ink)",
           }}
           labelStyle={{ color: "var(--color-ink-soft)" }}
@@ -57,7 +57,7 @@ export function ApplicationsChart({
           dataKey="total"
           name="Pengajuan"
           fill="var(--color-brand-500)"
-          radius={[4, 4, 0, 0]}
+          radius={[2, 2, 0, 0]}
           isAnimationActive={false}
         />
       </BarChart>
