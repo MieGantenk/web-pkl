@@ -20,7 +20,11 @@ import { Select } from "@/components/ui/select";
 import { verifyInstrukturJurnalAction } from "@/lib/actions/instruktur-verifikasi";
 import { requireRole } from "@/lib/auth";
 import { getInstrukturVerificationQueue } from "@/lib/data/instruktur";
-import { statusJurnal, type StatusJurnal } from "@/lib/status";
+import {
+  kehadiranJurnal,
+  statusJurnal,
+  type StatusJurnal,
+} from "@/lib/status";
 import { postgresUuidPattern } from "@/lib/validators/common";
 import { cn } from "@/lib/utils";
 
@@ -235,6 +239,7 @@ export default async function InstrukturVerificationPage({
                       </div>
                       <p className="mt-1 text-[12px] leading-4 text-muted">
                         {formatShortDay(journal.tanggal)} ·{" "}
+                        {kehadiranJurnal[journal.kehadiran].label} ·{" "}
                         {journal.perusahaan ?? "Perusahaan belum diisi"}
                       </p>
                       <p className="mt-1 truncate text-[13px] leading-[18px] text-ink-soft">
@@ -288,8 +293,10 @@ export default async function InstrukturVerificationPage({
                     </h2>
                     <p className="mt-1 text-sm text-muted">
                       {selected.nis ? `NIS ${selected.nis} · ` : ""}
-                      {selected.kelas ?? "—"} · {formatDay(selected.tanggal)}
-                      {formatTime(selected.waktuMulai) &&
+                      {selected.kelas ?? "—"} · {formatDay(selected.tanggal)}{" "}
+                      · {kehadiranJurnal[selected.kehadiran].label}
+                      {selected.kehadiran === "hadir" &&
+                      formatTime(selected.waktuMulai) &&
                       formatTime(selected.waktuSelesai)
                         ? ` · ${formatTime(selected.waktuMulai)}–${formatTime(selected.waktuSelesai)}`
                         : ""}
@@ -323,7 +330,7 @@ export default async function InstrukturVerificationPage({
                         loading="lazy"
                       />
                     </a>
-                  ) : (
+                  ) : selected.kehadiran === "hadir" ? (
                     <div className="mt-4 flex items-start gap-2 rounded-sm border border-warning-border bg-warning-bg px-3 py-2.5 text-[13px] leading-[18px] text-warning">
                       <ImageOff
                         className="mt-0.5 size-4 shrink-0"
@@ -332,7 +339,7 @@ export default async function InstrukturVerificationPage({
                       />
                       Foto jurnal tidak tersedia.
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 {selected.guruVerification?.catatan ? (

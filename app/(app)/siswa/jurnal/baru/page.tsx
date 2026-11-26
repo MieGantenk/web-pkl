@@ -40,7 +40,7 @@ export default async function SiswaJurnalBaruPage() {
         <EmptyState
           icon={CircleAlert}
           title="Jurnal belum dapat diisi"
-          description="Jurnal harian dapat diisi saat PKL berstatus berlangsung. Hubungi guru atau admin jika status PKL Anda belum sesuai."
+          description="Jurnal harian dapat diisi selama masa PKL berlangsung. Hubungi guru atau admin jika status atau tanggal PKL Anda belum sesuai."
           action={
             <Link
               href="/siswa/jurnal"

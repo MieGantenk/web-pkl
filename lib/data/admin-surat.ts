@@ -51,6 +51,7 @@ export type SuratListResult = {
 export type SuratIssueOption = {
   pengajuanId: string;
   status: StatusPengajuan;
+  tanggalSelesai: string | null;
   perusahaan: { nama: string; kota: string | null } | null;
   periode: { nama: string } | null;
   students: SuratStudent[];
@@ -67,6 +68,7 @@ export type SuratUploadLetter = {
 export type SuratUploadOption = {
   pengajuanId: string;
   status: StatusPengajuan;
+  tanggalSelesai: string | null;
   perusahaan: { nama: string; kota: string | null } | null;
   periode: { nama: string } | null;
   students: SuratStudent[];
@@ -84,6 +86,7 @@ export type SuratKelengkapanCell = {
 export type SuratKelengkapanRow = {
   pengajuanId: string;
   status: StatusPengajuan;
+  tanggalSelesai: string | null;
   perusahaan: { nama: string; kota: string | null } | null;
   periode: { nama: string } | null;
   students: SuratStudent[];
@@ -335,6 +338,7 @@ function suratLockedReason(
   jenis: JenisSurat,
   status: StatusPengajuan,
   documents: SuratRequirementState,
+  schedule: { tanggalSelesai: string | null; today: string },
 ) {
   if (jenis === "pengajuan" && status === "izin_ortu_diunggah") {
     return documents.izinVerified
@@ -346,6 +350,16 @@ function suratLockedReason(
     return documents.balasanVerified
       ? null
       : "Menunggu persetujuan surat balasan perusahaan.";
+  }
+
+  if (jenis === "penarikan") {
+    if (!schedule.tanggalSelesai) {
+      return "Tanggal selesai PKL belum diisi.";
+    }
+
+    if (schedule.tanggalSelesai > schedule.today) {
+      return `Surat penarikan dapat diterbitkan setelah ${schedule.tanggalSelesai}.`;
+    }
   }
 
   return null;
@@ -444,7 +458,7 @@ export const getSuratIssueOptions = cache(
     const { data: applications, error } = await admin
       .from("pengajuan_pkl")
       .select(
-        "id, status, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
+        "id, status, tanggal_selesai, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
       )
       .in("status", suratEligibleStatuses[jenis])
       .order("created_at", { ascending: false })
@@ -487,6 +501,7 @@ export const getSuratIssueOptions = cache(
         return {
           pengajuanId: row.id,
           status: row.status,
+          tanggalSelesai: row.tanggal_selesai,
           perusahaan: row.perusahaan,
           periode: row.periode,
           students: members.get(row.id) ?? [],
@@ -495,7 +510,10 @@ export const getSuratIssueOptions = cache(
         };
       })
       .filter((row) =>
-        canIssueSuratForApplication(jenis, row.status, row.documents),
+        canIssueSuratForApplication(jenis, row.status, row.documents, {
+          tanggalSelesai: row.tanggalSelesai,
+          today: jakartaToday(),
+        }),
       );
   },
 );
@@ -511,7 +529,7 @@ export const getSuratUploadOptions = cache(
     const { data, error } = await admin
       .from("pengajuan_pkl")
       .select(
-        "id, status, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
+        "id, status, tanggal_selesai, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
       )
       .in("status", statuses)
       .order("created_at", { ascending: false })
@@ -557,6 +575,7 @@ export const getSuratUploadOptions = cache(
     return rows.map((row) => ({
       pengajuanId: row.id,
       status: row.status,
+      tanggalSelesai: row.tanggal_selesai,
       perusahaan: row.perusahaan,
       periode: row.periode,
       students: members.get(row.id) ?? [],
@@ -578,7 +597,7 @@ export const getSuratKelengkapan = cache(
     const { data, error } = await admin
       .from("pengajuan_pkl")
       .select(
-        "id, status, created_at, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
+        "id, status, tanggal_selesai, created_at, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
       )
       .order("created_at", { ascending: false })
       .limit(100);
@@ -635,6 +654,10 @@ export const getSuratKelengkapan = cache(
               jenis,
               application.status,
               documents,
+              {
+                tanggalSelesai: application.tanggal_selesai,
+                today: jakartaToday(),
+              },
             );
             const state = surat
               ? "terbit"
@@ -647,6 +670,10 @@ export const getSuratKelengkapan = cache(
                   jenis,
                   application.status,
                   documents,
+                  {
+                    tanggalSelesai: application.tanggal_selesai,
+                    today: jakartaToday(),
+                  },
                 ) ?? "Belum tersedia pada status pengajuan ini.");
 
             return [
@@ -664,6 +691,7 @@ export const getSuratKelengkapan = cache(
         return {
           pengajuanId: application.id,
           status: application.status,
+          tanggalSelesai: application.tanggal_selesai,
           perusahaan: application.perusahaan,
           periode: application.periode,
           students,

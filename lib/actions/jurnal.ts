@@ -84,6 +84,7 @@ export async function createJurnalAction(
 
   const data = parsed.data;
   const today = jakartaToday();
+  const isHadir = data.kehadiran === "hadir";
 
   if (data.tanggal > today) {
     return {
@@ -118,6 +119,13 @@ export async function createJurnalAction(
     };
   }
 
+  if (placement.tanggal_selesai && today > placement.tanggal_selesai) {
+    return {
+      ok: false,
+      message: "Masa PKL sudah berakhir. Jurnal tidak dapat ditambah.",
+    };
+  }
+
   if (placement.tanggal_mulai && data.tanggal < placement.tanggal_mulai) {
     return {
       ok: false,
@@ -143,7 +151,7 @@ export async function createJurnalAction(
     "i",
   );
 
-  if (!fotoPattern.test(data.foto_path)) {
+  if (isHadir && (!data.foto_path || !fotoPattern.test(data.foto_path))) {
     return {
       ok: false,
       message: "Periksa kembali jurnal Anda.",
@@ -165,7 +173,10 @@ export async function createJurnalAction(
   }
 
   if (existing) {
-    cleanupFoto(session.supabase, data.foto_path);
+    if (data.foto_path) {
+      cleanupFoto(session.supabase, data.foto_path);
+    }
+
     return {
       ok: false,
       message: "Periksa kembali jurnal Anda.",
@@ -175,23 +186,31 @@ export async function createJurnalAction(
     };
   }
 
+  const kegiatan = isHadir
+    ? data.kegiatan
+    : data.kehadiran === "izin"
+      ? "Izin"
+      : "Sakit";
   const { data: inserted, error } = await session.supabase
     .from("jurnal")
     .insert({
       siswa_id: session.siswaId,
       pengajuan_id: placement.id,
       tanggal: data.tanggal,
-      waktu_mulai: data.waktu_mulai,
-      waktu_selesai: data.waktu_selesai,
-      kegiatan: data.kegiatan,
+      kehadiran: data.kehadiran,
+      waktu_mulai: isHadir ? data.waktu_mulai : null,
+      waktu_selesai: isHadir ? data.waktu_selesai : null,
+      kegiatan,
       deskripsi: data.deskripsi || null,
-      foto_path: data.foto_path,
+      foto_path: isHadir ? data.foto_path : null,
     })
     .select("id")
     .single();
 
   if (error || !inserted) {
-    cleanupFoto(session.supabase, data.foto_path);
+    if (data.foto_path) {
+      cleanupFoto(session.supabase, data.foto_path);
+    }
 
     if (error?.code === "23505") {
       return {
@@ -217,7 +236,10 @@ export async function createJurnalAction(
     },
     {
       judul: "Jurnal baru menunggu verifikasi",
-      pesan: "Siswa bimbingan mengirim jurnal harian baru.",
+      pesan:
+        data.kehadiran === "hadir"
+          ? "Siswa bimbingan mengirim jurnal harian baru."
+          : `Siswa bimbingan mencatat ${data.kehadiran === "izin" ? "izin" : "sakit"} pada jurnal harian.`,
     },
   );
 

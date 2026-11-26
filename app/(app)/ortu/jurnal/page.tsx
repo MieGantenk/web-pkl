@@ -28,7 +28,11 @@ import {
   type OrtuJurnalVerification,
 } from "@/lib/data/ortu-jurnal";
 import { normalizeMonthFilter } from "@/lib/data/siswa-jurnal";
-import { statusJurnal, type StatusJurnal } from "@/lib/status";
+import {
+  kehadiranJurnal,
+  statusJurnal,
+  type StatusJurnal,
+} from "@/lib/status";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -397,6 +401,7 @@ export default async function OrtuJurnalPage({
                       <p className="mt-1 text-[13px] leading-[18px] text-muted">
                         {[
                           journal.perusahaan,
+                          kehadiranJurnal[journal.kehadiran].label,
                           waktu,
                           journal.periode,
                         ]
@@ -442,7 +447,7 @@ export default async function OrtuJurnalPage({
                         loading="lazy"
                       />
                     </a>
-                  ) : (
+                  ) : journal.kehadiran === "hadir" ? (
                     <div className="mt-4 flex items-start gap-2 rounded-sm border border-warning-border bg-warning-bg px-3 py-2.5 text-[13px] leading-[18px] text-warning">
                       <ImageOff
                         className="mt-0.5 size-4 shrink-0"
@@ -451,7 +456,7 @@ export default async function OrtuJurnalPage({
                       />
                       Foto jurnal tidak tersedia.
                     </div>
-                  )}
+                  ) : null}
 
                   <div className="mt-5 border-t border-border pt-4">
                     <h4 className="text-sm font-semibold text-ink">

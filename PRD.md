@@ -275,7 +275,7 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 
 | ID | Requirement | Acceptance |
 |---|---|---|
-| PJL-01 | Siswa membuat pengajuan + anggota kelompok | Minimal 1 siswa; ketua otomatis |
+| PJL-01 | Siswa membuat pengajuan + anggota kelompok + guru pembimbing | Minimal 1 siswa; ketua otomatis; guru pembimbing tersimpan di pengajuan |
 | PJL-02 | Sistem menerbitkan surat izin orang tua | PDF bernomor, berkop, ada akreditasi |
 | PJL-03 | Siswa upload scan izin bertanda tangan | JPG/PDF, maks 5 MB, preview muncul |
 | PJL-04 | Admin verifikasi izin | Status berubah; catatan revisi tersimpan |
@@ -300,7 +300,7 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 | ID | Requirement | Acceptance |
 |---|---|---|
 | JRN-01 | Satu jurnal per siswa per tanggal | Unique constraint; edit pada hari yang sama |
-| JRN-02 | Isi tanggal, waktu, kegiatan, deskripsi, foto | Foto wajib; maks 5 MB |
+| JRN-02 | Isi tanggal, kehadiran, waktu, kegiatan, deskripsi, foto | Kehadiran hadir/izin/sakit; foto wajib saat hadir, maks 5 MB |
 | JRN-03 | Foto dikompres sebelum upload | Ukuran turun; kualitas masih layak |
 | JRN-04 | Edit hanya sebelum verifikasi | Setelah verified, tombol edit hilang |
 | JRN-05 | Guru verifikasi langkah 1 | Status `terverifikasi_guru`; catatan tersimpan |
@@ -313,7 +313,7 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 
 | ID | Requirement | Acceptance |
 |---|---|---|
-| MUT-01 | Admin membuat form mutaba'ah (nama, deskripsi, periode) | Form tersimpan sebagai draft versi 1; hanya satu form aktif per periode |
+| MUT-01 | Admin membuat form mutaba'ah (nama, deskripsi, periode) | Form tersimpan sebagai draft versi 1; beberapa form boleh aktif bersamaan dan siswa mengerjakan semuanya |
 | MUT-02 | Admin membuat pertanyaan dengan 6 tipe: ya/tidak, pilih satu, pilih banyak, isian singkat, isian angka, essay | Semua tipe tampil dan tervalidasi |
 | MUT-03 | Admin mengatur wajib/opsional, urutan, opsi, min/max, satuan | Urutan bisa naik/turun; opsi minimal 2 untuk tipe pilihan |
 | MUT-04 | Form yang sudah punya jawaban tidak bisa diubah | Tombol "Buat versi baru"; data lama tetap utuh |

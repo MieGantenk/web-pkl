@@ -116,6 +116,12 @@ enum status_jurnal {
   revisi
 }
 
+enum kehadiran_jurnal {
+  hadir
+  izin
+  sakit
+}
+
 enum status_tugas {
   belum
   selesai
@@ -387,6 +393,7 @@ Table jurnal [note: 'Jurnal kegiatan harian siswa. Maksimal 1 entri per siswa pe
   siswa_id     uuid         [not null]
   pengajuan_id uuid
   tanggal      date         [not null]
+  kehadiran    kehadiran_jurnal [not null, default: 'hadir']
   waktu_mulai  time
   waktu_selesai time
   kegiatan     varchar(200) [not null]
@@ -457,7 +464,7 @@ Table tugas_siswa {
   }
 }
 
-Table mutabaah_form [note: 'Template/versi form mutabaah. Hanya satu form aktif per periode; form berjawaban tidak boleh diubah, buat versi baru.'] {
+Table mutabaah_form [note: 'Template/versi form mutabaah. Beberapa form boleh aktif bersamaan; form berjawaban tidak boleh diubah, buat versi baru.'] {
   id          uuid         [pk, default: `gen_random_uuid()`]
   nama        varchar(150) [not null, note: 'contoh: Mutabaah Harian']
   deskripsi   text
@@ -512,7 +519,7 @@ Table mutabaah_opsi [note: 'Pilihan untuk pertanyaan pilih_satu / pilih_banyak.'
   }
 }
 
-Table mutabaah_harian [note: 'Satu entri per siswa per tanggal. form_id mencatat versi form yang dipakai.'] {
+Table mutabaah_harian [note: 'Satu entri per siswa per form per tanggal.'] {
   id         uuid        [pk, default: `gen_random_uuid()`]
   siswa_id   uuid        [not null]
   form_id    uuid        [not null]
@@ -522,7 +529,7 @@ Table mutabaah_harian [note: 'Satu entri per siswa per tanggal. form_id mencatat
   updated_at timestamptz [not null, default: `now()`]
 
   indexes {
-    (siswa_id, tanggal) [unique]
+    (siswa_id, form_id, tanggal) [unique]
     form_id
   }
 }

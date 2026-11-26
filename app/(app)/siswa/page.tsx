@@ -70,10 +70,19 @@ export default async function SiswaHomePage() {
   const hasLetter = data.pengajuan
     ? letterStatuses.includes(data.pengajuan.status)
     : false;
+  const pklBerakhir =
+    data.pengajuan?.status === "berlangsung" &&
+    Boolean(
+      data.pengajuan.tanggal_selesai &&
+        data.pengajuan.tanggal_selesai < data.today,
+    );
   const journalNeedsWork =
-    !data.jurnalHariIni || data.jurnalHariIni.status === "revisi";
+    !pklBerakhir &&
+    (!data.jurnalHariIni || data.jurnalHariIni.status === "revisi");
   const mutabaahNeedsWork =
-    Boolean(data.mutabaah.formNama) && !data.mutabaah.hariIniTerisi;
+    !pklBerakhir &&
+    Boolean(data.mutabaah.formNama) &&
+    !data.mutabaah.hariIniTerisi;
 
   let primaryAction: "jurnal" | "mutabaah" | null = null;
 
@@ -150,7 +159,9 @@ export default async function SiswaHomePage() {
                       .join(" · ") || "Menunggu penempatan dari sekolah"}
                   </p>
                   <p className="mt-3 max-w-[68ch] text-base leading-[26px] text-ink-soft">
-                    {statusPengajuanNextStep[data.pengajuan.status]}
+                    {pklBerakhir
+                      ? "Periode PKL sudah berakhir. Sekolah akan menerbitkan surat penarikan."
+                      : statusPengajuanNextStep[data.pengajuan.status]}
                   </p>
                 </div>
 

@@ -17,6 +17,8 @@ export type SiswaDashboardData = {
     id: string;
     status: StatusPengajuan;
     alasan_penolakan: string | null;
+    tanggal_selesai: string | null;
+    periode_id: string;
     perusahaan: { nama: string; kota: string | null } | null;
     periode: { nama: string } | null;
   } | null;
@@ -103,7 +105,7 @@ export const getSiswaDashboard = cache(
       const { data, error } = await supabase
         .from("pengajuan_pkl")
         .select(
-          "id, status, alasan_penolakan, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
+          "id, status, alasan_penolakan, tanggal_selesai, periode_id, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
         )
         .eq("id", anggota.pengajuan_id)
         .maybeSingle();
@@ -129,25 +131,34 @@ export const getSiswaDashboard = cache(
     const jurnalHariIni =
       jurnal?.find((entry) => entry.tanggal === today) ?? null;
 
-    const { data: form, error: formError } = await supabase
+    let formQuery = supabase
       .from("mutabaah_form")
       .select("id, nama")
-      .eq("status", "aktif")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .eq("status", "aktif");
+
+    if (pengajuan?.periode_id) {
+      formQuery = formQuery.eq("periode_id", pengajuan.periode_id);
+    }
+
+    const { data: forms, error: formError } = await formQuery.order(
+      "created_at",
+      { ascending: true },
+    );
 
     if (formError) {
       throw new Error("Gagal memuat form mutaba'ah.");
     }
 
-    let mutabaahEntries: Array<{ tanggal: string }> = [];
+    const activeForms = forms ?? [];
+    const activeFormIds = activeForms.map((form) => form.id);
+    let mutabaahEntries: Array<{ form_id: string; tanggal: string }> = [];
 
-    if (form) {
+    if (activeFormIds.length) {
       const { data, error } = await supabase
         .from("mutabaah_harian")
-        .select("tanggal")
+        .select("form_id, tanggal")
         .eq("siswa_id", siswa.id)
+        .in("form_id", activeFormIds)
         .gte("tanggal", startOfWeek(today))
         .lte("tanggal", today);
 
@@ -157,6 +168,18 @@ export const getSiswaDashboard = cache(
 
       mutabaahEntries = data ?? [];
     }
+
+    const filledByDate = new Map<string, Set<string>>();
+
+    for (const entry of mutabaahEntries) {
+      const filled = filledByDate.get(entry.tanggal) ?? new Set();
+      filled.add(entry.form_id);
+      filledByDate.set(entry.tanggal, filled);
+    }
+
+    const completeDates = Array.from(filledByDate.values()).filter(
+      (filled) => activeFormIds.every((formId) => filled.has(formId)),
+    ).length;
 
     return {
       today,
@@ -170,12 +193,19 @@ export const getSiswaDashboard = cache(
         status: entry.status,
       })),
       mutabaah: {
-        formNama: form?.nama ?? null,
-        terisi: new Set(mutabaahEntries.map((entry) => entry.tanggal)).size,
+        formNama:
+          activeForms.length === 0
+            ? null
+            : activeForms.length === 1
+              ? activeForms[0].nama
+              : `${activeForms.length} mutaba'ah aktif`,
+        terisi: completeDates,
         totalHari: 7,
-        hariIniTerisi: mutabaahEntries.some(
-          (entry) => entry.tanggal === today,
-        ),
+        hariIniTerisi:
+          activeFormIds.length > 0 &&
+          activeFormIds.every((formId) =>
+            filledByDate.get(today)?.has(formId),
+          ),
       },
     };
   },

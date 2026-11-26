@@ -28,7 +28,11 @@ import {
   normalizeMonthFilter,
   type SiswaJurnalVerification,
 } from "@/lib/data/siswa-jurnal";
-import { statusJurnal, type StatusJurnal } from "@/lib/status";
+import {
+  kehadiranJurnal,
+  statusJurnal,
+  type StatusJurnal,
+} from "@/lib/status";
 import { postgresUuidPattern } from "@/lib/validators/common";
 import { cn } from "@/lib/utils";
 
@@ -397,9 +401,14 @@ export default async function SiswaJurnalPage({
                           )}
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <p className="text-[13px] font-medium text-ink">
-                              {formatDate(journal.tanggal)}
-                            </p>
+                            <div>
+                              <p className="text-[13px] font-medium text-ink">
+                                {formatDate(journal.tanggal)}
+                              </p>
+                              <p className="mt-0.5 text-[12px] leading-4 text-muted">
+                                {kehadiranJurnal[journal.kehadiran].label}
+                              </p>
+                            </div>
                             <JurnalBadge status={journal.status} />
                           </div>
                           <p className="mt-1 truncate text-[13px] leading-[18px] text-ink-soft">
@@ -447,6 +456,10 @@ export default async function SiswaJurnalPage({
                     <h2 className="mt-1 font-display text-2xl font-semibold leading-8 tracking-[-0.02em] text-ink">
                       {formatDay(selected.tanggal)}
                     </h2>
+                    <p className="mt-1 text-sm text-muted">
+                      Kehadiran:{" "}
+                      {kehadiranJurnal[selected.kehadiran].label}
+                    </p>
                   </div>
                   <JurnalBadge status={selected.status} />
                 </div>
@@ -466,15 +479,19 @@ export default async function SiswaJurnalPage({
                 ) : null}
 
                 <dl className="mt-4 grid gap-3 border-t border-border pt-4 text-sm sm:grid-cols-2">
-                  <div>
-                    <dt className="text-[13px] leading-[18px] text-muted">
-                      Waktu
-                    </dt>
-                    <dd className="mt-0.5 font-medium text-ink">
-                      {timeRange(selected.waktuMulai, selected.waktuSelesai) ??
-                        "—"}
-                    </dd>
-                  </div>
+                  {selected.kehadiran === "hadir" ? (
+                    <div>
+                      <dt className="text-[13px] leading-[18px] text-muted">
+                        Waktu
+                      </dt>
+                      <dd className="mt-0.5 font-medium text-ink">
+                        {timeRange(
+                          selected.waktuMulai,
+                          selected.waktuSelesai,
+                        ) ?? "—"}
+                      </dd>
+                    </div>
+                  ) : null}
                   <div>
                     <dt className="text-[13px] leading-[18px] text-muted">
                       Periode
@@ -497,36 +514,38 @@ export default async function SiswaJurnalPage({
                   ) : null}
                 </div>
 
-                <div className="mt-5 border-t border-border pt-4">
-                  <h3 className="text-base font-semibold text-ink">
-                    Foto kegiatan
-                  </h3>
-                  {selected.fotoUrl ? (
-                    <a
-                      href={selected.fotoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-3 block"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={selected.fotoUrl}
-                        alt={`Foto jurnal tanggal ${formatDate(selected.tanggal)}`}
-                        className="max-h-[420px] w-full rounded-sm border border-border bg-surface-muted object-contain"
-                        loading="lazy"
-                      />
-                    </a>
-                  ) : (
-                    <div className="mt-3 flex items-start gap-2 rounded-sm border border-warning-border bg-warning-bg px-3 py-2.5 text-[13px] leading-[18px] text-warning">
-                      <ImageOff
-                        className="mt-0.5 size-4 shrink-0"
-                        strokeWidth={1.75}
-                        aria-hidden
-                      />
-                      Foto jurnal tidak tersedia.
-                    </div>
-                  )}
-                </div>
+                {selected.kehadiran === "hadir" ? (
+                  <div className="mt-5 border-t border-border pt-4">
+                    <h3 className="text-base font-semibold text-ink">
+                      Foto kegiatan
+                    </h3>
+                    {selected.fotoUrl ? (
+                      <a
+                        href={selected.fotoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-3 block"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={selected.fotoUrl}
+                          alt={`Foto jurnal tanggal ${formatDate(selected.tanggal)}`}
+                          className="max-h-[420px] w-full rounded-sm border border-border bg-surface-muted object-contain"
+                          loading="lazy"
+                        />
+                      </a>
+                    ) : (
+                      <div className="mt-3 flex items-start gap-2 rounded-sm border border-warning-border bg-warning-bg px-3 py-2.5 text-[13px] leading-[18px] text-warning">
+                        <ImageOff
+                          className="mt-0.5 size-4 shrink-0"
+                          strokeWidth={1.75}
+                          aria-hidden
+                        />
+                        Foto jurnal tidak tersedia.
+                      </div>
+                    )}
+                  </div>
+                ) : null}
 
                 <div className="mt-5 border-t border-border pt-4">
                   <h3 className="text-base font-semibold text-ink">

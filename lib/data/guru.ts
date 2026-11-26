@@ -2,7 +2,12 @@ import { cache } from "react";
 import { connection } from "next/server";
 
 import { jakartaToday } from "@/lib/date";
-import type { StatusJurnal, StatusPengajuan, StatusTugas } from "@/lib/status";
+import type {
+  KehadiranJurnal,
+  StatusJurnal,
+  StatusPengajuan,
+  StatusTugas,
+} from "@/lib/status";
 import { createClient } from "@/lib/supabase/server";
 
 const ACTIVE_STATUSES: StatusPengajuan[] = [
@@ -50,6 +55,7 @@ export type GuruJournalSummary = {
   waktuMulai: string | null;
   waktuSelesai: string | null;
   kegiatan: string;
+  kehadiran: KehadiranJurnal;
   status: StatusJurnal;
 };
 
@@ -141,7 +147,7 @@ const getGuruStudentsBase = cache(
       supabase
         .from("jurnal")
         .select(
-          "id, pengajuan_id, siswa_id, tanggal, waktu_mulai, waktu_selesai, kegiatan, status",
+          "id, pengajuan_id, siswa_id, tanggal, waktu_mulai, waktu_selesai, kegiatan, kehadiran, status",
         )
         .in("pengajuan_id", applicationIds)
         .order("tanggal", { ascending: false }),
@@ -226,6 +232,7 @@ const getGuruStudentsBase = cache(
         waktuMulai: journal.waktu_mulai,
         waktuSelesai: journal.waktu_selesai,
         kegiatan: journal.kegiatan,
+        kehadiran: journal.kehadiran,
         status: journal.status,
       });
       journalsByStudent.set(journal.siswa_id, list);
@@ -293,6 +300,7 @@ const getGuruStudentsBase = cache(
         waktuMulai: journal.waktu_mulai,
         waktuSelesai: journal.waktu_selesai,
         kegiatan: journal.kegiatan,
+        kehadiran: journal.kehadiran,
         status: journal.status,
       })),
       applicationIds,
@@ -434,6 +442,7 @@ export type GuruStudentDetail = {
     waktuMulai: string | null;
     waktuSelesai: string | null;
     kegiatan: string;
+    kehadiran: KehadiranJurnal;
     deskripsi: string | null;
     status: StatusJurnal;
     fotoUrl: string | null;
@@ -474,7 +483,7 @@ export const getGuruStudentDetail = cache(
       supabase
         .from("jurnal")
         .select(
-          "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, deskripsi, status, foto_path",
+          "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, kehadiran, deskripsi, status, foto_path",
         )
         .eq("siswa_id", siswaId)
         .eq("pengajuan_id", student.pengajuanId)
@@ -545,6 +554,7 @@ export const getGuruStudentDetail = cache(
           waktuMulai: journal.waktu_mulai,
           waktuSelesai: journal.waktu_selesai,
           kegiatan: journal.kegiatan,
+          kehadiran: journal.kehadiran,
           deskripsi: journal.deskripsi,
           status: journal.status,
           fotoUrl,
@@ -750,7 +760,7 @@ export const getGuruVerificationQueue = cache(
         supabase
           .from("jurnal")
           .select(
-            "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, deskripsi, status, foto_path",
+            "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, kehadiran, deskripsi, status, foto_path",
           )
           .eq("id", selectedSummary.id)
           .maybeSingle(),
@@ -789,6 +799,7 @@ export const getGuruVerificationQueue = cache(
           waktuMulai: journal.waktu_mulai,
           waktuSelesai: journal.waktu_selesai,
           kegiatan: journal.kegiatan,
+          kehadiran: journal.kehadiran,
           status: journal.status,
           deskripsi: journal.deskripsi,
           fotoUrl,

@@ -166,7 +166,7 @@ export default async function AdminMutabaahPage({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[13px] font-medium leading-[18px] text-muted">
-                Form aktif
+                Mutaba&apos;ah aktif
               </p>
               <p className="mt-1 text-base font-semibold leading-6 text-ink">
                 {data.stats.formName ?? "Belum ada"}

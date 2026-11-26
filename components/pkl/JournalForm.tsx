@@ -4,16 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { ImagePlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createJurnalAction } from "@/lib/actions/jurnal";
 import { compressImage } from "@/lib/image-compression";
+import {
+  kehadiranJurnal,
+  kehadiranJurnalList,
+} from "@/lib/status";
 import { createClient } from "@/lib/supabase/client";
 import { jurnalFormSchema, type JurnalFormInput } from "@/lib/validators/jurnal";
 import { cn } from "@/lib/utils";
@@ -46,6 +51,7 @@ export function JournalForm({
   const [processingPhoto, setProcessingPhoto] = useState(false);
   const [dragging, setDragging] = useState(false);
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -54,12 +60,19 @@ export function JournalForm({
     resolver: zodResolver(jurnalFormSchema),
     defaultValues: {
       tanggal: defaultDate,
+      kehadiran: "hadir",
       waktu_mulai: "",
       waktu_selesai: "",
       kegiatan: "",
       deskripsi: "",
     },
   });
+  const kehadiran = useWatch({
+    control,
+    name: "kehadiran",
+    defaultValue: "hadir",
+  });
+  const isHadir = kehadiran === "hadir";
 
   useEffect(() => {
     return () => {
@@ -124,7 +137,9 @@ export function JournalForm({
   }
 
   async function onSubmit(values: JurnalFormInput) {
-    if (!photo) {
+    const hadir = values.kehadiran === "hadir";
+
+    if (hadir && !photo) {
       setPhotoError("Foto kegiatan wajib diunggah.");
       document.getElementById("foto")?.focus();
       return;
@@ -135,31 +150,37 @@ export function JournalForm({
     let uploadedPath: string | null = null;
 
     try {
-      const extension = photo.type === "image/png" ? "png" : "jpg";
-      const filePath = `${siswaId}/${values.tanggal}-${crypto.randomUUID()}.${extension}`;
-      const { error: uploadError } = await supabase.storage
-        .from("jurnal")
-        .upload(filePath, photo, {
-          contentType: photo.type,
-          upsert: false,
-        });
+      let filePath: string | null = null;
 
-      if (uploadError) {
-        setPhotoError("Foto belum dapat diunggah. Coba lagi.");
-        return;
+      if (hadir && photo) {
+        const extension = photo.type === "image/png" ? "png" : "jpg";
+        filePath = `${siswaId}/${values.tanggal}-${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage
+          .from("jurnal")
+          .upload(filePath, photo, {
+            contentType: photo.type,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          setPhotoError("Foto belum dapat diunggah. Coba lagi.");
+          return;
+        }
+
+        uploadedPath = filePath;
       }
-
-      uploadedPath = filePath;
 
       const result = await createJurnalAction({
         ...values,
         foto_path: filePath,
-        foto_mime: photo.type,
-        foto_ukuran: photo.size,
+        foto_mime: hadir && photo ? photo.type : null,
+        foto_ukuran: hadir && photo ? photo.size : null,
       });
 
       if (!result.ok) {
-        await supabase.storage.from("jurnal").remove([filePath]);
+        if (filePath) {
+          await supabase.storage.from("jurnal").remove([filePath]);
+        }
         uploadedPath = null;
 
         if (result.fieldErrors) {
@@ -168,6 +189,7 @@ export function JournalForm({
               setPhotoError(message);
             } else if (
               field === "tanggal" ||
+              field === "kehadiran" ||
               field === "waktu_mulai" ||
               field === "waktu_selesai" ||
               field === "kegiatan" ||
@@ -214,7 +236,36 @@ export function JournalForm({
           </p>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-3">
+        <Field
+          label="Kehadiran"
+          htmlFor="kehadiran"
+          required
+          hint="Pilih izin atau sakit jika tidak masuk kerja pada tanggal ini."
+          error={errors.kehadiran?.message}
+        >
+          <Select
+            id="kehadiran"
+            aria-invalid={invalid("kehadiran")}
+            aria-describedby={describedBy(
+              "kehadiran",
+              "Pilih izin atau sakit jika tidak masuk kerja pada tanggal ini.",
+            )}
+            {...register("kehadiran")}
+          >
+            {kehadiranJurnalList.map((value) => (
+              <option key={value} value={value}>
+                {kehadiranJurnal[value].label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <div
+          className={cn(
+            "grid gap-5",
+            isHadir ? "sm:grid-cols-3" : "sm:grid-cols-1",
+          )}
+        >
           <Field
             label="Tanggal"
             htmlFor="tanggal"
@@ -232,62 +283,73 @@ export function JournalForm({
             />
           </Field>
 
-          <Field
-            label="Waktu mulai"
-            htmlFor="waktu_mulai"
-            required
-            error={errors.waktu_mulai?.message}
-          >
-            <Input
-              id="waktu_mulai"
-              type="time"
-              step={60}
-              aria-invalid={invalid("waktu_mulai")}
-              aria-describedby={describedBy("waktu_mulai")}
-              {...register("waktu_mulai")}
-            />
-          </Field>
+          {isHadir ? (
+            <>
+              <Field
+                label="Waktu mulai"
+                htmlFor="waktu_mulai"
+                required
+                error={errors.waktu_mulai?.message}
+              >
+                <Input
+                  id="waktu_mulai"
+                  type="time"
+                  step={60}
+                  aria-invalid={invalid("waktu_mulai")}
+                  aria-describedby={describedBy("waktu_mulai")}
+                  {...register("waktu_mulai")}
+                />
+              </Field>
 
-          <Field
-            label="Waktu selesai"
-            htmlFor="waktu_selesai"
-            required
-            error={errors.waktu_selesai?.message}
-          >
-            <Input
-              id="waktu_selesai"
-              type="time"
-              step={60}
-              aria-invalid={invalid("waktu_selesai")}
-              aria-describedby={describedBy("waktu_selesai")}
-              {...register("waktu_selesai")}
-            />
-          </Field>
+              <Field
+                label="Waktu selesai"
+                htmlFor="waktu_selesai"
+                required
+                error={errors.waktu_selesai?.message}
+              >
+                <Input
+                  id="waktu_selesai"
+                  type="time"
+                  step={60}
+                  aria-invalid={invalid("waktu_selesai")}
+                  aria-describedby={describedBy("waktu_selesai")}
+                  {...register("waktu_selesai")}
+                />
+              </Field>
+            </>
+          ) : null}
         </div>
 
-        <Field
-          label="Kegiatan"
-          htmlFor="kegiatan"
-          required
-          hint="Ringkas dalam satu baris. Contoh: Menyusun laporan stok gudang."
-          error={errors.kegiatan?.message}
-        >
-          <Input
-            id="kegiatan"
-            maxLength={200}
-            aria-invalid={invalid("kegiatan")}
-            aria-describedby={describedBy(
-              "kegiatan",
-              "Ringkas dalam satu baris. Contoh: Menyusun laporan stok gudang.",
-            )}
-            {...register("kegiatan")}
-          />
-        </Field>
+        {isHadir ? (
+          <Field
+            label="Kegiatan"
+            htmlFor="kegiatan"
+            required
+            hint="Ringkas dalam satu baris. Contoh: Menyusun laporan stok gudang."
+            error={errors.kegiatan?.message}
+          >
+            <Input
+              id="kegiatan"
+              maxLength={200}
+              aria-invalid={invalid("kegiatan")}
+              aria-describedby={describedBy(
+                "kegiatan",
+                "Ringkas dalam satu baris. Contoh: Menyusun laporan stok gudang.",
+              )}
+              {...register("kegiatan")}
+            />
+          </Field>
+        ) : null}
 
         <Field
-          label="Deskripsi"
+          label={isHadir ? "Deskripsi" : "Alasan izin atau sakit"}
           htmlFor="deskripsi"
-          hint="Opsional. Jelaskan hasil atau kendala kegiatan."
+          required={!isHadir}
+          hint={
+            isHadir
+              ? "Opsional. Jelaskan hasil atau kendala kegiatan."
+              : "Contoh: demam, izin acara keluarga, atau keterangan dari orang tua."
+          }
           error={errors.deskripsi?.message}
         >
           <Textarea
@@ -297,14 +359,17 @@ export function JournalForm({
             aria-invalid={invalid("deskripsi")}
             aria-describedby={describedBy(
               "deskripsi",
-              "Opsional. Jelaskan hasil atau kendala kegiatan.",
+              isHadir
+                ? "Opsional. Jelaskan hasil atau kendala kegiatan."
+                : "Contoh: demam, izin acara keluarga, atau keterangan dari orang tua.",
             )}
             {...register("deskripsi")}
           />
         </Field>
       </section>
 
-      <section className="space-y-3 border-t border-border pt-6">
+      {isHadir ? (
+        <section className="space-y-3 border-t border-border pt-6">
         <div className="flex items-baseline justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-ink">Foto kegiatan</h2>
@@ -414,7 +479,14 @@ export function JournalForm({
             jelas.
           </p>
         )}
-      </section>
+        </section>
+      ) : (
+        <section className="rounded-md border border-info-border bg-info-bg px-4 py-3 text-sm leading-[22px] text-info">
+          Jurnal akan dicatat sebagai{" "}
+          {kehadiran === "izin" ? "izin" : "sakit"} tanpa foto kegiatan. Isi
+          alasan pada kolom di atas.
+        </section>
+      )}
 
       <div className="sticky bottom-[calc(64px+env(safe-area-inset-bottom))] z-20 -mx-4 flex flex-col-reverse gap-2 border-t border-border bg-surface px-4 py-3 sm:static sm:mx-0 sm:flex-row sm:justify-end sm:bg-transparent sm:p-0 sm:pt-5">
         <Link

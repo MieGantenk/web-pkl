@@ -107,7 +107,7 @@ export const getAdminMutabaahHistory = cache(
       studentCountRes,
       todayEntriesRes,
       weekEntriesRes,
-      activeFormRes,
+      activeFormsRes,
       classesRes,
       formsRes,
     ] = await Promise.all([
@@ -117,7 +117,7 @@ export const getAdminMutabaahHistory = cache(
         .eq("aktif", true),
       admin
         .from("mutabaah_harian")
-        .select("id", { count: "exact", head: true })
+        .select("siswa_id, form_id")
         .eq("tanggal", today),
       admin
         .from("mutabaah_harian")
@@ -128,9 +128,7 @@ export const getAdminMutabaahHistory = cache(
         .from("mutabaah_form")
         .select("id, nama")
         .eq("status", "aktif")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+        .order("created_at", { ascending: false }),
       admin.from("siswa").select("kelas").eq("aktif", true),
       admin
         .from("mutabaah_form")
@@ -142,7 +140,7 @@ export const getAdminMutabaahHistory = cache(
       studentCountRes.error ||
       todayEntriesRes.error ||
       weekEntriesRes.error ||
-      activeFormRes.error ||
+      activeFormsRes.error ||
       classesRes.error ||
       formsRes.error
     ) {
@@ -150,11 +148,33 @@ export const getAdminMutabaahHistory = cache(
     }
 
     const totalStudents = studentCountRes.count ?? 0;
-    const todayFilled = todayEntriesRes.count ?? 0;
+    const activeForms = activeFormsRes.data ?? [];
+    const activeFormIds = activeForms.map((form) => form.id);
+    const filledByStudent = new Map<string, Set<string>>();
+
+    for (const entry of todayEntriesRes.data ?? []) {
+      const current = filledByStudent.get(entry.siswa_id) ?? new Set();
+      current.add(entry.form_id);
+      filledByStudent.set(entry.siswa_id, current);
+    }
+
+    const todayFilled =
+      activeFormIds.length === 0
+        ? 0
+        : Array.from(filledByStudent.values()).filter((filled) =>
+            activeFormIds.every((formId) => filled.has(formId)),
+          ).length;
     const weekFilled = weekEntriesRes.count ?? 0;
     const weekPercent =
-      totalStudents > 0
-        ? Math.min(100, Math.round((weekFilled / (totalStudents * 7)) * 100))
+      totalStudents > 0 && activeFormIds.length > 0
+        ? Math.min(
+            100,
+            Math.round(
+              (weekFilled /
+                (totalStudents * 7 * activeFormIds.length)) *
+                100,
+            ),
+          )
         : 0;
     const kelasOptions = Array.from(
       new Set(
@@ -295,7 +315,12 @@ export const getAdminMutabaahHistory = cache(
         todayFilled,
         weekPercent,
         missingToday: Math.max(0, totalStudents - todayFilled),
-        formName: activeFormRes.data?.nama ?? null,
+        formName:
+          activeForms.length === 0
+            ? null
+            : activeForms.length === 1
+              ? activeForms[0].nama
+              : `${activeForms.length} form aktif`,
       },
       rows,
       kelasOptions,

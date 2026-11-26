@@ -195,7 +195,7 @@ Aturan:
 - Jangan membuat status baru di komponen; tambahkan di enum + PRD + mapping UI.
 - Verifikasi jurnal 2 langkah memakai `verifikasi_jurnal` (guru lalu instruktur).
 - Mutaba'ah memakai `mutabaah_form`, `mutabaah_pertanyaan`, `mutabaah_opsi`, `mutabaah_harian`, `mutabaah_jawaban`, `mutabaah_jawaban_opsi`.
-- Status form: `draft`, `aktif`, `arsip`; hanya satu form aktif per periode.
+- Status form: `draft`, `aktif`, `arsip`; beberapa form boleh aktif bersamaan dan siswa mengerjakan semuanya.
 - Form mutaba'ah yang sudah punya jawaban **tidak boleh diubah**; buat versi baru (`versi + 1`), biarkan versi lama tetap aktif untuk arsip.
 - Tipe pertanyaan hanya: `ya_tidak`, `pilih_satu`, `pilih_banyak`, `isian_singkat`, `isian_angka`, `essay`.
 - Jangan menambah tipe pertanyaan tanpa update `ERD.dbml` + `PRD.md` + komponen builder.
@@ -204,6 +204,7 @@ Aturan:
 - Nomor surat dibuat dalam transaksi; jangan `max(nomor)+1` dari client.
 - Satu siswa hanya boleh punya satu pengajuan aktif; tegakkan di aplikasi + partial unique index.
 - Jangan `select('*')` pada `pengguna`; kolom `email` dan `telepon` dibatasi. Pilih kolom yang diizinkan.
+- Jurnal menyimpan `kehadiran` (`hadir`, `izin`, `sakit`); foto hanya wajib saat hadir.
 - Setiap aksi penting dicatat di `log_aktivitas`.
 
 ---

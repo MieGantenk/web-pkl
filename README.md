@@ -95,6 +95,20 @@ Kalau masih bertentangan, berhenti dan minta keputusan. Jangan menebak.
 3. Lanjut ke modul surat, mutaba'ah, tugas, dan laporan.
 4. Untuk data demo pengembangan: `npm run seed:demo` (jangan dijalankan di produksi).
 
+### Akun guru dari data pegawai
+
+Untuk membuat akun guru dari rekap pegawai XLSX:
+
+```bash
+node scripts/import-guru-pegawai.mjs \
+  --file "~/Downloads/Data_Pegawai_SMK-IT_As-Syifa_September_2026.xlsx" \
+  --out "~/Downloads/guru-akun.csv" \
+  --execute
+```
+
+Akun yang sudah ada tidak dibuat ulang dan kata sandinya tidak diubah.
+Kredensial akun baru ditulis ke berkas `--out`.
+
 ### Akun demo
 
 Jalankan `npm run seed:demo` lebih dulu, lalu gunakan akun berikut.

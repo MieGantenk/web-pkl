@@ -219,6 +219,36 @@ async function resolvePerusahaan(
   return { ok: true, id: created.id };
 }
 
+async function resolveGuruPembimbing(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  guruId: string,
+): Promise<
+  | { ok: false; message: string; fieldErrors?: Record<string, string> }
+  | { ok: true; id: string }
+> {
+  const { data: guru, error } = await supabase
+    .from("guru")
+    .select("id, pengguna:pengguna_id(aktif)")
+    .eq("id", guruId)
+    .maybeSingle();
+
+  if (error) {
+    return { ok: false, message: "Guru pembimbing belum dapat diperiksa." };
+  }
+
+  if (!guru || !guru.pengguna?.aktif) {
+    return {
+      ok: false,
+      message: "Periksa kembali guru pembimbing.",
+      fieldErrors: {
+        guru_pembimbing_id: "Guru pembimbing tidak ditemukan atau nonaktif.",
+      },
+    };
+  }
+
+  return { ok: true, id: guru.id };
+}
+
 async function getActiveOptions(
   supabase: Awaited<ReturnType<typeof createClient>>,
   perusahaanId: string,
@@ -329,6 +359,19 @@ export async function createPengajuanAction(
     };
   }
 
+  const guru = await resolveGuruPembimbing(
+    session.supabase,
+    data.guru_pembimbing_id,
+  );
+
+  if (!guru.ok) {
+    return {
+      ok: false,
+      message: guru.message,
+      fieldErrors: guru.fieldErrors,
+    };
+  }
+
   const options = await getActiveOptions(
     session.supabase,
     perusahaan.id,
@@ -348,6 +391,7 @@ export async function createPengajuanAction(
     .insert({
       perusahaan_id: perusahaan.id,
       periode_id: data.periode_id,
+      guru_pembimbing_id: guru.id,
       dibuat_oleh: session.profileId,
       status: "draft",
       tanggal_mulai: options.periode.tanggal_mulai,
@@ -428,6 +472,19 @@ export async function updatePengajuanDraftAction(
     };
   }
 
+  const guru = await resolveGuruPembimbing(
+    session.supabase,
+    data.guru_pembimbing_id,
+  );
+
+  if (!guru.ok) {
+    return {
+      ok: false,
+      message: guru.message,
+      fieldErrors: guru.fieldErrors,
+    };
+  }
+
   const options = await getActiveOptions(
     session.supabase,
     perusahaan.id,
@@ -447,6 +504,7 @@ export async function updatePengajuanDraftAction(
     .update({
       perusahaan_id: perusahaan.id,
       periode_id: data.periode_id,
+      guru_pembimbing_id: guru.id,
       tanggal_mulai: options.periode.tanggal_mulai,
       tanggal_selesai: options.periode.tanggal_selesai,
     })
@@ -476,7 +534,7 @@ export async function submitPengajuanAction(
 
   const { data: current, error } = await session.supabase
     .from("pengajuan_pkl")
-    .select("id, status, dibuat_oleh")
+    .select("id, status, dibuat_oleh, guru_pembimbing_id")
     .eq("id", parsedId.data)
     .maybeSingle();
 
@@ -486,6 +544,16 @@ export async function submitPengajuanAction(
 
   if (current.status !== "draft") {
     return { ok: false, message: "Pengajuan sudah dikirim." };
+  }
+
+  if (!current.guru_pembimbing_id) {
+    return {
+      ok: false,
+      message: "Pilih guru pembimbing sebelum mengirim pengajuan.",
+      fieldErrors: {
+        guru_pembimbing_id: "Guru pembimbing wajib dipilih.",
+      },
+    };
   }
 
   const { count, error: countError } = await session.supabase

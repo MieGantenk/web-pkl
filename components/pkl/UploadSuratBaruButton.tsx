@@ -38,15 +38,23 @@ const extensionByType: Record<(typeof allowedTypes)[number], string> = {
   "image/png": "png",
 };
 
-function isEligibleJenis(option: SuratUploadOption, jenis: JenisSurat) {
+function isEligibleJenis(
+  option: SuratUploadOption,
+  jenis: JenisSurat,
+  today: string,
+) {
   return canIssueSuratForApplication(
     jenis,
     option.status,
     option.documents,
+    { tanggalSelesai: option.tanggalSelesai, today },
   );
 }
 
-function firstJenisFor(option: SuratUploadOption | null) {
+function firstJenisFor(
+  option: SuratUploadOption | null,
+  today: string,
+) {
   if (!option) {
     return "";
   }
@@ -54,7 +62,7 @@ function firstJenisFor(option: SuratUploadOption | null) {
   return (
     jenisSuratList.find(
       (jenis) =>
-        !option.letters[jenis] && isEligibleJenis(option, jenis),
+        !option.letters[jenis] && isEligibleJenis(option, jenis, today),
     ) ??
     jenisSuratList.find((jenis) => Boolean(option.letters[jenis])) ??
     jenisSuratList[0]
@@ -75,9 +83,11 @@ function applicationLabel(option: SuratUploadOption) {
 export function UploadSuratBaruButton({
   options,
   tahun,
+  today,
 }: {
   options: SuratUploadOption[];
   tahun: number;
+  today: string;
 }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -86,7 +96,7 @@ export function UploadSuratBaruButton({
     firstApplication?.pengajuanId ?? "",
   );
   const [jenis, setJenis] = useState<JenisSurat | "">(
-    firstJenisFor(firstApplication),
+    firstJenisFor(firstApplication, today),
   );
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -151,7 +161,7 @@ export function UploadSuratBaruButton({
     const next =
       options.find((option) => option.pengajuanId === nextId) ?? null;
     setPengajuanId(nextId);
-    setJenis(firstJenisFor(next));
+    setJenis(firstJenisFor(next, today));
     setError(null);
   }
 
@@ -307,7 +317,7 @@ export function UploadSuratBaruButton({
               {jenisSuratList.map((value) => {
                 const existing = selectedApplication?.letters[value];
                 const eligible = selectedApplication
-                  ? isEligibleJenis(selectedApplication, value)
+                  ? isEligibleJenis(selectedApplication, value, today)
                   : false;
                 const suffix = existing
                   ? ` · sudah terbit${existing.hasFile ? " · file sekolah" : ""}`

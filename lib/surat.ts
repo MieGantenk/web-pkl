@@ -35,6 +35,11 @@ export type SuratRequirementState = {
   balasanVerified: boolean;
 };
 
+export type SuratSchedule = {
+  tanggalSelesai: string | null;
+  today: string;
+};
+
 export const emptySuratRequirementState: SuratRequirementState = {
   izinVerified: false,
   balasanVerified: false,
@@ -60,14 +65,30 @@ export function suratRequirementMet(
  * Surat pengajuan menunggu izin orang tua bertanda tangan; surat keberangkatan
  * menunggu surat balasan perusahaan.
  */
+export function suratScheduleMet(
+  jenis: JenisSurat,
+  schedule?: SuratSchedule,
+) {
+  if (jenis !== "penarikan") {
+    return true;
+  }
+
+  return Boolean(
+    schedule?.tanggalSelesai &&
+      schedule.tanggalSelesai <= schedule.today,
+  );
+}
+
 export function canIssueSuratForApplication(
   jenis: JenisSurat,
   status: StatusPengajuan,
   state: SuratRequirementState,
+  schedule?: SuratSchedule,
 ) {
   return (
     suratEligibleStatuses[jenis].includes(status) &&
-    suratRequirementMet(jenis, state)
+    suratRequirementMet(jenis, state) &&
+    suratScheduleMet(jenis, schedule)
   );
 }
 

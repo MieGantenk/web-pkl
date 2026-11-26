@@ -99,9 +99,11 @@ function Choice({
 }
 
 export function MutabaahForm({
+  formId,
   questions,
   todayEntry,
 }: {
+  formId: string;
   questions: MutabaahQuestion[];
   todayEntry: MutabaahEntry | null;
 }) {
@@ -162,6 +164,7 @@ export function MutabaahForm({
 
     try {
       const result = await saveMutabaahAction({
+        form_id: formId,
         answers: questions.map((question) => {
           const value = answers[question.id];
 

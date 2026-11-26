@@ -24,6 +24,9 @@ export const mutabaahAnswerSchema = z.object({
 });
 
 export const saveMutabaahSchema = z.object({
+  form_id: z
+    .string()
+    .regex(postgresUuidPattern, "Form mutaba'ah tidak valid."),
   answers: z
     .array(mutabaahAnswerSchema)
     .min(1, "Tidak ada jawaban yang dikirim.")

@@ -21,6 +21,7 @@ import {
   suratKode,
   suratNextStatus,
   suratRequirementMet,
+  suratScheduleMet,
   type SuratRequirementState,
 } from "@/lib/surat";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -200,7 +201,7 @@ export async function issueSuratAction(
   const admin = createAdminClient();
   const { data: application, error: applicationError } = await admin
     .from("pengajuan_pkl")
-    .select("id, status")
+    .select("id, status, tanggal_selesai")
     .eq("id", data.pengajuan_id)
     .maybeSingle();
 
@@ -219,13 +220,27 @@ export async function issueSuratAction(
     (await getSuratRequirementState(application.id)) ??
     emptySuratRequirementState;
 
+  const schedule = {
+    tanggalSelesai: application.tanggal_selesai,
+    today: jakartaToday(),
+  };
+
   if (
     !canIssueSuratForApplication(
       data.jenis,
       application.status,
       requirements,
+      schedule,
     )
   ) {
+    if (data.jenis === "penarikan" && !suratScheduleMet(data.jenis, schedule)) {
+      return {
+        ok: false,
+        message:
+          "Surat penarikan dapat diterbitkan setelah tanggal selesai PKL.",
+      };
+    }
+
     if (data.jenis === "pengajuan" && !requirements.izinVerified) {
       return {
         ok: false,
@@ -520,7 +535,7 @@ export async function uploadSuratForPengajuanAction(
   const admin = createAdminClient();
   const { data: application, error: applicationError } = await admin
     .from("pengajuan_pkl")
-    .select("id, status")
+    .select("id, status, tanggal_selesai")
     .eq("id", data.pengajuan_id)
     .maybeSingle();
 
@@ -535,6 +550,11 @@ export async function uploadSuratForPengajuanAction(
     application.status,
   );
   const requirementMet = suratRequirementMet(data.jenis, requirements);
+  const schedule = {
+    tanggalSelesai: application.tanggal_selesai,
+    today: jakartaToday(),
+  };
+  const scheduleMet = suratScheduleMet(data.jenis, schedule);
 
   const { data: existing, error: existingError } = await admin
     .from("surat")
@@ -547,7 +567,18 @@ export async function uploadSuratForPengajuanAction(
     return { ok: false, message: "Surat belum dapat diperiksa." };
   }
 
-  if (!existing && (!eligibleByStatus || !requirementMet)) {
+  if (
+    !existing &&
+    (!eligibleByStatus || !requirementMet || !scheduleMet)
+  ) {
+    if (data.jenis === "penarikan" && !scheduleMet) {
+      return {
+        ok: false,
+        message:
+          "Surat penarikan dapat diterbitkan setelah tanggal selesai PKL.",
+      };
+    }
+
     if (data.jenis === "pengajuan" && !requirements.izinVerified) {
       return {
         ok: false,
@@ -570,7 +601,7 @@ export async function uploadSuratForPengajuanAction(
     };
   }
 
-  const shouldAdvance = eligibleByStatus && requirementMet;
+  const shouldAdvance = eligibleByStatus && requirementMet && scheduleMet;
   let suratId = existing?.id;
   let createdSuratId: string | null = null;
 

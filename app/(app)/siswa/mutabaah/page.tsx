@@ -2,9 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { id as localeId } from "date-fns/locale";
-import { HeartHandshake, Users } from "lucide-react";
+import {
+  Check,
+  CircleDashed,
+  ClipboardList,
+  HeartHandshake,
+  Users,
+} from "lucide-react";
 
 import { EmptyState } from "@/components/pkl/EmptyState";
+import { StatusBadge } from "@/components/pkl/StatusBadge";
 import { buttonVariants } from "@/components/ui/button";
 import { MutabaahForm } from "@/components/pkl/MutabaahForm";
 import { MutabaahHistory } from "@/components/pkl/MutabaahHistory";
@@ -22,9 +29,18 @@ export const instant = false;
 const card =
   "rounded-md border border-border bg-surface p-4 shadow-xs sm:p-6";
 
-export default async function SiswaMutabaahPage() {
+type PageProps = {
+  searchParams: Promise<{ form?: string }>;
+};
+
+export default async function SiswaMutabaahPage({
+  searchParams,
+}: PageProps) {
   const profile = await requireRole("siswa");
-  const data = await getSiswaMutabaah(profile.id);
+  const params = await searchParams;
+  const selectedFormId =
+    typeof params.form === "string" ? params.form : undefined;
+  const data = await getSiswaMutabaah(profile.id, selectedFormId);
 
   const header = (
     <header className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
@@ -74,7 +90,7 @@ export default async function SiswaMutabaahPage() {
           <EmptyState
             icon={HeartHandshake}
             title="Mutaba'ah belum dapat diisi"
-            description="Mutaba'ah tersedia saat PKL berstatus berlangsung. Hubungi guru atau admin jika status PKL Anda belum sesuai."
+            description="Mutaba'ah tersedia selama masa PKL berlangsung. Hubungi guru atau admin jika status atau tanggal PKL Anda belum sesuai."
             action={
               <Link
                 href="/siswa/pengajuan"
@@ -125,6 +141,79 @@ export default async function SiswaMutabaahPage() {
 
       <section
         className={cn(card, "mb-6")}
+        aria-labelledby="daftar-mutabaah-title"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2
+              id="daftar-mutabaah-title"
+              className="text-xl font-semibold text-ink"
+            >
+              Mutaba&apos;ah aktif
+            </h2>
+            <p className="mt-1 text-sm leading-[22px] text-muted">
+              Semua mutaba&apos;ah di bawah ini harus dikerjakan hari ini.
+            </p>
+          </div>
+          <ClipboardList
+            className="size-5 shrink-0 text-brand-600"
+            strokeWidth={1.75}
+            aria-hidden
+          />
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {data.forms.map((form) => {
+            const active = form.id === data.selectedFormId;
+
+            return (
+              <Link
+                key={form.id}
+                href={`/siswa/mutabaah?form=${form.id}`}
+                prefetch={false}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "block rounded-md border p-4 transition-colors duration-[var(--m-fast)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-100",
+                  active
+                    ? "border-brand-700 bg-brand-50"
+                    : "border-border bg-surface hover:bg-surface-muted",
+                )}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="min-w-0 text-base font-semibold text-ink">
+                    {form.nama}
+                  </p>
+                  {form.todayFilled ? (
+                    <StatusBadge
+                      label="Sudah diisi"
+                      tone="success"
+                      icon={Check}
+                    />
+                  ) : (
+                    <StatusBadge
+                      label="Belum diisi"
+                      tone="warning"
+                      icon={CircleDashed}
+                    />
+                  )}
+                </div>
+                {form.deskripsi ? (
+                  <p className="mt-1 line-clamp-2 text-[13px] leading-[18px] text-muted">
+                    {form.deskripsi}
+                  </p>
+                ) : null}
+                <p className="mt-2 text-[12px] leading-4 text-muted tabular-nums">
+                  {form.questionCount} pertanyaan · {form.week.filled}/7 hari
+                  terisi
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section
+        className={cn(card, "mb-6")}
         aria-labelledby="mutabaah-summary-title"
       >
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -167,6 +256,7 @@ export default async function SiswaMutabaahPage() {
       </section>
 
       <MutabaahForm
+        formId={data.form.id}
         questions={data.questions}
         todayEntry={data.todayEntry}
       />
