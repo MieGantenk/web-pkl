@@ -8,18 +8,18 @@ import { KeyRound } from "lucide-react";
 
 import { PasswordInput } from "@/components/pkl/PasswordInput";
 import { Button } from "@/components/ui/button";
-import { resetSiswaPasswordAction } from "@/lib/actions/siswa";
+import { resetAccountPasswordAction } from "@/lib/actions/account";
 import {
-  resetSiswaPasswordSchema,
-  type ResetSiswaPasswordInput,
-} from "@/lib/validators/siswa";
+  resetAccountPasswordSchema,
+  type ResetAccountPasswordInput,
+} from "@/lib/validators/password";
 
-export function SiswaPasswordPanel({
-  siswaId,
+export function AccountPasswordPanel({
+  penggunaId,
   nama,
   username,
 }: {
-  siswaId: string;
+  penggunaId: string;
   nama: string;
   username: string;
 }) {
@@ -30,8 +30,8 @@ export function SiswaPasswordPanel({
     setError,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<ResetSiswaPasswordInput>({
-    resolver: zodResolver(resetSiswaPasswordSchema),
+  } = useForm<ResetAccountPasswordInput>({
+    resolver: zodResolver(resetAccountPasswordSchema),
     defaultValues: {
       password: "",
       confirmPassword: "",
@@ -39,13 +39,18 @@ export function SiswaPasswordPanel({
   });
   const submit = handleSubmit(onSubmit);
 
-  async function onSubmit(values: ResetSiswaPasswordInput) {
+  async function onSubmit(values: ResetAccountPasswordInput) {
     try {
-      const result = await resetSiswaPasswordAction(siswaId, values);
+      const result = await resetAccountPasswordAction(
+        penggunaId,
+        values,
+      );
 
       if (!result.ok) {
         if (result.fieldErrors) {
-          for (const [field, message] of Object.entries(result.fieldErrors)) {
+          for (const [field, message] of Object.entries(
+            result.fieldErrors,
+          )) {
             if (field === "password" || field === "confirmPassword") {
               setError(field, { type: "server", message });
             }
@@ -57,7 +62,9 @@ export function SiswaPasswordPanel({
       }
 
       setSaved(true);
-      toast.success("Kata sandi diperbarui. Salin sebelum meninggalkan halaman.");
+      toast.success(
+        "Kata sandi diperbarui. Salin sebelum meninggalkan halaman.",
+      );
     } catch {
       toast.error(
         "Tidak dapat memperbarui kata sandi. Periksa koneksi lalu coba lagi.",
@@ -85,8 +92,8 @@ export function SiswaPasswordPanel({
       </div>
 
       <p className="mt-3 text-sm leading-[22px] text-ink-soft">
-        Atur ulang kata sandi siswa. Ketik manual atau buat kata sandi aman
-        secara otomatis.
+        Atur ulang kata sandi akun ini. Kata sandi tidak perlu dibuat ulang
+        setiap kali pengguna masuk.
       </p>
 
       <p className="mt-2 text-[13px] leading-[18px] text-muted">

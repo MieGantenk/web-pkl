@@ -18,7 +18,7 @@ import {
   statusPengajuan,
   type JenisSurat,
 } from "@/lib/status";
-import { suratEligibleStatuses } from "@/lib/surat";
+import { canIssueSuratForApplication } from "@/lib/surat";
 import { cn } from "@/lib/utils";
 
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -37,7 +37,11 @@ const extensionByType: Record<(typeof allowedTypes)[number], string> = {
 };
 
 function isEligibleJenis(option: SuratUploadOption, jenis: JenisSurat) {
-  return suratEligibleStatuses[jenis].includes(option.status);
+  return canIssueSuratForApplication(
+    jenis,
+    option.status,
+    option.documents,
+  );
 }
 
 function firstJenisFor(option: SuratUploadOption | null) {
@@ -292,8 +296,8 @@ export function UploadSuratBaruButton({
 
           {pengajuanId ? (
             <p className="text-[13px] leading-[18px] text-muted">
-              Mengunggah berkas tidak mengubah status pengajuan. Jenis surat
-              yang belum waktunya tetap dapat diunggah manual.
+              Unggah berkas surat asli. Status pengajuan hanya maju setelah
+              berkas tersimpan dan syarat dokumennya terpenuhi.
             </p>
           ) : null}
 

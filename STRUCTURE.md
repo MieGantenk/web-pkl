@@ -249,6 +249,7 @@ npm run build
 | Mutaba'ah orang tua | Selesai (pilih anak, ring mingguan, riwayat 7 hari) |
 | Mutaba'ah admin | Selesai (riwayat, filter, form builder, versi, publikasi, arsip) |
 | Notifikasi | Selesai (lonceng global, badge unread, tandai dibaca, tautan per role) |
+| Keamanan API | Selesai (CSRF API mutasi, same-origin, security headers) |
 | Surat orang tua | Selesai (pilih anak, surat terbit, unduh PDF) |
 | Jurnal orang tua | Selesai (pilih anak, filter, foto, status verifikasi, read-only) |
 | Surat tugas guru | Selesai (daftar penempatan bimbingan, surat monitoring, unduh PDF) |

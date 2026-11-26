@@ -12,9 +12,9 @@ import {
   FileText,
 } from "lucide-react";
 
+import { AccountPasswordPanel } from "@/components/pkl/AccountPasswordPanel";
 import { EmptyState } from "@/components/pkl/EmptyState";
 import { SiswaForm } from "@/components/pkl/SiswaForm";
-import { SiswaPasswordPanel } from "@/components/pkl/SiswaPasswordPanel";
 import { SiswaStatusButton } from "@/components/pkl/SiswaStatusButton";
 import {
   AkunBadge,
@@ -176,8 +176,8 @@ export default async function AdminSiswaDetailPage({
             </div>
           </section>
 
-          <SiswaPasswordPanel
-            siswaId={data.id}
+          <AccountPasswordPanel
+            penggunaId={data.pengguna.id}
             nama={data.pengguna.nama_lengkap}
             username={data.pengguna.username}
           />

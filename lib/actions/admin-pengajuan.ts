@@ -127,10 +127,13 @@ export async function reviewPengajuanAction(
       : data.action === "revisi"
         ? "revisi"
         : "ditolak";
+  // Menyetujui izin tidak sama dengan menerbitkan surat pengajuan.
+  // Status tetap di izin_ortu_diunggah sampai admin benar-benar menerbitkan
+  // surat pengajuan, agar surat itu tidak dianggap terbit tanpa berkas.
   const nextStatus =
     data.jenis === "izin"
       ? data.action === "setujui"
-        ? "pengajuan_terbit"
+        ? "izin_ortu_diunggah"
         : "izin_ortu_terbit"
       : data.action === "setujui"
         ? "diterima"

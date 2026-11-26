@@ -147,6 +147,7 @@ Catatan:
 
 - Supabase REST (`/rest/v1/...`) **tidak** dipakai langsung oleh client. Semua baca/tulis lewat Server Component, Server Action, atau Route Handler + RLS.
 - Semua route `(app)` wajib cek sesi + role di server.
+- API mutasi (`POST`/`PUT`/`PATCH`/`DELETE`) wajib memakai `verifyCsrfAndOrigin`; client memakai `fetchWithCsrf`. Detail di `SECURITY.md`. Route `GET` tidak perlu token.
 - PDF memakai `@react-pdf/renderer` dan `export const runtime = "nodejs"`.
 - Login dengan username: cari email lewat service role di server, lalu `signInWithPassword`. Jangan ekspos email ke client.
 
@@ -161,6 +162,7 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 | Auth | `loginAction`, `logoutAction`, `requestPasswordResetAction`, `setPasswordAction` | Publik/auth |
 | Profil | `updateProfileAction`, `changePasswordAction` | Semua |
 | Master siswa | `createSiswaAction`, `updateSiswaAction`, `resetSiswaPasswordAction`, `setSiswaAktifAction`, `promoteSiswaKelasAction` | Admin |
+| Akun | `resetAccountPasswordAction` (siswa, guru, instruktur, orang tua) | Admin |
 | Master guru | `createGuruAction`, `updateGuruAction`, `deactivateGuruAction` | Admin |
 | Master perusahaan | `createPerusahaanAction`, `updatePerusahaanAction`, `setPerusahaanAktifAction` | Admin |
 | Instruktur | `createInstrukturAction`, `updateInstrukturAction`, `setInstrukturAktifAction`, `savePenugasanAction`, `setPenugasanAktifAction` | Admin |

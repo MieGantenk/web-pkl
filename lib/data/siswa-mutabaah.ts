@@ -77,6 +77,7 @@ export type SiswaMutabaahData = MutabaahData & {
     kelas: string | null;
     jurusan: { nama: string } | null;
   } | null;
+  pklAktif: boolean;
 };
 
 function startOfWeek(isoDate: string) {
@@ -375,6 +376,34 @@ export const getSiswaMutabaah = cache(
       return {
         today,
         student: null,
+        pklAktif: false,
+        form: null,
+        questions: [],
+        todayEntry: null,
+        week: { filled: 0, total: 7 },
+        history: [],
+      };
+    }
+
+    const { data: memberships, error: membershipError } = await supabase
+      .from("pengajuan_anggota")
+      .select("pengajuan:pengajuan_id(status)")
+      .eq("siswa_id", student.id)
+      .order("created_at", { ascending: false });
+
+    if (membershipError) {
+      throw new Error("Gagal memuat status PKL siswa.");
+    }
+
+    const pklAktif = (memberships ?? []).some(
+      (membership) => membership.pengajuan?.status === "berlangsung",
+    );
+
+    if (!pklAktif) {
+      return {
+        today,
+        student,
+        pklAktif: false,
         form: null,
         questions: [],
         todayEntry: null,
@@ -385,6 +414,6 @@ export const getSiswaMutabaah = cache(
 
     const data = await loadMutabaahData(supabase, student.id, today);
 
-    return { student, ...data };
+    return { student, pklAktif: true, ...data };
   },
 );

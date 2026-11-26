@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import { AccountPasswordPanel } from "@/components/pkl/AccountPasswordPanel";
 import { OrangTuaAccountForm } from "@/components/pkl/OrangTuaAccountForm";
 import { OrangTuaStatusButton } from "@/components/pkl/OrangTuaStatusButton";
 import { RelasiManager } from "@/components/pkl/RelasiManager";
@@ -131,6 +132,12 @@ export default async function AdminOrangTuaDetailPage({
               />
             </div>
           </section>
+
+          <AccountPasswordPanel
+            penggunaId={data.id}
+            nama={data.nama}
+            username={data.username}
+          />
         </aside>
       </div>
     </div>

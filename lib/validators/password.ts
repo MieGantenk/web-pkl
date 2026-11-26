@@ -18,7 +18,23 @@ export const passwordSchema = z
     message: "Kata sandi baru harus berbeda dari yang sekarang.",
   });
 
+export const resetAccountPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Kata sandi minimal 8 karakter.")
+      .max(72, "Kata sandi terlalu panjang."),
+    confirmPassword: z.string().min(1, "Ulangi kata sandi baru."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Ulangi kata sandi dengan benar.",
+  });
+
 export type PasswordInput = z.infer<typeof passwordSchema>;
+export type ResetAccountPasswordInput = z.infer<
+  typeof resetAccountPasswordSchema
+>;
 
 export type PasswordResult =
   | { ok: true; message: string }

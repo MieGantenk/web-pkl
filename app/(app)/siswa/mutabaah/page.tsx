@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { HeartHandshake, Users } from "lucide-react";
 
 import { EmptyState } from "@/components/pkl/EmptyState";
+import { buttonVariants } from "@/components/ui/button";
 import { MutabaahForm } from "@/components/pkl/MutabaahForm";
 import { MutabaahHistory } from "@/components/pkl/MutabaahHistory";
 import { MutabaahRing } from "@/components/pkl/MutabaahRing";
@@ -58,6 +60,29 @@ export default async function SiswaMutabaahPage() {
             icon={Users}
             title="Data siswa belum terhubung"
             description="Akun ini belum memiliki data siswa. Hubungi admin sekolah agar profil siswa dihubungkan ke akun Anda."
+          />
+        </section>
+      </div>
+    );
+  }
+
+  if (!data.pklAktif) {
+    return (
+      <div>
+        {header}
+        <section className={card}>
+          <EmptyState
+            icon={HeartHandshake}
+            title="Mutaba'ah belum dapat diisi"
+            description="Mutaba'ah tersedia saat PKL berstatus berlangsung. Hubungi guru atau admin jika status PKL Anda belum sesuai."
+            action={
+              <Link
+                href="/siswa/pengajuan"
+                className={buttonVariants({ variant: "secondary" })}
+              >
+                Periksa pengajuan PKL
+              </Link>
+            }
           />
         </section>
       </div>

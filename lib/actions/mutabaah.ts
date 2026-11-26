@@ -84,6 +84,27 @@ export async function saveMutabaahAction(
   const supabase = session.supabase;
   const today = jakartaToday();
 
+  const { data: memberships, error: membershipError } = await supabase
+    .from("pengajuan_anggota")
+    .select("pengajuan:pengajuan_id(status)")
+    .eq("siswa_id", session.siswaId)
+    .order("created_at", { ascending: false });
+
+  if (membershipError) {
+    return { ok: false, message: "Status PKL belum dapat diperiksa." };
+  }
+
+  const pklAktif = (memberships ?? []).some(
+    (membership) => membership.pengajuan?.status === "berlangsung",
+  );
+
+  if (!pklAktif) {
+    return {
+      ok: false,
+      message: "Mutaba'ah dapat diisi saat PKL berstatus berlangsung.",
+    };
+  }
+
   const { data: form, error: formError } = await supabase
     .from("mutabaah_form")
     .select("id, nama")

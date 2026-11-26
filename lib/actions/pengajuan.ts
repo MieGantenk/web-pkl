@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { validateStoredFile } from "@/lib/file-validation";
 import { notifyAdmins } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -796,6 +797,18 @@ export async function recordDokumenAction(
     !stored?.some((object) => object.name === fileName)
   ) {
     return { ok: false, message: "Berkas belum ditemukan di penyimpanan." };
+  }
+
+  const validated = await validateStoredFile({
+    download: () =>
+      admin.storage.from("dokumen").download(data.file_path),
+    mimeType: data.mime_type,
+    expectedSize: data.ukuran,
+    label: "Berkas dokumen",
+  });
+
+  if (!validated.ok) {
+    return { ok: false, message: validated.message };
   }
 
   const insertResult = await session.supabase

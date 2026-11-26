@@ -64,13 +64,14 @@ export const statusPengajuanNextStep: Record<StatusPengajuan, string> = {
   diajukan: "Sekolah sedang menerbitkan surat izin orang tua.",
   izin_ortu_terbit:
     "Unduh surat izin, minta tanda tangan orang tua, lalu unggah kembali.",
-  izin_ortu_diunggah: "Admin sedang memeriksa scan izin orang tua.",
+  izin_ortu_diunggah:
+    "Sekolah memeriksa scan izin orang tua lalu menerbitkan surat pengajuan.",
   pengajuan_terbit:
     "Serahkan surat pengajuan ke perusahaan, lalu unggah surat balasannya.",
   balasan_diunggah: "Admin sedang meninjau surat balasan perusahaan.",
   diterima: "Tunggu surat keberangkatan dari sekolah.",
   keberangkatan_terbit:
-    "Unduh surat keberangkatan dan siapkan diri untuk mulai PKL.",
+    "Surat keberangkatan sudah terbit. PKL siap dimulai.",
   berlangsung: "Isi jurnal setiap hari dan lengkapi mutaba'ah.",
   penarikan_terbit: "Serahkan surat penarikan ke perusahaan.",
   selesai: "PKL selesai. Data Anda tersimpan sebagai arsip.",

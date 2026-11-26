@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import { AccountPasswordPanel } from "@/components/pkl/AccountPasswordPanel";
 import { InstrukturAccountForm } from "@/components/pkl/InstrukturAccountForm";
 import { InstrukturStatusButton } from "@/components/pkl/InstrukturStatusButton";
 import { PenugasanManager } from "@/components/pkl/PenugasanManager";
@@ -130,6 +131,12 @@ export default async function AdminInstrukturDetailPage({
               />
             </div>
           </section>
+
+          <AccountPasswordPanel
+            penggunaId={data.id}
+            nama={data.nama}
+            username={data.username}
+          />
         </aside>
       </div>
     </div>
