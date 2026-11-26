@@ -59,9 +59,9 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/surat/kelengkapan` | Kelengkapan surat | Matriks surat per siswa, status terbit/siap/terkunci |
 | `/admin/surat/siswa` | Surat dari siswa | Dokumen unggahan siswa, filter, lihat/unduh, tinjau pengajuan |
 | `/admin/surat/print/[id]` | Cetak surat | Pratinjau A4, cetak, unduh PDF |
-| `/admin/laporan` | Laporan | Rekap periode/perusahaan/kelas, ekspor v1.1 |
+| `/admin/laporan` | Laporan | Rekap periode/perusahaan/kelas, ringkasan, rincian siswa, ekspor CSV |
 | `/admin/pengaturan` | Pengaturan | Profil sekolah, akreditasi, kop/footer, nomor surat, item mutaba'ah |
-| `/admin/audit` | Audit | Log aksi, filter |
+| `/admin/audit` | Audit | Log aksi, filter pengguna/aksi/entitas/tanggal, detail + reset kata sandi akun target |
 
 > Periode PKL tidak punya halaman sendiri. Periode ditetapkan dari tingkat kelas: XI → 2026/2027, X → 2027/2028. Filter periode tersedia di halaman data siswa dan data orang tua.
 
@@ -135,6 +135,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `GET` | `/auth/callback` | Publik | Tukar `code` Supabase menjadi sesi |
 | `GET` | `/api/health` | Internal | Health check deployment |
 | `GET` | `/api/notifikasi` | Auth | Daftar notifikasi dan jumlah belum dibaca |
+| `GET` | `/api/admin/laporan/export` | Admin | Unduh CSV rekap PKL sesuai filter |
 | `GET` | `/api/surat/[id]/pdf` | Role berhak | Generate/unduh PDF surat (Node runtime) |
 | `GET` | `/api/verifikasi/surat/[kode]` | Publik | Halaman verifikasi QR (v1.1) |
 | `GET` | `/api/sertifikat/[id]/pdf` | Role berhak | Generate/unduh sertifikat (v1.1) |

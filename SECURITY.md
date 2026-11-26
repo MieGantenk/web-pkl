@@ -85,6 +85,19 @@ Route `GET` yang sudah ada tidak terpengaruh dan tidak perlu token CSRF:
 - `X-Frame-Options: DENY`
 - `Referrer-Policy: strict-origin-when-cross-origin`
 
+## Audit & kata sandi
+
+- `log_aktivitas` tidak boleh menyimpan kata sandi plaintext, baik sebelum
+  maupun sesudah perubahan.
+- Supabase Auth menyimpan kata sandi sebagai hash; kata sandi lama/baru tidak
+  dapat dibaca dari aplikasi, termasuk oleh admin.
+- Detail audit menampilkan pelaku, akun target, waktu, aksi, dan metadata.
+  Untuk aksi terkait kata sandi, admin dapat membuka panel reset akun target.
+- Reset dari panel audit memakai `resetAccountPasswordAction` yang sudah
+  dibatasi role admin dan dicatat sebagai `atur_ulang_kata_sandi`.
+- Field detail yang mengandung `password`, `sandi`, `token`, atau `secret`
+  tidak ditampilkan di UI audit.
+
 ## Catatan
 
 - Jangan menambahkan token CSRF ke Server Actions; proteksi bawaan Next.js

@@ -89,6 +89,7 @@ export async function resetAccountPasswordAction(
   revalidatePath("/admin/guru");
   revalidatePath("/admin/instruktur");
   revalidatePath("/admin/orang-tua");
+  revalidatePath("/admin/audit");
   revalidatePath("/admin");
 
   return { ok: true, id: account.id };
