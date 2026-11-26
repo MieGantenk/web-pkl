@@ -320,7 +320,7 @@ Penjelasan lengkap ada di `LAYOUT.md`. Ringkasnya:
 
 | Halaman | Inti desain | Momen |
 |---|---|---|
-| **Login** | Dua kolom: panel teal gelap + form 400 px. Tanpa marketing berlebihan | Form masuk 12 px, 40 ms bertahap |
+| **Login** | Dua kolom: panel foto kampus dengan overlay teal + form 400 px. Tanpa marketing berlebihan | Form masuk 12 px, 40 ms bertahap |
 | **Dashboard staf** | Antrean tugas di atas, statistik di bawah | Angka count-up sekali |
 | **Dashboard siswa** | Kartu status surat + jurnal hari ini + cincin mutaba'ah | Ring terisi |
 | **Daftar/table** | Header + filter + tabel + pagination; di HP menjadi kartu | Baris hover, drawer filter |

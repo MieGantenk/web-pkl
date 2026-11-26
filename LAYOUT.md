@@ -232,12 +232,14 @@ Aturan:
 Logo                              H1 "Masuk ke sistem"
 Nama sistem                       Deskripsi 1 baris
 1 kalimat                          Label + input ID
-Foto kampus opsional               Label + input kata sandi
+Foto kampus + overlay teal         Label + input kata sandi
                                    [ Masuk ]
                                    Lupa kata sandi?
                                    Bantuan
 ```
 
+- Panel kiri memakai foto kampus sebagai background dengan overlay `sidebar`
+  70–90% agar teks tetap terbaca.
 - Satu aksi utama.
 - Error login: banner di atas form, bukan toast.
 - Setelah login, redirect sesuai role.
