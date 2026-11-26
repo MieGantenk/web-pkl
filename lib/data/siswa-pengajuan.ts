@@ -49,7 +49,6 @@ export type PengajuanSurat = {
   nomor: string | null;
   tanggalTerbit: string | null;
   status: StatusSurat;
-  fileUrl: string | null;
 };
 
 export type PengajuanData = {
@@ -207,7 +206,7 @@ export const getSiswaPengajuan = cache(
         .order("diunggah_pada", { ascending: false }),
       supabase
         .from("surat")
-        .select("id, jenis, nomor, tanggal_terbit, status, file_path")
+        .select("id, jenis, nomor, tanggal_terbit, status")
         .eq("pengajuan_id", application.id)
         .order("created_at", { ascending: false }),
     ]);
@@ -241,27 +240,13 @@ export const getSiswaPengajuan = cache(
       }),
     );
 
-    const letters = await Promise.all(
-      (letterRes.data ?? []).map(async (letter) => {
-        let fileUrl: string | null = null;
-
-        if (letter.file_path) {
-          const { data } = await supabase.storage
-            .from("surat")
-            .createSignedUrl(letter.file_path, 60 * 60);
-          fileUrl = data?.signedUrl ?? null;
-        }
-
-        return {
-          id: letter.id,
-          jenis: letter.jenis,
-          nomor: letter.nomor,
-          tanggalTerbit: letter.tanggal_terbit,
-          status: letter.status,
-          fileUrl,
-        };
-      }),
-    );
+    const letters = (letterRes.data ?? []).map((letter) => ({
+      id: letter.id,
+      jenis: letter.jenis,
+      nomor: letter.nomor,
+      tanggalTerbit: letter.tanggal_terbit,
+      status: letter.status,
+    }));
 
     return {
       siswa,

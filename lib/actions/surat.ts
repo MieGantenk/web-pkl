@@ -6,16 +6,22 @@ import { z } from "zod";
 import { assertAdminAction } from "@/lib/actions/admin-guard";
 import { currentSuratYear } from "@/lib/data/admin-surat";
 import { jakartaToday } from "@/lib/date";
+import { validateStoredFile } from "@/lib/file-validation";
 import { notifyPengajuan } from "@/lib/notifications";
 import {
   jenisSuratLabel,
   jenisSuratList,
   type JenisSurat,
+  type StatusPengajuan,
 } from "@/lib/status";
 import {
-  canIssueSurat,
+  canIssueSuratForApplication,
+  emptySuratRequirementState,
+  suratEligibleStatuses,
   suratKode,
   suratNextStatus,
+  suratRequirementMet,
+  type SuratRequirementState,
 } from "@/lib/surat";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -111,10 +117,67 @@ function revalidateSurat() {
   revalidatePath("/admin/surat");
   revalidatePath("/admin");
   revalidatePath("/admin/pengajuan");
+  revalidatePath("/admin/penempatan");
   revalidatePath("/siswa");
   revalidatePath("/siswa/surat");
+  revalidatePath("/siswa/pengajuan");
+  revalidatePath("/siswa/jurnal");
+  revalidatePath("/siswa/mutabaah");
   revalidatePath("/guru");
   revalidatePath("/ortu");
+}
+
+async function getSuratRequirementState(
+  applicationId: string,
+): Promise<SuratRequirementState | null> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("dokumen")
+    .select("jenis, status, file_path")
+    .eq("pengajuan_id", applicationId)
+    .in("jenis", ["izin_orang_tua_ttd", "surat_balasan_perusahaan"]);
+
+  if (error) {
+    return null;
+  }
+
+  const verified = (jenis: string) =>
+    (data ?? []).some(
+      (document) =>
+        document.jenis === jenis &&
+        document.status === "diterima" &&
+        Boolean(document.file_path),
+    );
+
+  return {
+    izinVerified: verified("izin_orang_tua_ttd"),
+    balasanVerified: verified("surat_balasan_perusahaan"),
+  };
+}
+
+async function advanceApplicationStatus(
+  applicationId: string,
+  currentStatus: StatusPengajuan,
+  nextStatus: StatusPengajuan | undefined,
+) {
+  if (!nextStatus || nextStatus === currentStatus) {
+    return { ok: true as const, changed: false };
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("pengajuan_pkl")
+    .update({ status: nextStatus })
+    .eq("id", applicationId)
+    .eq("status", currentStatus)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    return { ok: false as const, message: "Status pengajuan belum dapat diperbarui." };
+  }
+
+  return { ok: true as const, changed: true };
 }
 
 export async function issueSuratAction(
@@ -145,7 +208,40 @@ export async function issueSuratAction(
     return { ok: false, message: "Pengajuan belum dapat diperiksa." };
   }
 
-  if (!application || !canIssueSurat(data.jenis, application.status)) {
+  if (!application) {
+    return {
+      ok: false,
+      message: "Pengajuan ini belum memenuhi syarat untuk jenis surat tersebut.",
+    };
+  }
+
+  const requirements =
+    (await getSuratRequirementState(application.id)) ??
+    emptySuratRequirementState;
+
+  if (
+    !canIssueSuratForApplication(
+      data.jenis,
+      application.status,
+      requirements,
+    )
+  ) {
+    if (data.jenis === "pengajuan" && !requirements.izinVerified) {
+      return {
+        ok: false,
+        message:
+          "Verifikasi izin orang tua bertanda tangan terlebih dahulu sebelum menerbitkan surat pengajuan.",
+      };
+    }
+
+    if (data.jenis === "keberangkatan" && !requirements.balasanVerified) {
+      return {
+        ok: false,
+        message:
+          "Setujui surat balasan perusahaan terlebih dahulu sebelum menerbitkan surat keberangkatan.",
+      };
+    }
+
     return {
       ok: false,
       message: "Pengajuan ini belum memenuhi syarat untuk jenis surat tersebut.",
@@ -209,12 +305,18 @@ export async function issueSuratAction(
   }
 
   const nextStatus = suratNextStatus[data.jenis];
+  const statusUpdate = await advanceApplicationStatus(
+    application.id,
+    application.status,
+    nextStatus,
+  );
 
-  if (nextStatus) {
-    await admin
-      .from("pengajuan_pkl")
-      .update({ status: nextStatus })
-      .eq("id", application.id);
+  if (!statusUpdate.ok) {
+    return {
+      ok: false,
+      message:
+        "Surat sudah tersimpan, tetapi status pengajuan belum berubah. Muat ulang halaman lalu periksa kembali.",
+    };
   }
 
   try {
@@ -223,7 +325,12 @@ export async function issueSuratAction(
       aksi: "terbit_surat",
       entitas: "surat",
       entitas_id: inserted.data.id,
-      detail: { jenis: data.jenis, nomor },
+      detail: {
+        jenis: data.jenis,
+        nomor,
+        status_sebelum: application.status,
+        status_sesudah: nextStatus ?? application.status,
+      },
     });
   } catch {
     // Audit log tidak boleh menggagalkan penerbitan.
@@ -335,6 +442,17 @@ export async function recordSuratFileAction(
     return { ok: false, message: "Berkas belum ditemukan di penyimpanan." };
   }
 
+  const validated = await validateStoredFile({
+    download: () => admin.storage.from("surat").download(data.file_path),
+    mimeType: data.mime_type,
+    expectedSize: data.ukuran,
+    label: "Berkas surat",
+  });
+
+  if (!validated.ok) {
+    return { ok: false, message: validated.message };
+  }
+
   const { data: updated, error: updateError } = await admin
     .from("surat")
     .update({ file_path: data.file_path })
@@ -400,6 +518,24 @@ export async function uploadSuratForPengajuanAction(
 
   const data = parsed.data;
   const admin = createAdminClient();
+  const { data: application, error: applicationError } = await admin
+    .from("pengajuan_pkl")
+    .select("id, status")
+    .eq("id", data.pengajuan_id)
+    .maybeSingle();
+
+  if (applicationError || !application) {
+    return { ok: false, message: "Pengajuan tidak ditemukan." };
+  }
+
+  const requirements =
+    (await getSuratRequirementState(application.id)) ??
+    emptySuratRequirementState;
+  const eligibleByStatus = suratEligibleStatuses[data.jenis].includes(
+    application.status,
+  );
+  const requirementMet = suratRequirementMet(data.jenis, requirements);
+
   const { data: existing, error: existingError } = await admin
     .from("surat")
     .select("id")
@@ -411,7 +547,32 @@ export async function uploadSuratForPengajuanAction(
     return { ok: false, message: "Surat belum dapat diperiksa." };
   }
 
+  if (!existing && (!eligibleByStatus || !requirementMet)) {
+    if (data.jenis === "pengajuan" && !requirements.izinVerified) {
+      return {
+        ok: false,
+        message:
+          "Verifikasi izin orang tua bertanda tangan terlebih dahulu sebelum menerbitkan surat pengajuan.",
+      };
+    }
+
+    if (data.jenis === "keberangkatan" && !requirements.balasanVerified) {
+      return {
+        ok: false,
+        message:
+          "Setujui surat balasan perusahaan terlebih dahulu sebelum menerbitkan surat keberangkatan.",
+      };
+    }
+
+    return {
+      ok: false,
+      message: "Pengajuan ini belum memenuhi syarat untuk jenis surat tersebut.",
+    };
+  }
+
+  const shouldAdvance = eligibleByStatus && requirementMet;
   let suratId = existing?.id;
+  let createdSuratId: string | null = null;
 
   if (!suratId) {
     const supabase = await createClient();
@@ -456,6 +617,7 @@ export async function uploadSuratForPengajuanAction(
     }
 
     suratId = inserted.data.id;
+    createdSuratId = inserted.data.id;
   }
 
   const recorded = await recordSuratFileAction({
@@ -467,7 +629,27 @@ export async function uploadSuratForPengajuanAction(
   });
 
   if (!recorded.ok) {
+    if (createdSuratId) {
+      await admin.from("surat").delete().eq("id", createdSuratId);
+    }
+
     return { ok: false, message: recorded.message };
+  }
+
+  if (shouldAdvance) {
+    const statusUpdate = await advanceApplicationStatus(
+      application.id,
+      application.status,
+      suratNextStatus[data.jenis],
+    );
+
+    if (!statusUpdate.ok) {
+      return {
+        ok: false,
+        message:
+          "Berkas tersimpan, tetapi status pengajuan belum berubah. Muat ulang halaman lalu periksa kembali.",
+      };
+    }
   }
 
   return { ok: true, id: suratId };

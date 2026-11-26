@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Users } from "lucide-react";
 
+import { AccountPasswordPanel } from "@/components/pkl/AccountPasswordPanel";
 import { GuruForm } from "@/components/pkl/GuruForm";
 import { GuruStatusButton } from "@/components/pkl/GuruStatusButton";
 import { AkunBadge } from "@/components/pkl/StatusBadge";
@@ -129,6 +130,12 @@ export default async function AdminGuruDetailPage({
               />
             </div>
           </section>
+
+          <AccountPasswordPanel
+            penggunaId={data.pengguna.id}
+            nama={data.pengguna.nama_lengkap}
+            username={data.pengguna.username}
+          />
 
           <section className="rounded-md border border-border bg-surface p-5 shadow-xs">
             <div className="flex items-center justify-between gap-3">

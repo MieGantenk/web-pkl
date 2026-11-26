@@ -5,6 +5,8 @@
  *   npm run seed:demo
  *
  * Script ini membuat akun dan data contoh yang idempoten.
+ * Kata sandi akun demo yang sudah ada tidak diubah agar tetap tersimpan.
+ * Gunakan --reset-passwords untuk mengembalikan kata sandi demo.
  * Jangan jalankan pada database produksi.
  */
 import crypto from "node:crypto";
@@ -53,6 +55,8 @@ function must(result, label) {
 }
 
 loadEnv();
+
+const resetPasswords = process.argv.includes("--reset-passwords");
 
 const url =
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
@@ -154,7 +158,7 @@ async function ensureDemoUser({ email, username, nama, peran }) {
   if (account) {
     must(
       await admin.auth.admin.updateUserById(account.id, {
-        password: PASSWORD,
+        ...(resetPasswords ? { password: PASSWORD } : {}),
         email_confirm: true,
         user_metadata: { username, nama_lengkap: nama },
         app_metadata: { peran },

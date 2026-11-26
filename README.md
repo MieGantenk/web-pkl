@@ -97,7 +97,10 @@ Kalau masih bertentangan, berhenti dan minta keputusan. Jangan menebak.
 
 ### Akun demo
 
-Jalankan `npm run seed:demo` lebih dulu, lalu gunakan akun berikut:
+Jalankan `npm run seed:demo` lebih dulu, lalu gunakan akun berikut.
+Kata sandi akun yang sudah ada tidak diubah oleh seed. Untuk
+mengembalikan kata sandi demo ke nilai di tabel, jalankan
+`npm run seed:demo -- --reset-passwords`.
 
 | Peran | ID / username | Email | Kata sandi |
 |---|---|---|---|

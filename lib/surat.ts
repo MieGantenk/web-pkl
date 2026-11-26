@@ -26,9 +26,50 @@ export const suratNextStatus: Partial<
 > = {
   izin_orang_tua: "izin_ortu_terbit",
   pengajuan: "pengajuan_terbit",
-  keberangkatan: "keberangkatan_terbit",
+  keberangkatan: "berlangsung",
   penarikan: "penarikan_terbit",
 };
+
+export type SuratRequirementState = {
+  izinVerified: boolean;
+  balasanVerified: boolean;
+};
+
+export const emptySuratRequirementState: SuratRequirementState = {
+  izinVerified: false,
+  balasanVerified: false,
+};
+
+export function suratRequirementMet(
+  jenis: JenisSurat,
+  state: SuratRequirementState,
+) {
+  if (jenis === "pengajuan") {
+    return state.izinVerified;
+  }
+
+  if (jenis === "keberangkatan") {
+    return state.balasanVerified;
+  }
+
+  return true;
+}
+
+/**
+ * Surat alur hanya boleh terbit setelah dokumen pendukungnya diverifikasi.
+ * Surat pengajuan menunggu izin orang tua bertanda tangan; surat keberangkatan
+ * menunggu surat balasan perusahaan.
+ */
+export function canIssueSuratForApplication(
+  jenis: JenisSurat,
+  status: StatusPengajuan,
+  state: SuratRequirementState,
+) {
+  return (
+    suratEligibleStatuses[jenis].includes(status) &&
+    suratRequirementMet(jenis, state)
+  );
+}
 
 export const studentSuratTypes: readonly JenisSurat[] = [
   "izin_orang_tua",

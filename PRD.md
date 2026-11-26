@@ -144,11 +144,11 @@ Aturan:
 
 | # | Aktor | Aksi | Status |
 |---|---|---|---|
-| 1 | Admin | Terbitkan surat keberangkatan | `keberangkatan_terbit` |
-| 2 | Admin | Terbitkan surat tugas monitoring untuk guru | `keberangkatan_terbit` |
+| 1 | Admin | Terbitkan surat keberangkatan | `berlangsung` |
+| 2 | Admin | Terbitkan surat tugas monitoring untuk guru | `berlangsung` |
 | 3 | Admin | Tetapkan guru pembimbing, instruktur, pembimbing lapangan | — |
 | 4 | Sistem | Beri akses ke instruktur & orang tua | — |
-| 5 | Admin/Sistem | Tandai PKL mulai (atau otomatis pada tanggal mulai) | `berlangsung` |
+| 5 | Admin/Sistem | Tandai PKL mulai untuk data lama (atau otomatis pada tanggal mulai) | `berlangsung` |
 
 ### Tahap 3 — Pelaksanaan, jurnal, mutaba'ah
 
@@ -194,7 +194,7 @@ Aturan:
 | `pengajuan_terbit` | Surat pengajuan terbit | 1 | Siswa serahkan ke perusahaan | Info |
 | `balasan_diunggah` | Balasan diunggah | 1 | Admin tinjau | Warning |
 | `diterima` | Diterima | 2 | Admin terbitkan keberangkatan | Success |
-| `keberangkatan_terbit` | Surat keberangkatan terbit | 2 | PKL mulai | Success |
+| `keberangkatan_terbit` | Surat keberangkatan terbit | 2 | Data lama; admin tandai PKL mulai | Success |
 | `berlangsung` | Berlangsung | 3 | Jurnal & mutaba'ah | Success |
 | `penarikan_terbit` | Surat penarikan terbit | 4 | Serahkan & tandai selesai | Info |
 | `selesai` | Selesai | 4 | Arsip | Success |

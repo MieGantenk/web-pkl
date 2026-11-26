@@ -93,8 +93,24 @@ export default async function SiswaPengajuanPage() {
     pengajuan.status === "dibatalkan";
   const hasOptions = data.options.periode.length > 0;
   const canEditDraft = isDraft && isOwner;
-  const canUploadIzin = pengajuan?.status === "izin_ortu_terbit";
-  const canUploadBalasan = pengajuan?.status === "pengajuan_terbit";
+  const hasIzinLetter = Boolean(
+    pengajuan?.surat.some(
+      (surat) => surat.jenis === "izin_orang_tua" && surat.status === "terbit",
+    ),
+  );
+  const hasPengajuanLetter = Boolean(
+    pengajuan?.surat.some(
+      (surat) => surat.jenis === "pengajuan" && surat.status === "terbit",
+    ),
+  );
+  const izinDocument = pengajuan?.dokumen.find(
+    (dokumen) => dokumen.jenis === "izin_orang_tua_ttd",
+  );
+  const izinVerified = izinDocument?.status === "diterima";
+  const canUploadIzin =
+    pengajuan?.status === "izin_ortu_terbit" && hasIzinLetter;
+  const canUploadBalasan =
+    pengajuan?.status === "pengajuan_terbit" && hasPengajuanLetter;
   const canShowTimeline =
     pengajuan &&
     pengajuan.status !== "ditolak" &&
@@ -201,8 +217,7 @@ export default async function SiswaPengajuanPage() {
             />
           ) : null}
 
-          {pengajuan.status === "izin_ortu_diunggah" ||
-          pengajuan.status === "balasan_diunggah" ? (
+          {pengajuan.status === "izin_ortu_diunggah" ? (
             <div className="mt-4 flex items-start gap-2 rounded-sm border border-warning-border bg-warning-bg px-3 py-2.5 text-sm leading-[22px] text-warning">
               <Clock
                 className="mt-0.5 size-4 shrink-0"
@@ -210,8 +225,23 @@ export default async function SiswaPengajuanPage() {
                 aria-hidden
               />
               <span>
-                Dokumen sedang menunggu verifikasi admin sekolah. Anda akan
-                melihat perubahan status di halaman ini.
+                {izinVerified
+                  ? "Izin orang tua sudah diverifikasi. Sekolah akan menerbitkan surat pengajuan ke perusahaan."
+                  : "Dokumen sedang menunggu verifikasi admin sekolah. Anda akan melihat perubahan status di halaman ini."}
+              </span>
+            </div>
+          ) : null}
+
+          {pengajuan.status === "balasan_diunggah" ? (
+            <div className="mt-4 flex items-start gap-2 rounded-sm border border-warning-border bg-warning-bg px-3 py-2.5 text-sm leading-[22px] text-warning">
+              <Clock
+                className="mt-0.5 size-4 shrink-0"
+                strokeWidth={1.75}
+                aria-hidden
+              />
+              <span>
+                Surat balasan perusahaan sedang menunggu persetujuan admin
+                sekolah. Anda akan melihat perubahan status di halaman ini.
               </span>
             </div>
           ) : null}
@@ -445,20 +475,20 @@ export default async function SiswaPengajuanPage() {
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-3">
-                      {surat.fileUrl ? (
-                        <a
-                          href={surat.fileUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex h-11 items-center text-[13px] font-semibold text-brand-700 hover:text-brand-800"
-                        >
-                          Unduh
-                        </a>
-                      ) : (
-                        <span className="text-[12px] leading-4 text-muted">
-                          Berkas belum tersedia
-                        </span>
-                      )}
+                      <a
+                        href={`/api/surat/${surat.id}/pdf`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex h-11 items-center text-[13px] font-semibold text-brand-700 hover:text-brand-800"
+                      >
+                        Lihat
+                      </a>
+                      <a
+                        href={`/api/surat/${surat.id}/pdf?download=1`}
+                        className="inline-flex h-11 items-center text-[13px] font-semibold text-brand-700 hover:text-brand-800"
+                      >
+                        Unduh
+                      </a>
                       <SuratBadge status={surat.status} />
                     </div>
                   </li>

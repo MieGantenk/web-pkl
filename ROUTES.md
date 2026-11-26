@@ -162,6 +162,7 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 | Auth | `loginAction`, `logoutAction`, `requestPasswordResetAction`, `setPasswordAction` | Publik/auth |
 | Profil | `updateProfileAction`, `changePasswordAction` | Semua |
 | Master siswa | `createSiswaAction`, `updateSiswaAction`, `resetSiswaPasswordAction`, `setSiswaAktifAction`, `promoteSiswaKelasAction` | Admin |
+| Akun | `resetAccountPasswordAction` (siswa, guru, instruktur, orang tua) | Admin |
 | Master guru | `createGuruAction`, `updateGuruAction`, `deactivateGuruAction` | Admin |
 | Master perusahaan | `createPerusahaanAction`, `updatePerusahaanAction`, `setPerusahaanAktifAction` | Admin |
 | Instruktur | `createInstrukturAction`, `updateInstrukturAction`, `setInstrukturAktifAction`, `savePenugasanAction`, `setPenugasanAktifAction` | Admin |

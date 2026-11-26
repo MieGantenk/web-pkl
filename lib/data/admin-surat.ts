@@ -8,7 +8,12 @@ import {
   type StatusPengajuan,
   type StatusSurat,
 } from "@/lib/status";
-import { suratEligibleStatuses } from "@/lib/surat";
+import {
+  canIssueSuratForApplication,
+  emptySuratRequirementState,
+  suratEligibleStatuses,
+  type SuratRequirementState,
+} from "@/lib/surat";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const SURAT_PAGE_SIZE = 10;
@@ -50,6 +55,7 @@ export type SuratIssueOption = {
   periode: { nama: string } | null;
   students: SuratStudent[];
   existingSurat: { id: string; nomor: string | null } | null;
+  documents: SuratRequirementState;
 };
 
 export type SuratUploadLetter = {
@@ -65,12 +71,14 @@ export type SuratUploadOption = {
   periode: { nama: string } | null;
   students: SuratStudent[];
   letters: Partial<Record<JenisSurat, SuratUploadLetter>>;
+  documents: SuratRequirementState;
 };
 
 export type SuratKelengkapanCell = {
   jenis: JenisSurat;
   state: "terbit" | "siap" | "terkunci";
   surat: SuratUploadLetter | null;
+  reason: string | null;
 };
 
 export type SuratKelengkapanRow = {
@@ -79,6 +87,7 @@ export type SuratKelengkapanRow = {
   perusahaan: { nama: string; kota: string | null } | null;
   periode: { nama: string } | null;
   students: SuratStudent[];
+  documents: SuratRequirementState;
   cells: Record<JenisSurat, SuratKelengkapanCell>;
 };
 
@@ -280,6 +289,68 @@ async function getMembers(applicationIds: string[]) {
   return byApplication;
 }
 
+async function getDocumentStates(applicationIds: string[]) {
+  const byApplication = new Map<string, SuratRequirementState>();
+
+  if (!applicationIds.length) {
+    return byApplication;
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("dokumen")
+    .select("pengajuan_id, jenis, status, file_path")
+    .in("pengajuan_id", applicationIds)
+    .in("jenis", ["izin_orang_tua_ttd", "surat_balasan_perusahaan"]);
+
+  if (error) {
+    throw new Error("Gagal memuat verifikasi dokumen pengajuan.");
+  }
+
+  for (const applicationId of applicationIds) {
+    const documents = (data ?? []).filter(
+      (document) => document.pengajuan_id === applicationId,
+    );
+
+    byApplication.set(applicationId, {
+      izinVerified: documents.some(
+        (document) =>
+          document.jenis === "izin_orang_tua_ttd" &&
+          document.status === "diterima" &&
+          Boolean(document.file_path),
+      ),
+      balasanVerified: documents.some(
+        (document) =>
+          document.jenis === "surat_balasan_perusahaan" &&
+          document.status === "diterima" &&
+          Boolean(document.file_path),
+      ),
+    });
+  }
+
+  return byApplication;
+}
+
+function suratLockedReason(
+  jenis: JenisSurat,
+  status: StatusPengajuan,
+  documents: SuratRequirementState,
+) {
+  if (jenis === "pengajuan" && status === "izin_ortu_diunggah") {
+    return documents.izinVerified
+      ? null
+      : "Menunggu verifikasi izin orang tua bertanda tangan.";
+  }
+
+  if (jenis === "keberangkatan" && status === "diterima") {
+    return documents.balasanVerified
+      ? null
+      : "Menunggu persetujuan surat balasan perusahaan.";
+  }
+
+  return null;
+}
+
 export async function getSuratList(params: {
   q: string;
   jenis: string;
@@ -385,7 +456,7 @@ export const getSuratIssueOptions = cache(
 
     const rows = applications ?? [];
     const applicationIds = rows.map((row) => row.id);
-    const [members, existingRes] = await Promise.all([
+    const [members, existingRes, documentStates] = await Promise.all([
       getMembers(applicationIds),
       applicationIds.length
         ? admin
@@ -394,6 +465,7 @@ export const getSuratIssueOptions = cache(
             .eq("jenis", jenis)
             .in("pengajuan_id", applicationIds)
         : Promise.resolve({ data: [], error: null }),
+      getDocumentStates(applicationIds),
     ]);
 
     if (existingRes.error) {
@@ -407,14 +479,24 @@ export const getSuratIssueOptions = cache(
       ]),
     );
 
-    return rows.map((row) => ({
-      pengajuanId: row.id,
-      status: row.status,
-      perusahaan: row.perusahaan,
-      periode: row.periode,
-      students: members.get(row.id) ?? [],
-      existingSurat: existingByApplication.get(row.id) ?? null,
-    }));
+    return rows
+      .map((row) => {
+        const documents =
+          documentStates.get(row.id) ?? emptySuratRequirementState;
+
+        return {
+          pengajuanId: row.id,
+          status: row.status,
+          perusahaan: row.perusahaan,
+          periode: row.periode,
+          students: members.get(row.id) ?? [],
+          existingSurat: existingByApplication.get(row.id) ?? null,
+          documents,
+        };
+      })
+      .filter((row) =>
+        canIssueSuratForApplication(jenis, row.status, row.documents),
+      );
   },
 );
 
@@ -441,7 +523,7 @@ export const getSuratUploadOptions = cache(
 
     const rows = data ?? [];
     const applicationIds = rows.map((row) => row.id);
-    const [members, lettersResult] = await Promise.all([
+    const [members, lettersResult, documentStates] = await Promise.all([
       getMembers(applicationIds),
       applicationIds.length
         ? admin
@@ -449,6 +531,7 @@ export const getSuratUploadOptions = cache(
             .select("id, jenis, nomor, file_path, pengajuan_id")
             .in("pengajuan_id", applicationIds)
         : Promise.resolve({ data: [], error: null }),
+      getDocumentStates(applicationIds),
     ]);
 
     if (lettersResult.error) {
@@ -478,6 +561,8 @@ export const getSuratUploadOptions = cache(
       periode: row.periode,
       students: members.get(row.id) ?? [],
       letters: lettersByApplication.get(row.id) ?? {},
+      documents:
+        documentStates.get(row.id) ?? emptySuratRequirementState,
     }));
   },
 );
@@ -504,7 +589,7 @@ export const getSuratKelengkapan = cache(
 
     const applications = data ?? [];
     const applicationIds = applications.map((row) => row.id);
-    const [members, lettersResult] = await Promise.all([
+    const [members, lettersResult, documentStates] = await Promise.all([
       getMembers(applicationIds),
       applicationIds.length
         ? admin
@@ -512,6 +597,7 @@ export const getSuratKelengkapan = cache(
             .select("id, jenis, nomor, file_path, pengajuan_id")
             .in("pengajuan_id", applicationIds)
         : Promise.resolve({ data: [], error: null }),
+      getDocumentStates(applicationIds),
     ]);
 
     if (lettersResult.error) {
@@ -539,14 +625,29 @@ export const getSuratKelengkapan = cache(
       .map((application): SuratKelengkapanRow => {
         const students = members.get(application.id) ?? [];
         const letters = lettersByApplication.get(application.id) ?? {};
+        const documents =
+          documentStates.get(application.id) ??
+          emptySuratRequirementState;
         const cells = Object.fromEntries(
           jenisSuratList.map((jenis) => {
             const surat = letters[jenis] ?? null;
+            const issueable = canIssueSuratForApplication(
+              jenis,
+              application.status,
+              documents,
+            );
             const state = surat
               ? "terbit"
-              : suratEligibleStatuses[jenis].includes(application.status)
+              : issueable
                 ? "siap"
                 : "terkunci";
+            const reason = surat || issueable
+              ? null
+              : (suratLockedReason(
+                  jenis,
+                  application.status,
+                  documents,
+                ) ?? "Belum tersedia pada status pengajuan ini.");
 
             return [
               jenis,
@@ -554,6 +655,7 @@ export const getSuratKelengkapan = cache(
                 jenis,
                 state,
                 surat,
+                reason,
               } satisfies SuratKelengkapanCell,
             ];
           }),
@@ -565,6 +667,7 @@ export const getSuratKelengkapan = cache(
           perusahaan: application.perusahaan,
           periode: application.periode,
           students,
+          documents,
           cells,
         };
       })

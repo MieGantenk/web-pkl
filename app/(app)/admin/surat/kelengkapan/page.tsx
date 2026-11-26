@@ -61,7 +61,7 @@ function cellTitle(cell: SuratKelengkapanCell) {
     return "Siap diterbitkan";
   }
 
-  return "Belum tersedia pada status pengajuan ini";
+  return cell.reason ?? "Belum tersedia pada status pengajuan ini";
 }
 
 function LetterCell({ cell, pengajuanId }: {
