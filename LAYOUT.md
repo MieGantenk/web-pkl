@@ -203,9 +203,9 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 
 | Role | Menu utama | Menu sekunder |
 |---|---|---|
-| **Admin** | Ringkasan | Data Master (Siswa, Guru, Perusahaan, Instruktur, Orang Tua), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Tugas, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
-| **Guru** | Ringkasan | Siswa Bimbingan, Verifikasi Jurnal, Tugas, Mutaba'ah, Surat Tugas, Penarikan, Profil |
-| **Siswa** | Beranda | Pengajuan PKL, Jurnal Harian, Mutaba'ah, Tugas, Surat, Profil |
+| **Admin** | Ringkasan | Data Master (Siswa, Guru, Perusahaan, Instruktur, Orang Tua), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
+| **Guru** | Ringkasan | Siswa Bimbingan, Verifikasi Jurnal, Mutaba'ah, Surat Tugas, Penarikan, Profil |
+| **Siswa** | Beranda | Pengajuan PKL, Jurnal Harian, Mutaba'ah, Surat, Profil |
 | **Instruktur** | Ringkasan | Siswa PKL, Verifikasi Jurnal, Penilaian, Profil |
 | **Orang tua** | Beranda | Jurnal Anak, Mutaba'ah, Surat, Profil |
 
@@ -215,7 +215,6 @@ Aturan:
 - URL memakai prefix role: `/admin/*`, `/guru/*`, `/siswa/*`, `/instruktur/*`, `/ortu/*`.
 - Satu item aktif per halaman (`aria-current="page"`).
 - Jangan menampilkan menu yang tidak bisa diakses role.
-- **Tugas** untuk siswa/guru ada di sidebar/drawer dan kartu Beranda; tidak dimasukkan ke bottom nav karena sudah 5 item.
 - **Penilaian** instruktur ada di sidebar; bukan bottom nav.
 - **Audit** hanya admin.
 
@@ -486,28 +485,7 @@ Minggu ini: ◕ 4/7
 - Jangan memakai tab jika hanya 2 bagian; cukup dua card.
 - Perubahan disimpan dengan tombol eksplisit + toast.
 
-### 3.12 Tugas — `/guru/tugas`, `/siswa/tugas`
-
-```
-Tugas PKL
-┌──────────────────────────────────────────────────────────────┐
-│ [Semua] [Aktif] [Selesai] [Terlambat]                        │
-├──────────────────────────────────────────────────────────────┤
-│ Membuat laporan kegiatan harian            Deadline 20 Nov   │
-│ ● Aktif · 2 dari 5 siswa selesai             [Lihat detail]  │
-│ Observasi alur produksi                    Deadline 25 Nov   │
-│ ● Aktif · 0 dari 5 siswa selesai             [Lihat detail]  │
-└──────────────────────────────────────────────────────────────┘
-```
-
-- Guru: buat tugas (judul, deskripsi, deadline), lihat progres per siswa.
-- Siswa: lihat tugas, tandai selesai, upload bukti (opsional).
-- Peringatan jika guru membuat > 3 tugas aktif dalam satu minggu.
-- Status: `belum`, `selesai`, `terlambat`.
-- Di HP: kartu; tombol "Tandai selesai" 44 px.
-- Check draw 160 ms saat selesai; toast konfirmasi.
-
-### 3.13 Mutaba'ah Admin — `/admin/mutabaah`
+### 3.12 Mutaba'ah Admin — `/admin/mutabaah`
 
 **Tujuan:** mutaba'ah punya halaman sendiri, tidak lagi tersembunyi di detail siswa.
 

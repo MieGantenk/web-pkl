@@ -432,8 +432,19 @@ async function loadMutabaahFormsOverview(
   }));
 }
 
-export const getMutabaahBySiswaId = cache(
-  async (siswaId: string): Promise<MutabaahData> => {
+export type MutabaahReviewData = {
+  today: string;
+  forms: MutabaahFormSummary[];
+  selectedFormId: string | null;
+  data: MutabaahData;
+};
+
+export const getMutabaahReview = cache(
+  async (
+    siswaId: string,
+    selectedFormId?: string,
+    periodeId?: string,
+  ): Promise<MutabaahReviewData> => {
     await connection();
 
     const supabase = await createClient();
@@ -442,12 +453,39 @@ export const getMutabaahBySiswaId = cache(
       supabase,
       siswaId,
       today,
+      periodeId,
     );
-    const form = forms[0];
 
-    return form
-      ? loadMutabaahData(supabase, siswaId, today, form)
-      : emptyMutabaahData(today);
+    if (!forms.length) {
+      return {
+        today,
+        forms: [],
+        selectedFormId: null,
+        data: emptyMutabaahData(today),
+      };
+    }
+
+    const selected =
+      (selectedFormId && forms.some((form) => form.id === selectedFormId)
+        ? selectedFormId
+        : null) ??
+      forms.find((form) => !form.todayFilled)?.id ??
+      forms[0].id;
+    const form = forms.find((item) => item.id === selected) ?? forms[0];
+
+    return {
+      today,
+      forms,
+      selectedFormId: selected,
+      data: await loadMutabaahData(supabase, siswaId, today, form),
+    };
+  },
+);
+
+export const getMutabaahBySiswaId = cache(
+  async (siswaId: string): Promise<MutabaahData> => {
+    const review = await getMutabaahReview(siswaId);
+    return review.data;
   },
 );
 

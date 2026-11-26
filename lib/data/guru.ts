@@ -36,6 +36,7 @@ export type GuruStudent = {
   pengajuanStatus: StatusPengajuan;
   perusahaan: { nama: string; kota: string | null } | null;
   periode: { nama: string } | null;
+  periodeId: string | null;
   tanggalMulai: string | null;
   tanggalSelesai: string | null;
   jurnal: {
@@ -116,7 +117,7 @@ const getGuruStudentsBase = cache(
     const { data: applications, error: applicationsError } = await supabase
       .from("pengajuan_pkl")
       .select(
-        "id, status, tanggal_mulai, tanggal_selesai, perusahaan:perusahaan_id(nama, kota), periode:periode_id(nama)",
+        "id, status, tanggal_mulai, tanggal_selesai, perusahaan:perusahaan_id(nama, kota), periode:periode_id(id, nama)",
       )
       .eq("guru_pembimbing_id", guruId)
       .in("status", ACTIVE_STATUSES)
@@ -273,6 +274,7 @@ const getGuruStudentsBase = cache(
         pengajuanStatus: application.status,
         perusahaan: application.perusahaan,
         periode: application.periode,
+        periodeId: application.periode?.id ?? null,
         tanggalMulai: application.tanggal_mulai,
         tanggalSelesai: application.tanggal_selesai,
         jurnal: {

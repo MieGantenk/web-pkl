@@ -14,7 +14,6 @@ export function getSuratContent(data: SuratPdfData) {
   const dates = `${formatSuratDate(
     data.application.tanggalMulai,
   )} – ${formatSuratDate(data.application.tanggalSelesai)}`;
-  const guru = data.application.guru ?? "guru pembimbing";
   const student = data.students[0]?.nama ?? "siswa";
 
   switch (data.surat.jenis) {
@@ -22,9 +21,8 @@ export function getSuratContent(data: SuratPdfData) {
       return {
         title: "SURAT IZIN ORANG TUA/WALI",
         paragraphs: [
-          "Yang bertanda tangan di bawah ini, orang tua/wali dari siswa yang tercantum pada surat ini, memberikan izin kepada putra/putri kami untuk mengikuti Praktik Kerja Lapangan (PKL).",
-          `Kegiatan dilaksanakan di ${company} pada ${dates}. Kami memahami bahwa PKL merupakan bagian dari program pendidikan sekolah dan menyetujui kegiatan tersebut dengan penuh tanggung jawab.`,
-          "Demikian surat izin ini dibuat dengan sebenarnya untuk digunakan sebagaimana mestinya.",
+          "Saya selaku orang tua/wali memahami bahwa kegiatan PKL ini merupakan bagian dari program pendidikan sekolah, serta menyetujui putra kami untuk mengikuti kegiatan tersebut dengan penuh tanggung jawab.",
+          "Demikian surat izin ini dibuat dengan sebenarnya, untuk digunakan sebagaimana mestinya.",
         ],
         signature: "Orang Tua/Wali",
         signer: "",
@@ -33,9 +31,8 @@ export function getSuratContent(data: SuratPdfData) {
       return {
         title: "SURAT PENGAJUAN TEMPAT PKL",
         paragraphs: [
-          `Kepada Yth. Pimpinan ${company} di tempat.`,
-          "Dengan hormat, kami mengajukan permohonan agar siswa yang tercantum pada surat ini dapat melaksanakan Praktik Kerja Lapangan (PKL) di perusahaan Bapak/Ibu.",
-          "Demikian surat pengajuan ini kami sampaikan. Atas perhatian dan kerja samanya, kami ucapkan terima kasih.",
+          "Sesuai dengan Permendikbud No. 50 Tahun 2020 tentang Praktik Kerja Lapangan (PKL) bagi peserta didik, bahwa proses pembelajaran di SMK harus melibatkan Dunia Industri dalam pembimbingan PKL.",
+          "Dengan ini kami bermaksud mengajukan permohonan Praktik Kerja Lapangan di perusahaan/instansi/industri yang Bapak/Ibu pimpin. Demikian surat ini disampaikan dan besar harapan kami agar siswa kami dapat diterima di industri yang Bapak/Ibu pimpin.",
         ],
         signature: "Kepala Sekolah",
         signer: data.school.kepala ?? "",
@@ -55,8 +52,7 @@ export function getSuratContent(data: SuratPdfData) {
       return {
         title: "SURAT TUGAS MONITORING PKL",
         paragraphs: [
-          `Kepada Yth. ${guru},`,
-          `Dengan ini kami menugaskan Bapak/Ibu untuk melakukan monitoring pelaksanaan PKL siswa di ${company} pada ${dates}.`,
+          `Untuk melakukan monitoring pelaksanaan PKL siswa di ${company} pada ${dates}.`,
           "Kami mohon Bapak/Ibu memantau kegiatan siswa, memeriksa jurnal, dan memberikan bimbingan selama masa PKL.",
           "Demikian surat tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab.",
         ],
