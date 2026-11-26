@@ -256,6 +256,7 @@ export default async function SiswaMutabaahPage({
       </section>
 
       <MutabaahForm
+        key={data.form.id}
         formId={data.form.id}
         questions={data.questions}
         todayEntry={data.todayEntry}

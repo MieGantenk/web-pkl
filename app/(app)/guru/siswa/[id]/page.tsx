@@ -8,7 +8,6 @@ import {
   BookOpen,
   Building2,
   CalendarDays,
-  ClipboardCheck,
   HeartHandshake,
   MapPin,
   Phone,
@@ -21,7 +20,6 @@ import { MutabaahRing } from "@/components/pkl/MutabaahRing";
 import {
   JurnalBadge,
   PengajuanBadge,
-  TugasBadge,
 } from "@/components/pkl/StatusBadge";
 import { buttonVariants } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth";
@@ -96,12 +94,11 @@ export default async function GuruStudentDetailPage({
     );
   }
 
-  const { student, profile: studentProfile, journals, tasks } = data;
+  const { student, profile: studentProfile, journals } = data;
   const totalJournals = student.jurnal.total;
   const verifiedPercent = totalJournals
     ? Math.round((student.jurnal.terverifikasi / totalJournals) * 100)
     : 0;
-  const completedTasks = tasks.filter((task) => task.status === "selesai").length;
 
   return (
     <div>
@@ -343,55 +340,6 @@ export default async function GuruStudentDetailPage({
             )}
           </section>
 
-          <section className={card} aria-labelledby="tugas-title">
-            <div className="flex items-center gap-2">
-              <ClipboardCheck
-                className="size-5 text-brand-600"
-                strokeWidth={1.75}
-                aria-hidden
-              />
-              <h2
-                id="tugas-title"
-                className="text-xl font-semibold text-ink"
-              >
-                Tugas
-              </h2>
-            </div>
-
-            {tasks.length ? (
-              <ul className="mt-4 divide-y divide-border">
-                {tasks.map((task) => (
-                  <li
-                    key={task.id}
-                    className="flex flex-col gap-2 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-base font-medium text-ink">
-                        {task.judul}
-                      </p>
-                      {task.deskripsi ? (
-                        <p className="mt-1 text-sm leading-[22px] text-ink-soft">
-                          {task.deskripsi}
-                        </p>
-                      ) : null}
-                      <p className="mt-1 text-[13px] leading-[18px] text-muted">
-                        Deadline {formatDate(task.deadline)}
-                      </p>
-                    </div>
-                    <TugasBadge status={task.status} />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="mt-5">
-                <EmptyState
-                  icon={ClipboardCheck}
-                  title="Belum ada tugas"
-                  description="Tugas dari guru akan muncul di sini."
-                />
-              </div>
-            )}
-          </section>
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24">
@@ -450,13 +398,6 @@ export default async function GuruStudentDetailPage({
                   {student.mutabaah.totalHari} hari terisi.
                 </p>
               </div>
-            </div>
-
-            <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4 text-sm">
-              <span className="text-muted">Tugas selesai</span>
-              <span className="font-medium text-ink tabular-nums">
-                {completedTasks}/{tasks.length}
-              </span>
             </div>
 
             <Link

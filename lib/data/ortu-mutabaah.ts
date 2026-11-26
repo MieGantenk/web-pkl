@@ -3,8 +3,9 @@ import { connection } from "next/server";
 
 import { jakartaToday } from "@/lib/date";
 import {
-  getMutabaahBySiswaId,
+  getMutabaahReview,
   type MutabaahData,
+  type MutabaahFormSummary,
 } from "@/lib/data/siswa-mutabaah";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,12 +21,15 @@ export type OrtuMutabaahChild = {
 export type OrtuMutabaahData = MutabaahData & {
   children: OrtuMutabaahChild[];
   activeChild: OrtuMutabaahChild | null;
+  forms: MutabaahFormSummary[];
+  selectedFormId: string | null;
 };
 
 export const getOrtuMutabaah = cache(
   async (
     penggunaId: string,
     selectedChildId?: string,
+    selectedFormId?: string,
   ): Promise<OrtuMutabaahData> => {
     await connection();
 
@@ -106,11 +110,41 @@ export const getOrtuMutabaah = cache(
       null;
 
     if (!activeChild) {
-      return { children, activeChild: null, ...empty };
+      return {
+        children,
+        activeChild: null,
+        forms: [],
+        selectedFormId: null,
+        ...empty,
+      };
     }
 
-    const data = await getMutabaahBySiswaId(activeChild.id);
+    const { data: memberships, error: membershipError } = await supabase
+      .from("pengajuan_anggota")
+      .select("pengajuan:pengajuan_id(status, periode_id)")
+      .eq("siswa_id", activeChild.id)
+      .order("created_at", { ascending: false });
 
-    return { children, activeChild, ...data };
+    if (membershipError) {
+      throw new Error("Gagal memuat penempatan PKL anak.");
+    }
+
+    const activePlacement = (memberships ?? [])
+      .map((membership) => membership.pengajuan)
+      .find((pengajuan) => pengajuan?.status === "berlangsung");
+
+    const review = await getMutabaahReview(
+      activeChild.id,
+      selectedFormId,
+      activePlacement?.periode_id ?? undefined,
+    );
+
+    return {
+      children,
+      activeChild,
+      forms: review.forms,
+      selectedFormId: review.selectedFormId,
+      ...review.data,
+    };
   },
 );

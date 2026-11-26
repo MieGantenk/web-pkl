@@ -3,9 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { PasswordInput } from "@/components/pkl/PasswordInput";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ export function OrangTuaForm({
 }) {
   const router = useRouter();
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -165,25 +167,23 @@ export function OrangTuaForm({
           />
         </Field>
 
-        <Field
-          label="Kata sandi awal"
-          htmlFor="password"
-          required
-          hint="Minimal 8 karakter. Berikan kepada orang tua."
-          error={errors.password?.message}
-        >
-          <Input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            aria-invalid={invalid("password")}
-            aria-describedby={describedBy(
-              "password",
-              "Minimal 8 karakter. Berikan kepada orang tua.",
-            )}
-            {...register("password")}
-          />
-        </Field>
+        <Controller
+          control={control}
+          name="password"
+          render={({ field }) => (
+            <PasswordInput
+              id="password"
+              name={field.name}
+              label="Kata sandi awal"
+              required
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              error={errors.password?.message}
+              hint="Minimal 8 karakter. Berikan kepada orang tua."
+              autoComplete="new-password"
+            />
+          )}
+        />
       </section>
 
       <section className="space-y-5 border-t border-border pt-6">

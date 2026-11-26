@@ -53,7 +53,6 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/penempatan` | Penempatan | PKL aktif, guru/instruktur, tanggal, mulai |
 | `/admin/jurnal` | Jurnal | Monitoring semua jurnal, filter, foto |
 | `/admin/verifikasi` | Verifikasi dokumen | Scan izin ortu, surat balasan, revisi |
-| `/admin/tugas` | Tugas | Monitoring tugas, progres |
 | `/admin/mutabaah` | Mutaba'ah | Riwayat semua siswa, filter tanggal/kelas/kelengkapan, rekap |
 | `/admin/mutabaah/pertanyaan` | Form builder | Form, versi, pertanyaan, opsi, publish/arsip |
 | `/admin/surat` | Surat sekolah | 7 jenis, terbitkan, nomor, pratinjau, unduh, unggah berkas surat |
@@ -68,31 +67,29 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 
 ---
 
-## 4. Guru — 8 halaman
+## 4. Guru — 7 halaman
 
 | Route | Halaman | Isi utama |
 |---|---|---|
-| `/guru` | Ringkasan | Antrean verifikasi, siswa bimbingan, jurnal terbaru, tugas |
+| `/guru` | Ringkasan | Antrean verifikasi, siswa bimbingan, jurnal terbaru |
 | `/guru/siswa` | Siswa bimbingan | Daftar, progres jurnal, mutaba'ah, penempatan |
 | `/guru/verifikasi` | Verifikasi jurnal | Split view, langkah 1, setujui/revisi, cap |
-| `/guru/tugas` | Tugas | Buat tugas, deadline, progres, peringatan porsi |
-| `/guru/mutabaah` | Mutaba'ah | Read-only siswa bimbingan, filter tanggal |
+| `/guru/mutabaah` | Mutaba'ah | Lihat jawaban mutaba'ah siswa bimbingan |
 | `/guru/surat-tugas` | Surat tugas | Lihat/unduh surat tugas monitoring |
 | `/guru/penarikan` | Penarikan | Lihat/unduh surat penarikan |
 | `/guru/profil` | Profil | Data diri, kontak, kata sandi |
 
 ---
 
-## 5. Siswa — 8 halaman
+## 5. Siswa — 7 halaman
 
 | Route | Halaman | Isi utama |
 |---|---|---|
-| `/siswa` | Beranda | Status PKL, jurnal hari ini, ring mutaba'ah, tugas, jurnal terakhir |
-| `/siswa/pengajuan` | Pengajuan PKL | Buat, anggota, unduh izin, unggah TTD, unggah balasan, timeline |
-| `/siswa/jurnal` | Jurnal harian | Daftar, filter, status, detail/foto |
-| `/siswa/jurnal/baru` | Jurnal baru | Tanggal, waktu, kegiatan, deskripsi, foto wajib |
-| `/siswa/mutabaah` | Mutaba'ah | Form dinamis, checklist, ring, riwayat |
-| `/siswa/tugas` | Tugas | Daftar, deadline, tandai selesai, bukti |
+| `/siswa` | Beranda | Status PKL, jurnal hari ini, ring mutaba'ah, jurnal terakhir |
+| `/siswa/pengajuan` | Pengajuan PKL | Buat, anggota, guru pembimbing, unduh izin, unggah TTD, unggah balasan, timeline |
+| `/siswa/jurnal` | Jurnal harian | Daftar, filter, status, kehadiran, detail/foto |
+| `/siswa/jurnal/baru` | Jurnal baru | Kehadiran, tanggal, waktu, kegiatan, deskripsi, foto saat hadir |
+| `/siswa/mutabaah` | Mutaba'ah | Daftar form aktif, checklist, ring, riwayat |
 | `/siswa/surat` | Surat | Izin, pengajuan, keberangkatan, penarikan; unduh |
 | `/siswa/profil` | Profil | Data, kontak, kata sandi |
 
@@ -159,7 +156,7 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 
 | Modul | Action | Role |
 |---|---|---|
-| Auth | `loginAction`, `logoutAction`, `requestPasswordResetAction`, `setPasswordAction` | Publik/auth |
+| Auth | `loginAction`, `logoutAction`, `resetPasswordFromLoginAction`, `requestPasswordResetAction`, `setPasswordAction` | Publik/auth |
 | Profil | `updateProfileAction`, `changePasswordAction` | Semua |
 | Master siswa | `createSiswaAction`, `updateSiswaAction`, `resetSiswaPasswordAction`, `setSiswaAktifAction`, `promoteSiswaKelasAction` | Admin |
 | Akun | `resetAccountPasswordAction` (siswa, guru, instruktur, orang tua) | Admin |
@@ -174,7 +171,6 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 | Surat | `issueSuratAction`, `downloadSuratAction` | Admin |
 | Jurnal | `createJurnalAction`, `updateJurnalAction`, `deleteJurnalAction` | Siswa |
 | Verifikasi | `verifyJurnalGuruAction`, `verifyJurnalInstrukturAction`, `requestJurnalRevisiAction` | Guru/instruktur |
-| Tugas | `createTugasAction`, `updateTugasAction`, `markTugasSelesaiAction` | Guru/siswa |
 | Mutaba'ah | `createFormAction`, `updateFormDraftAction`, `publishFormAction`, `createFormVersionAction`, `archiveFormAction` | Admin |
 | Mutaba'ah | `saveMutabaahAction` | Siswa |
 | Penilaian | `savePenilaianAction` | Guru/instruktur (v1.1) |

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
+import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { ThemeToggle } from "@/components/app/ThemeToggle";
 import { getCurrentProfile } from "@/lib/auth";
@@ -111,14 +112,7 @@ export default async function LoginPage() {
 
           <LoginForm />
 
-          <div className="mt-8 border-t border-border pt-5">
-            <p className="text-[13px] font-semibold leading-[18px] text-ink-soft">
-              Lupa kata sandi?
-            </p>
-            <p className="mt-1 text-[13px] leading-[18px] text-muted">
-              Hubungi admin sekolah untuk mengatur ulang kata sandi Anda.
-            </p>
-          </div>
+          <ForgotPasswordForm />
         </div>
       </section>
     </main>
