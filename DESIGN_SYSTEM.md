@@ -59,12 +59,12 @@ Stack acuan: Next.js (App Router) · Tailwind CSS v4 · shadcn/ui · Lucide · `
 | `sidebar-text` | `#EAF4F2` | Teks item |
 | `sidebar-muted` | `#8FB3AE` | Label grup, ikon nonaktif |
 | `sidebar-line` | `#1C4A46` | Garis pemisah |
-| `sidebar-accent` | `#7CC4FF` | Aksen biru kapsul, ikon submenu aktif |
-| `sidebar-accent-strong` | `#2F81F7` | Border/ring kapsul, avatar |
+| `sidebar-accent` | `#7CC4FF` | Aksen biru kapsul, dot section, avatar |
+| `sidebar-accent-strong` | `#2F81F7` | Gradient avatar |
 
-Item aktif memakai tab `canvas` yang menyatu ke tepi kanan sidebar. Brand
-memakai kapsul kaca dengan aksen biru. Footer memakai baris profil sederhana
-dengan avatar biru.
+Item aktif memakai pill `sidebar-text` dengan teks `sidebar` dan indikator gold
+3 px di kiri. Brand memakai kapsul kaca dengan aksen biru. Footer memakai baris
+profil sederhana dengan avatar biru.
 
 ### 1.4 Gold (dari logo)
 
@@ -511,11 +511,10 @@ Contoh: "Belum ada jurnal hari ini. Isi jurnal sebelum pukul 23.59." + tombol "I
 
 ### 8.21 AppShell nav item
 
-- Tinggi 44; padding kiri 20, kanan 12; radius kiri 16; gap 12.
+- Tinggi 44; padding 8; radius 16; gap 12.
 - Default: teks `sidebar-muted`; hover: latar putih transparan, teks putih.
-- Aktif: tab `canvas` selebar sidebar, menyatu ke tepi kanan, teks `ink`.
-- Fillet 16 px di kanan atas/bawah tab aktif (desktop), warna `canvas`.
-- Ikon 18 px di dalam tile 32 px; ikon submenu aktif memakai `sidebar-accent`.
+- Aktif: pill `sidebar-text`, teks `sidebar`, indikator gold 3 px di kiri.
+- Ikon 18 px di dalam tile 32 px; ikon submenu aktif memakai `primary`.
 - Brand: kapsul kaca biru dengan logo. Footer: baris profil + avatar biru.
 - Tab aktif meluncur 240 ms (`layoutId`).
 
