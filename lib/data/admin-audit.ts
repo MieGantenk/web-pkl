@@ -281,29 +281,3 @@ export async function getAuditList(
     stats,
   };
 }
-
-export async function getAuditDetail(
-  id: string,
-): Promise<AuditRow | null> {
-  await connection();
-
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("log_aktivitas")
-    .select(logSelect)
-    .eq("id", id)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error("Gagal memuat detail audit.");
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  const row = data as RawAuditRow;
-  const targets = await loadTargets(admin, [row]);
-
-  return mapRow(row, targets);
-}

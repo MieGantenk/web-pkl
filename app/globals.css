@@ -347,6 +347,62 @@ html.theme-transition .theme-toggle-icon {
   }
 }
 
+/* Drawer detail audit. Ditulis di luar @layer components agar tidak ter-prune. */
+.audit-detail-dialog {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  width: min(560px, 100vw);
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  opacity: 0;
+  transform: translateX(100%);
+  transition:
+    transform var(--m-slide) var(--ease-out),
+    opacity var(--m-base) var(--ease-out);
+}
+
+.audit-detail-dialog[open] {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.audit-detail-dialog[data-closing="true"] {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.audit-detail-dialog::backdrop {
+  background: var(--color-backdrop);
+  opacity: 0;
+  transition: opacity var(--m-base) var(--ease-out);
+}
+
+.audit-detail-dialog[open]::backdrop {
+  opacity: 1;
+}
+
+.audit-detail-dialog[data-closing="true"]::backdrop {
+  opacity: 0;
+}
+
+@starting-style {
+  .audit-detail-dialog[open] {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  .audit-detail-dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
