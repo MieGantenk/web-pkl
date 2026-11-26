@@ -19,6 +19,23 @@ export type StatusJurnal =
   | "terverifikasi_instruktur"
   | "revisi";
 
+export type KehadiranJurnal = "hadir" | "izin" | "sakit";
+
+export const kehadiranJurnal: Record<
+  KehadiranJurnal,
+  { label: string; tone: StatusTone }
+> = {
+  hadir: { label: "Hadir", tone: "success" },
+  izin: { label: "Izin", tone: "info" },
+  sakit: { label: "Sakit", tone: "warning" },
+};
+
+export const kehadiranJurnalList: readonly KehadiranJurnal[] = [
+  "hadir",
+  "izin",
+  "sakit",
+];
+
 export type StatusTugas = "belum" | "selesai" | "terlambat";
 export type StatusVerifikasi = "menunggu" | "diterima" | "revisi" | "ditolak";
 

@@ -86,7 +86,7 @@ export async function saveMutabaahAction(
 
   const { data: memberships, error: membershipError } = await supabase
     .from("pengajuan_anggota")
-    .select("pengajuan:pengajuan_id(status)")
+    .select("pengajuan:pengajuan_id(status, tanggal_selesai)")
     .eq("siswa_id", session.siswaId)
     .order("created_at", { ascending: false });
 
@@ -95,7 +95,10 @@ export async function saveMutabaahAction(
   }
 
   const pklAktif = (memberships ?? []).some(
-    (membership) => membership.pengajuan?.status === "berlangsung",
+    (membership) =>
+      membership.pengajuan?.status === "berlangsung" &&
+      (!membership.pengajuan.tanggal_selesai ||
+        membership.pengajuan.tanggal_selesai >= today),
   );
 
   if (!pklAktif) {
@@ -108,9 +111,8 @@ export async function saveMutabaahAction(
   const { data: form, error: formError } = await supabase
     .from("mutabaah_form")
     .select("id, nama")
+    .eq("id", parsed.data.form_id)
     .eq("status", "aktif")
-    .order("created_at", { ascending: false })
-    .limit(1)
     .maybeSingle();
 
   if (formError) {
@@ -118,7 +120,7 @@ export async function saveMutabaahAction(
   }
 
   if (!form) {
-    return { ok: false, message: "Form mutaba'ah belum aktif." };
+    return { ok: false, message: "Form mutaba'ah tidak aktif." };
   }
 
   const { data: questionRows, error: questionError } = await supabase
@@ -251,6 +253,7 @@ export async function saveMutabaahAction(
     .from("mutabaah_harian")
     .select("id, form_id")
     .eq("siswa_id", session.siswaId)
+    .eq("form_id", form.id)
     .eq("tanggal", today)
     .maybeSingle();
 

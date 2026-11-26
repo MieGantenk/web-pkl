@@ -6,6 +6,7 @@ import { id as localeId } from "date-fns/locale";
 import { jakartaToday } from "@/lib/date";
 import {
   statusJurnal,
+  type KehadiranJurnal,
   type StatusJurnal,
   type StatusVerifikasi,
 } from "@/lib/status";
@@ -38,6 +39,7 @@ export type OrtuJurnalRow = {
   waktuMulai: string | null;
   waktuSelesai: string | null;
   kegiatan: string;
+  kehadiran: KehadiranJurnal;
   deskripsi: string | null;
   status: StatusJurnal;
   fotoUrl: string | null;
@@ -78,7 +80,7 @@ type OrtuJurnalFilters = {
 };
 
 const listSelect =
-  "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, deskripsi, status, foto_path, pengajuan:pengajuan_id(perusahaan:perusahaan_id(nama), periode:periode_id(nama))";
+  "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, kehadiran, deskripsi, status, foto_path, pengajuan:pengajuan_id(perusahaan:perusahaan_id(nama), periode:periode_id(nama))";
 
 function cleanSearch(value: string) {
   return value.replace(/[%_,()]/g, " ").trim();
@@ -336,6 +338,7 @@ export const getOrtuJurnalData = cache(
           waktuMulai: journal.waktu_mulai,
           waktuSelesai: journal.waktu_selesai,
           kegiatan: journal.kegiatan,
+          kehadiran: journal.kehadiran,
           deskripsi: journal.deskripsi,
           status: journal.status,
           fotoUrl,

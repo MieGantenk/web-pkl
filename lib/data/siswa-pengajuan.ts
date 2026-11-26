@@ -64,6 +64,7 @@ export type PengajuanData = {
   peran: "ketua" | "anggota";
   perusahaan: { id: string; nama: string; kota: string | null } | null;
   periode: { id: string; nama: string; tahun_ajaran: string } | null;
+  guruPembimbing: { id: string; nama: string; jabatan: string | null } | null;
   anggota: PengajuanMember[];
   dokumen: PengajuanDokumen[];
   surat: PengajuanSurat[];
@@ -78,6 +79,7 @@ export type PengajuanOptions = {
     tanggal_mulai: string;
     tanggal_selesai: string;
   }>;
+  guru: Array<{ id: string; nama: string; jabatan: string | null }>;
 };
 
 export type SiswaPengajuanData = {
@@ -94,7 +96,7 @@ export type SiswaPengajuanData = {
 async function getOptions(
   supabase: Awaited<ReturnType<typeof createClient>>,
 ): Promise<PengajuanOptions> {
-  const [perusahaanRes, periodeRes] = await Promise.all([
+  const [perusahaanRes, periodeRes, guruRes] = await Promise.all([
     supabase
       .from("perusahaan")
       .select("id, nama, kota")
@@ -105,15 +107,27 @@ async function getOptions(
       .select("id, nama, tahun_ajaran, tanggal_mulai, tanggal_selesai")
       .eq("aktif", true)
       .order("tanggal_mulai", { ascending: false }),
+    supabase
+      .from("guru")
+      .select("id, jabatan, pengguna:pengguna_id(nama_lengkap, aktif)")
+      .order("created_at", { ascending: true }),
   ]);
 
-  if (perusahaanRes.error || periodeRes.error) {
+  if (perusahaanRes.error || periodeRes.error || guruRes.error) {
     throw new Error("Gagal memuat pilihan pengajuan.");
   }
 
   return {
     perusahaan: perusahaanRes.data ?? [],
     periode: periodeRes.data ?? [],
+    guru: (guruRes.data ?? [])
+      .filter((guru) => guru.pengguna?.aktif)
+      .map((guru) => ({
+        id: guru.id,
+        nama: guru.pengguna?.nama_lengkap ?? "Guru",
+        jabatan: guru.jabatan,
+      }))
+      .sort((a, b) => a.nama.localeCompare(b.nama)),
   };
 }
 
@@ -160,7 +174,7 @@ export const getSiswaPengajuan = cache(
     const { data: applications, error: applicationError } = await supabase
       .from("pengajuan_pkl")
       .select(
-        "id, status, alasan_penolakan, catatan, tanggal_mulai, tanggal_selesai, created_at, dibuat_oleh, perusahaan:perusahaan_id(id, nama, kota), periode:periode_id(id, nama, tahun_ajaran)",
+        "id, status, alasan_penolakan, catatan, tanggal_mulai, tanggal_selesai, created_at, dibuat_oleh, perusahaan:perusahaan_id(id, nama, kota), periode:periode_id(id, nama, tahun_ajaran), guru:guru_pembimbing_id(id, jabatan, pengguna:pengguna_id(nama_lengkap))",
       )
       .in("id", membershipIds)
       .order("created_at", { ascending: false });
@@ -264,6 +278,14 @@ export const getSiswaPengajuan = cache(
         peran: membership?.peran ?? "anggota",
         perusahaan: application.perusahaan,
         periode: application.periode,
+        guruPembimbing: application.guru
+          ? {
+              id: application.guru.id,
+              nama:
+                application.guru.pengguna?.nama_lengkap ?? "Guru pembimbing",
+              jabatan: application.guru.jabatan,
+            }
+          : null,
         anggota: (memberRows ?? []).map((member) => ({
           id: member.id,
           siswaId: member.siswa_id,

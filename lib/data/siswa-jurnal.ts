@@ -6,6 +6,7 @@ import { id as localeId } from "date-fns/locale";
 import { jakartaToday } from "@/lib/date";
 import {
   statusJurnal,
+  type KehadiranJurnal,
   type StatusJurnal,
   type StatusVerifikasi,
 } from "@/lib/status";
@@ -26,6 +27,7 @@ export type SiswaJurnalListItem = {
   waktuMulai: string | null;
   waktuSelesai: string | null;
   kegiatan: string;
+  kehadiran: KehadiranJurnal;
   status: StatusJurnal;
   perusahaan: string | null;
   periode: string | null;
@@ -91,6 +93,7 @@ export type SiswaJurnalFormContext = {
   jurnalHariIni: {
     id: string;
     status: StatusJurnal;
+    kehadiran: KehadiranJurnal;
   } | null;
 };
 
@@ -103,10 +106,10 @@ type SiswaJurnalBase = {
 };
 
 const listSelect =
-  "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, status, pengajuan:pengajuan_id(perusahaan:perusahaan_id(nama), periode:periode_id(nama))";
+  "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, kehadiran, status, pengajuan:pengajuan_id(perusahaan:perusahaan_id(nama), periode:periode_id(nama))";
 
 const detailSelect =
-  "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, deskripsi, status, foto_path, pengajuan:pengajuan_id(perusahaan:perusahaan_id(nama), periode:periode_id(nama))";
+  "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, kehadiran, deskripsi, status, foto_path, pengajuan:pengajuan_id(perusahaan:perusahaan_id(nama), periode:periode_id(nama))";
 
 function cleanSearch(value: string) {
   return value.replace(/[%_,()]/g, " ").trim();
@@ -143,6 +146,7 @@ function mapListRow(row: {
   waktu_mulai: string | null;
   waktu_selesai: string | null;
   kegiatan: string;
+  kehadiran: KehadiranJurnal;
   status: StatusJurnal;
   pengajuan: {
     perusahaan: { nama: string } | null;
@@ -155,6 +159,7 @@ function mapListRow(row: {
     waktuMulai: row.waktu_mulai,
     waktuSelesai: row.waktu_selesai,
     kegiatan: row.kegiatan,
+    kehadiran: row.kehadiran,
     status: row.status,
     perusahaan: row.pengajuan?.perusahaan?.nama ?? null,
     periode: row.pengajuan?.periode?.nama ?? null,
@@ -426,11 +431,15 @@ export const getSiswaJurnalFormContext = cache(
 
     const active = (memberships ?? [])
       .map((membership) => membership.pengajuan)
-      .find((pengajuan) => pengajuan?.status === "berlangsung");
+      .find(
+        (pengajuan) =>
+          pengajuan?.status === "berlangsung" &&
+          (!pengajuan.tanggal_selesai || pengajuan.tanggal_selesai >= today),
+      );
 
     const { data: todayJournal, error: journalError } = await supabase
       .from("jurnal")
-      .select("id, status")
+      .select("id, status, kehadiran")
       .eq("siswa_id", siswa.id)
       .eq("tanggal", today)
       .maybeSingle();
@@ -457,7 +466,11 @@ export const getSiswaJurnalFormContext = cache(
           }
         : null,
       jurnalHariIni: todayJournal
-        ? { id: todayJournal.id, status: todayJournal.status }
+        ? {
+            id: todayJournal.id,
+            status: todayJournal.status,
+            kehadiran: todayJournal.kehadiran,
+          }
         : null,
     };
   },

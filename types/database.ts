@@ -193,6 +193,7 @@ export type Database = {
           foto_path: string | null
           id: string
           kegiatan: string
+          kehadiran: Database["public"]["Enums"]["kehadiran_jurnal"]
           pengajuan_id: string | null
           ringkasan_ai: string | null
           siswa_id: string
@@ -208,6 +209,7 @@ export type Database = {
           foto_path?: string | null
           id?: string
           kegiatan: string
+          kehadiran?: Database["public"]["Enums"]["kehadiran_jurnal"]
           pengajuan_id?: string | null
           ringkasan_ai?: string | null
           siswa_id: string
@@ -223,6 +225,7 @@ export type Database = {
           foto_path?: string | null
           id?: string
           kegiatan?: string
+          kehadiran?: Database["public"]["Enums"]["kehadiran_jurnal"]
           pengajuan_id?: string | null
           ringkasan_ai?: string | null
           siswa_id?: string
@@ -1409,6 +1412,7 @@ export type Database = {
     }
     Enums: {
       hubungan_ortu: "ayah" | "ibu" | "wali"
+      kehadiran_jurnal: "hadir" | "izin" | "sakit"
       jenis_dokumen:
         | "izin_orang_tua_ttd"
         | "surat_balasan_perusahaan"
@@ -1586,6 +1590,7 @@ export const Constants = {
   public: {
     Enums: {
       hubungan_ortu: ["ayah", "ibu", "wali"],
+      kehadiran_jurnal: ["hadir", "izin", "sakit"],
       jenis_dokumen: [
         "izin_orang_tua_ttd",
         "surat_balasan_perusahaan",

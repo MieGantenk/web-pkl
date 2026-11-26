@@ -19,6 +19,9 @@ export const pengajuanFormSchema = z
     periode_id: z
       .string()
       .regex(postgresUuidPattern, "Pilih periode PKL terlebih dahulu."),
+    guru_pembimbing_id: z
+      .string()
+      .regex(postgresUuidPattern, "Pilih guru pembimbing terlebih dahulu."),
   })
   .superRefine((data, ctx) => {
     if (data.perusahaan_id === "baru") {

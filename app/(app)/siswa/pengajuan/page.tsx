@@ -121,12 +121,14 @@ export default async function SiswaPengajuanPage() {
     perusahaan_nama: "",
     perusahaan_alamat: "",
     periode_id: data.options.periode[0]?.id ?? "",
+    guru_pembimbing_id: "",
   };
   const editDefaults = {
     perusahaan_id: pengajuan?.perusahaan?.id ?? "",
     perusahaan_nama: "",
     perusahaan_alamat: "",
     periode_id: pengajuan?.periode?.id ?? "",
+    guru_pembimbing_id: pengajuan?.guruPembimbing?.id ?? "",
   };
 
   return (
@@ -347,6 +349,19 @@ export default async function SiswaPengajuanPage() {
                   {formatDate(pengajuan.tanggalMulai)} –{" "}
                   {formatDate(pengajuan.tanggalSelesai)}
                 </dd>
+              </div>
+              <div>
+                <dt className="text-[13px] font-medium text-muted">
+                  Guru pembimbing
+                </dt>
+                <dd className="mt-0.5 text-sm text-ink">
+                  {pengajuan.guruPembimbing?.nama ?? "Belum dipilih"}
+                </dd>
+                {pengajuan.guruPembimbing?.jabatan ? (
+                  <dd className="mt-0.5 text-[13px] leading-[18px] text-muted">
+                    {pengajuan.guruPembimbing.jabatan}
+                  </dd>
+                ) : null}
               </div>
               <div>
                 <dt className="text-[13px] font-medium text-muted">

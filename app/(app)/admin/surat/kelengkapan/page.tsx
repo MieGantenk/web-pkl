@@ -13,6 +13,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { requireRole } from "@/lib/auth";
+import { jakartaToday } from "@/lib/date";
 import {
   currentSuratYear,
   getSuratKelengkapan,
@@ -138,6 +139,7 @@ export default async function AdminSuratKelengkapanPage({
   const hasFilter = Boolean(q || status);
   const types = [...alurSuratTypes, ...suratTambahanTypes];
   const tahun = currentSuratYear();
+  const today = jakartaToday();
 
   return (
     <div>
@@ -165,6 +167,7 @@ export default async function AdminSuratKelengkapanPage({
           <UploadSuratBaruButton
             options={uploadOptions}
             tahun={tahun}
+            today={today}
           />
         </div>
       </header>

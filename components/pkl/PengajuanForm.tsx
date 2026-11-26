@@ -156,6 +156,39 @@ export function PengajuanForm({
         </Field>
       </div>
 
+      <Field
+        label="Guru pembimbing"
+        htmlFor="guru_pembimbing_id"
+        required
+        hint="Guru ini yang akan memverifikasi jurnal harian Anda."
+        error={errors.guru_pembimbing_id?.message}
+      >
+        <Select
+          id="guru_pembimbing_id"
+          aria-invalid={invalid("guru_pembimbing_id")}
+          aria-describedby={describedBy(
+            "guru_pembimbing_id",
+            "Guru ini yang akan memverifikasi jurnal harian Anda.",
+          )}
+          {...register("guru_pembimbing_id")}
+        >
+          <option value="">Pilih guru pembimbing</option>
+          {options.guru.map((guru) => (
+            <option key={guru.id} value={guru.id}>
+              {guru.nama}
+              {guru.jabatan ? ` · ${guru.jabatan}` : ""}
+            </option>
+          ))}
+        </Select>
+      </Field>
+
+      {!options.guru.length ? (
+        <div className="rounded-sm border border-warning-border bg-warning-bg px-3 py-2.5 text-[13px] leading-[18px] text-warning">
+          Belum ada akun guru aktif. Hubungi admin sekolah sebelum mengirim
+          pengajuan.
+        </div>
+      ) : null}
+
       {isNewCompany ? (
         <div className="grid gap-5 sm:grid-cols-2">
           <Field

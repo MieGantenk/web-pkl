@@ -70,6 +70,15 @@ export type MutabaahData = {
   history: MutabaahHistoryDay[];
 };
 
+export type MutabaahFormSummary = {
+  id: string;
+  nama: string;
+  deskripsi: string | null;
+  questionCount: number;
+  todayFilled: boolean;
+  week: { filled: number; total: number };
+};
+
 export type SiswaMutabaahData = MutabaahData & {
   student: {
     id: string;
@@ -78,6 +87,8 @@ export type SiswaMutabaahData = MutabaahData & {
     jurusan: { nama: string } | null;
   } | null;
   pklAktif: boolean;
+  forms: MutabaahFormSummary[];
+  selectedFormId: string | null;
 };
 
 function startOfWeek(isoDate: string) {
@@ -100,30 +111,8 @@ async function loadMutabaahData(
   supabase: Awaited<ReturnType<typeof createClient>>,
   siswaId: string,
   today: string,
+  form: { id: string; nama: string; deskripsi: string | null },
 ): Promise<MutabaahData> {
-  const { data: form, error: formError } = await supabase
-    .from("mutabaah_form")
-    .select("id, nama, deskripsi")
-    .eq("status", "aktif")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (formError) {
-    throw new Error("Gagal memuat form mutaba'ah.");
-  }
-
-  if (!form) {
-    return {
-      today,
-      form: null,
-      questions: [],
-      todayEntry: null,
-      week: { filled: 0, total: 7 },
-      history: [],
-    };
-  }
-
   const { data: questionRows, error: questionError } = await supabase
     .from("mutabaah_pertanyaan")
     .select(
@@ -190,6 +179,7 @@ async function loadMutabaahData(
     .from("mutabaah_harian")
     .select("id, tanggal, catatan")
     .eq("siswa_id", siswaId)
+    .eq("form_id", form.id)
     .gte("tanggal", rangeStart)
     .lte("tanggal", today)
     .order("tanggal", { ascending: false });
@@ -345,17 +335,127 @@ async function loadMutabaahData(
   };
 }
 
+function emptyMutabaahData(today: string): MutabaahData {
+  return {
+    today,
+    form: null,
+    questions: [],
+    todayEntry: null,
+    week: { filled: 0, total: 7 },
+    history: [],
+  };
+}
+
+async function loadMutabaahFormsOverview(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  siswaId: string,
+  today: string,
+  periodeId?: string,
+): Promise<MutabaahFormSummary[]> {
+  let formQuery = supabase
+    .from("mutabaah_form")
+    .select("id, nama, deskripsi")
+    .eq("status", "aktif");
+
+  if (periodeId) {
+    formQuery = formQuery.eq("periode_id", periodeId);
+  }
+
+  const { data: forms, error: formError } = await formQuery.order(
+    "created_at",
+    { ascending: true },
+  );
+
+  if (formError) {
+    throw new Error("Gagal memuat form mutaba'ah.");
+  }
+
+  const activeForms = forms ?? [];
+
+  if (!activeForms.length) {
+    return [];
+  }
+
+  const formIds = activeForms.map((form) => form.id);
+  const weekStart = startOfWeek(today);
+  const [questionRes, entryRes] = await Promise.all([
+    supabase
+      .from("mutabaah_pertanyaan")
+      .select("form_id")
+      .in("form_id", formIds)
+      .eq("aktif", true),
+    supabase
+      .from("mutabaah_harian")
+      .select("form_id, tanggal")
+      .eq("siswa_id", siswaId)
+      .in("form_id", formIds)
+      .gte("tanggal", shiftDate(today, -6))
+      .lte("tanggal", today),
+  ]);
+
+  if (questionRes.error || entryRes.error) {
+    throw new Error("Gagal memuat ringkasan mutaba'ah.");
+  }
+
+  const questionCount = new Map<string, number>();
+
+  for (const question of questionRes.data ?? []) {
+    questionCount.set(
+      question.form_id,
+      (questionCount.get(question.form_id) ?? 0) + 1,
+    );
+  }
+
+  const todayFilled = new Set<string>();
+  const weekFilled = new Map<string, number>();
+
+  for (const entry of entryRes.data ?? []) {
+    if (entry.tanggal === today) {
+      todayFilled.add(entry.form_id);
+    }
+
+    if (entry.tanggal >= weekStart && entry.tanggal <= today) {
+      weekFilled.set(
+        entry.form_id,
+        (weekFilled.get(entry.form_id) ?? 0) + 1,
+      );
+    }
+  }
+
+  return activeForms.map((form) => ({
+    id: form.id,
+    nama: form.nama,
+    deskripsi: form.deskripsi,
+    questionCount: questionCount.get(form.id) ?? 0,
+    todayFilled: todayFilled.has(form.id),
+    week: { filled: weekFilled.get(form.id) ?? 0, total: 7 },
+  }));
+}
+
 export const getMutabaahBySiswaId = cache(
   async (siswaId: string): Promise<MutabaahData> => {
     await connection();
 
     const supabase = await createClient();
-    return loadMutabaahData(supabase, siswaId, jakartaToday());
+    const today = jakartaToday();
+    const forms = await loadMutabaahFormsOverview(
+      supabase,
+      siswaId,
+      today,
+    );
+    const form = forms[0];
+
+    return form
+      ? loadMutabaahData(supabase, siswaId, today, form)
+      : emptyMutabaahData(today);
   },
 );
 
 export const getSiswaMutabaah = cache(
-  async (penggunaId: string): Promise<SiswaMutabaahData> => {
+  async (
+    penggunaId: string,
+    selectedFormId?: string,
+  ): Promise<SiswaMutabaahData> => {
     await connection();
 
     const supabase = await createClient();
@@ -374,20 +474,19 @@ export const getSiswaMutabaah = cache(
 
     if (!student) {
       return {
-        today,
+        ...emptyMutabaahData(today),
         student: null,
         pklAktif: false,
-        form: null,
-        questions: [],
-        todayEntry: null,
-        week: { filled: 0, total: 7 },
-        history: [],
+        forms: [],
+        selectedFormId: null,
       };
     }
 
     const { data: memberships, error: membershipError } = await supabase
       .from("pengajuan_anggota")
-      .select("pengajuan:pengajuan_id(status)")
+      .select(
+        "pengajuan:pengajuan_id(status, tanggal_selesai, periode_id)",
+      )
       .eq("siswa_id", student.id)
       .order("created_at", { ascending: false });
 
@@ -395,25 +494,63 @@ export const getSiswaMutabaah = cache(
       throw new Error("Gagal memuat status PKL siswa.");
     }
 
-    const pklAktif = (memberships ?? []).some(
-      (membership) => membership.pengajuan?.status === "berlangsung",
-    );
+    const activePlacement = (memberships ?? [])
+      .map((membership) => membership.pengajuan)
+      .find(
+        (pengajuan) =>
+          pengajuan?.status === "berlangsung" &&
+          (!pengajuan.tanggal_selesai ||
+            pengajuan.tanggal_selesai >= today),
+      );
+    const pklAktif = Boolean(activePlacement);
 
     if (!pklAktif) {
       return {
-        today,
+        ...emptyMutabaahData(today),
         student,
         pklAktif: false,
-        form: null,
-        questions: [],
-        todayEntry: null,
-        week: { filled: 0, total: 7 },
-        history: [],
+        forms: [],
+        selectedFormId: null,
       };
     }
 
-    const data = await loadMutabaahData(supabase, student.id, today);
+    const forms = await loadMutabaahFormsOverview(
+      supabase,
+      student.id,
+      today,
+      activePlacement?.periode_id ?? undefined,
+    );
 
-    return { student, pklAktif: true, ...data };
+    if (!forms.length) {
+      return {
+        ...emptyMutabaahData(today),
+        student,
+        pklAktif: true,
+        forms: [],
+        selectedFormId: null,
+      };
+    }
+
+    const selected =
+      (selectedFormId && forms.some((form) => form.id === selectedFormId)
+        ? selectedFormId
+        : null) ??
+      forms.find((form) => !form.todayFilled)?.id ??
+      forms[0].id;
+
+    const data = await loadMutabaahData(
+      supabase,
+      student.id,
+      today,
+      forms.find((form) => form.id === selected) ?? forms[0],
+    );
+
+    return {
+      ...data,
+      student,
+      pklAktif: true,
+      forms,
+      selectedFormId: selected,
+    };
   },
 );

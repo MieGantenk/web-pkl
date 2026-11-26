@@ -2,7 +2,11 @@ import { cache } from "react";
 import { connection } from "next/server";
 
 import { jakartaToday } from "@/lib/date";
-import type { StatusJurnal, StatusPengajuan } from "@/lib/status";
+import type {
+  KehadiranJurnal,
+  StatusJurnal,
+  StatusPengajuan,
+} from "@/lib/status";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -65,6 +69,7 @@ export type InstrukturJournalSummary = {
   waktuMulai: string | null;
   waktuSelesai: string | null;
   kegiatan: string;
+  kehadiran: KehadiranJurnal;
   status: StatusJurnal;
 };
 
@@ -204,7 +209,7 @@ const getInstrukturStudentsBase = cache(
       supabase
         .from("jurnal")
         .select(
-          "id, pengajuan_id, siswa_id, tanggal, waktu_mulai, waktu_selesai, kegiatan, status",
+          "id, pengajuan_id, siswa_id, tanggal, waktu_mulai, waktu_selesai, kegiatan, kehadiran, status",
         )
         .in("pengajuan_id", applicationIds)
         .order("tanggal", { ascending: false }),
@@ -289,6 +294,7 @@ const getInstrukturStudentsBase = cache(
         waktuMulai: journal.waktu_mulai,
         waktuSelesai: journal.waktu_selesai,
         kegiatan: journal.kegiatan,
+        kehadiran: journal.kehadiran,
         status: journal.status,
       });
       journalsByStudent.set(journal.siswa_id, list);
@@ -362,6 +368,7 @@ const getInstrukturStudentsBase = cache(
         waktuMulai: journal.waktu_mulai,
         waktuSelesai: journal.waktu_selesai,
         kegiatan: journal.kegiatan,
+        kehadiran: journal.kehadiran,
         status: journal.status,
       })),
       applicationIds,
@@ -529,7 +536,7 @@ export const getInstrukturVerificationQueue = cache(
         supabase
           .from("jurnal")
           .select(
-            "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, deskripsi, status, foto_path",
+            "id, tanggal, waktu_mulai, waktu_selesai, kegiatan, kehadiran, deskripsi, status, foto_path",
           )
           .eq("id", selectedSummary.id)
           .maybeSingle(),
@@ -592,6 +599,7 @@ export const getInstrukturVerificationQueue = cache(
           waktuMulai: journal.waktu_mulai,
           waktuSelesai: journal.waktu_selesai,
           kegiatan: journal.kegiatan,
+          kehadiran: journal.kehadiran,
           status: journal.status,
           deskripsi: journal.deskripsi,
           fotoUrl,

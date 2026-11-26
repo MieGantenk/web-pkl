@@ -26,6 +26,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { requireRole } from "@/lib/auth";
+import { jakartaToday } from "@/lib/date";
 import {
   currentSuratYear,
   getSuratIssueOptions,
@@ -86,6 +87,7 @@ export default async function AdminSuratPage({
 
   const hasFilter = Boolean(q || jenis || status);
   const tahun = currentSuratYear();
+  const today = jakartaToday();
   const from = data.total === 0 ? 0 : (data.page - 1) * data.pageSize + 1;
   const to = Math.min(data.page * data.pageSize, data.total);
 
@@ -127,6 +129,7 @@ export default async function AdminSuratPage({
           <UploadSuratBaruButton
             options={uploadOptions}
             tahun={tahun}
+            today={today}
           />
         </div>
       </header>

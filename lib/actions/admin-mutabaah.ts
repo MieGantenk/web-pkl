@@ -333,20 +333,6 @@ export async function publishFormAction(
     };
   }
 
-  const archive = await admin
-    .from("mutabaah_form")
-    .update({ status: "arsip" })
-    .eq("periode_id", form.periode_id)
-    .eq("status", "aktif")
-    .neq("id", parsedId.data);
-
-  if (archive.error) {
-    return {
-      ok: false,
-      message: "Form aktif sebelumnya belum dapat diarsipkan.",
-    };
-  }
-
   const { data: published, error } = await admin
     .from("mutabaah_form")
     .update({ status: "aktif" })
