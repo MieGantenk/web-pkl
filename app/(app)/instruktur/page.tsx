@@ -6,6 +6,7 @@ import {
   ArrowRight,
   BookOpen,
   Building2,
+  ClipboardCheck,
   Users,
 } from "lucide-react";
 
@@ -68,6 +69,13 @@ export default async function InstrukturHomePage() {
       href: "/instruktur/siswa",
       action: "Lihat penempatan",
       icon: Building2,
+    },
+    {
+      label: "Jurnal siap diverifikasi",
+      count: data.pending,
+      href: "/instruktur/verifikasi",
+      action: "Tinjau jurnal",
+      icon: ClipboardCheck,
     },
   ];
 
@@ -241,7 +249,7 @@ export default async function InstrukturHomePage() {
                   {data.journals.map((journal) => (
                     <li key={journal.id}>
                       <Link
-                        href={`/instruktur/siswa/${journal.siswaId}`}
+                        href={`/instruktur/verifikasi?jurnalId=${journal.id}`}
                         prefetch={false}
                         className="flex flex-col gap-2 px-4 py-4 transition-colors hover:bg-surface-muted sm:flex-row sm:items-center sm:justify-between sm:px-6"
                       >

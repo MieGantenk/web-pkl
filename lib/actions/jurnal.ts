@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { jakartaToday } from "@/lib/date";
+import { hasVisibleTimestamp } from "@/lib/jurnal/timestamp";
 import { notifyPengajuan } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { fieldErrorsFrom } from "@/lib/validators/common";
@@ -186,6 +187,49 @@ export async function createJurnalAction(
     };
   }
 
+  if (isHadir && data.foto_path) {
+    const { data: photoFile, error: photoError } = await session.supabase.storage
+      .from("jurnal")
+      .download(data.foto_path);
+
+    if (photoError || !photoFile) {
+      return {
+        ok: false,
+        message: "Foto kegiatan belum dapat diperiksa. Coba unggah ulang.",
+        fieldErrors: {
+          foto_path: "Foto belum dapat dibaca. Pilih ulang foto JPG atau PNG.",
+        },
+      };
+    }
+
+    let timestampFound: boolean;
+
+    try {
+      timestampFound = await hasVisibleTimestamp(
+        Buffer.from(await photoFile.arrayBuffer()),
+      );
+    } catch {
+      return {
+        ok: false,
+        message: "Pemeriksaan foto belum berhasil. Coba lagi.",
+        fieldErrors: {
+          foto_path: "Foto belum dapat diperiksa. Coba unggah ulang.",
+        },
+      };
+    }
+
+    if (!timestampFound) {
+      return {
+        ok: false,
+        message: "Foto kegiatan belum memenuhi syarat.",
+        fieldErrors: {
+          foto_path:
+            "Foto harus menampilkan timestamp tanggal dan waktu yang terbaca.",
+        },
+      };
+    }
+  }
+
   const kegiatan = isHadir
     ? data.kegiatan
     : data.kehadiran === "izin"
@@ -232,7 +276,7 @@ export async function createJurnalAction(
     placement.id,
     {
       guru: "/guru/siswa",
-      instruktur: "/instruktur/siswa",
+      instruktur: "/instruktur/verifikasi",
     },
     {
       judul: "Jurnal baru menunggu verifikasi",

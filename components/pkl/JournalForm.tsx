@@ -200,7 +200,20 @@ export function JournalForm({
           }
         }
 
-        toast.error(result.message);
+        const photoMessage = result.fieldErrors?.foto_path;
+
+        if (photoMessage) {
+          toast.error("Foto belum dapat digunakan", {
+            description: photoMessage,
+            action: {
+              label: "Ganti foto",
+              onClick: () => document.getElementById("foto")?.click(),
+            },
+          });
+        } else {
+          toast.error(result.message);
+        }
+
         return;
       }
 
@@ -433,6 +446,11 @@ export function JournalForm({
             Mengompres foto…
           </p>
         ) : null}
+        {isSubmitting && photo ? (
+          <p aria-live="polite" className="text-[13px] leading-[18px] text-muted">
+            Memeriksa timestamp foto dan menyimpan jurnal…
+          </p>
+        ) : null}
 
         {previewUrl && photo ? (
           <div className="rounded-sm border border-border bg-surface-muted p-2">
@@ -466,17 +484,17 @@ export function JournalForm({
         ) : null}
 
         {photoError ? (
-          <p
+          <div
             id="foto-error"
             role="alert"
-            className="text-[13px] leading-[18px] text-danger"
+            className="rounded-sm border border-danger-border bg-danger-bg px-3 py-2.5 text-[13px] leading-[18px] text-danger"
           >
             {photoError}
-          </p>
+          </div>
         ) : (
           <p id="foto-hint" className="text-[12px] leading-4 text-muted">
-            Foto akan dikompres sebelum diunggah. Pastikan kegiatan terlihat
-            jelas.
+            Foto akan dikompres sebelum diunggah. Pastikan kegiatan dan
+            timestamp tanggal serta waktu terlihat jelas.
           </p>
         )}
         </section>

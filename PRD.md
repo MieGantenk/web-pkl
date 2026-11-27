@@ -301,7 +301,7 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 | ID | Requirement | Acceptance |
 |---|---|---|
 | JRN-01 | Satu jurnal per siswa per tanggal | Unique constraint; edit pada hari yang sama |
-| JRN-02 | Isi tanggal, kehadiran, waktu, kegiatan, deskripsi, foto | Kehadiran hadir/izin/sakit; foto wajib saat hadir, maks 5 MB |
+| JRN-02 | Isi tanggal, kehadiran, waktu, kegiatan, deskripsi, foto | Kehadiran hadir/izin/sakit; saat hadir foto wajib, maks 5 MB, dan harus menampilkan timestamp tanggal serta waktu yang terdeteksi OCR di server |
 | JRN-03 | Foto dikompres sebelum upload | Ukuran turun; kualitas masih layak |
 | JRN-04 | Edit hanya sebelum verifikasi | Setelah verified, tombol edit hilang |
 | JRN-05 | Guru verifikasi langkah 1 | Status `terverifikasi_guru`; catatan tersimpan |
