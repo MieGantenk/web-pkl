@@ -12,9 +12,14 @@ type AccountListRow = Pick<
 
 export function renderAccountListPdf(
   accounts: AccountListRow[],
+  roleLabel: string,
   generatedAt: string,
 ) {
   return renderToBuffer(
-    <AccountListDocument accounts={accounts} generatedAt={generatedAt} />,
+    <AccountListDocument
+      accounts={accounts}
+      roleLabel={roleLabel}
+      generatedAt={generatedAt}
+    />,
   );
 }
