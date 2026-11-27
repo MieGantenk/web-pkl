@@ -202,12 +202,14 @@ export default async function SiswaPengajuanPage() {
           ) : null}
 
           {canUploadIzin ? (
-            <PengajuanUpload
-              pengajuanId={pengajuan.id}
-              jenis="izin_orang_tua_ttd"
-              label="Unggah izin orang tua bertanda tangan"
-              description="Minta tanda tangan orang tua atau wali, lalu unggah scan surat izin yang sudah ditandatangani."
-            />
+            <div id="upload-izin-ortu" className="scroll-mt-20">
+              <PengajuanUpload
+                pengajuanId={pengajuan.id}
+                jenis="izin_orang_tua_ttd"
+                label="Unggah izin orang tua bertanda tangan"
+                description="Minta tanda tangan orang tua atau wali, lalu unggah scan surat izin yang sudah ditandatangani."
+              />
+            </div>
           ) : null}
 
           {canUploadBalasan ? (

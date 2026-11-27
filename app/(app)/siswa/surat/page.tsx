@@ -8,6 +8,7 @@ import {
   Download,
   Eye,
   FileText,
+  Upload,
 } from "lucide-react";
 
 import { EmptyState } from "@/components/pkl/EmptyState";
@@ -213,6 +214,24 @@ export default async function SiswaSuratPage() {
                         />
                         Unduh
                       </Link>
+                      {jenis === "izin_orang_tua" &&
+                      data.application?.status === "izin_ortu_terbit" ? (
+                        <Link
+                          href="/siswa/pengajuan#upload-izin-ortu"
+                          prefetch={false}
+                          className={buttonVariants({
+                            variant: "primary",
+                            size: "sm",
+                          })}
+                        >
+                          <Upload
+                            className="size-4"
+                            strokeWidth={1.75}
+                            aria-hidden
+                          />
+                          Unggah surat bertanda tangan
+                        </Link>
+                      ) : null}
                     </div>
                   </>
                 ) : (
