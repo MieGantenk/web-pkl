@@ -40,7 +40,7 @@ function PrintField({
         {label}
       </span>
       {showColon ? <span className="w-[12pt] shrink-0">:</span> : null}
-      <span className="min-w-0 flex-1 border-b border-dotted border-black pb-px">
+      <span className="min-w-0 flex-1">
         {value || "\u00a0"}
       </span>
     </div>
@@ -93,18 +93,14 @@ function PrintStudentFields({
 function PrintPlacementFields({
   data,
   labelWidths = [76, 96, 108],
-  splitDateRange = false,
+  showDateRange = false,
 }: {
   data: SuratPdfData;
   labelWidths?: [number, number, number];
-  splitDateRange?: boolean;
+  showDateRange?: boolean;
 }) {
-  const start = data.application.tanggalMulai
-    ? formatSuratDate(data.application.tanggalMulai)
-    : "................";
-  const end = data.application.tanggalSelesai
-    ? formatSuratDate(data.application.tanggalSelesai)
-    : "................";
+  const start = formatSuratDate(data.application.tanggalMulai);
+  const end = formatSuratDate(data.application.tanggalSelesai);
 
   return (
     <>
@@ -118,20 +114,12 @@ function PrintPlacementFields({
         value={data.application.perusahaan?.alamat}
         labelWidth={labelWidths[1]}
       />
-      {splitDateRange ? (
-        <>
-          <PrintField
-            label="Waktu Pelaksanaan"
-            value={`${start} s/d`}
-            labelWidth={labelWidths[2]}
-          />
-          <PrintField
-            label=""
-            value={end}
-            labelWidth={0}
-            showColon={false}
-          />
-        </>
+      {showDateRange ? (
+        <PrintField
+          label="Waktu Pelaksanaan"
+          value={`${start} s/d ${end}`}
+          labelWidth={labelWidths[2]}
+        />
       ) : null}
     </>
   );
@@ -165,7 +153,7 @@ export default async function PrintSuratPage({
     data.surat.tanggalTerbit?.slice(0, 4) ?? String(new Date().getFullYear());
   const number =
     data.surat.nomor ?? "....../SMK-IT/AS-SYIFA/........../2026";
-  const dateRange = `${data.application.tanggalMulai ? formatSuratDate(data.application.tanggalMulai) : "................"} s/d ${data.application.tanggalSelesai ? formatSuratDate(data.application.tanggalSelesai) : "................"}`;
+  const dateRange = `${formatSuratDate(data.application.tanggalMulai)} s/d ${formatSuratDate(data.application.tanggalSelesai)}`;
   const schoolUnit = /subang$/i.test(data.school.nama.trim())
     ? data.school.nama
     : `${data.school.nama} Subang`;
@@ -313,7 +301,7 @@ export default async function PrintSuratPage({
                   <PrintPlacementFields
                     data={data}
                     labelWidths={[88, 98, 120]}
-                    splitDateRange
+                    showDateRange
                   />
                   <p className="mb-3 mt-3 text-justify">
                     {content.paragraphs[1]}

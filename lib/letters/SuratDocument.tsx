@@ -112,10 +112,6 @@ const styles = StyleSheet.create({
   },
   fieldValue: {
     flex: 1,
-    borderBottomWidth: 0.6,
-    borderBottomColor: "#111111",
-    borderStyle: "dotted",
-    paddingBottom: 1,
   },
   sectionGap: {
     height: 7,
@@ -276,19 +272,15 @@ function StudentFields({
 function PlacementFields({
   data,
   labelWidths = [76, 96, 108],
-  splitDateRange = false,
+  showDateRange = false,
 }: {
   data: SuratPdfData;
   labelWidths?: [number, number, number];
-  splitDateRange?: boolean;
+  showDateRange?: boolean;
 }) {
   const company = data.application.perusahaan;
-  const start = data.application.tanggalMulai
-    ? formatSuratDate(data.application.tanggalMulai)
-    : "................";
-  const end = data.application.tanggalSelesai
-    ? formatSuratDate(data.application.tanggalSelesai)
-    : "................";
+  const start = formatSuratDate(data.application.tanggalMulai);
+  const end = formatSuratDate(data.application.tanggalSelesai);
 
   return (
     <>
@@ -298,20 +290,12 @@ function PlacementFields({
         value={company?.alamat}
         labelWidth={labelWidths[1]}
       />
-      {splitDateRange ? (
-        <>
-          <Field
-            label="Waktu Pelaksanaan"
-            value={`${start} s/d`}
-            labelWidth={labelWidths[2]}
-          />
-          <Field
-            label=""
-            value={end}
-            labelWidth={0}
-            showColon={false}
-          />
-        </>
+      {showDateRange ? (
+        <Field
+          label="Waktu Pelaksanaan"
+          value={`${start} s/d ${end}`}
+          labelWidth={labelWidths[2]}
+        />
       ) : null}
     </>
   );
@@ -331,7 +315,7 @@ export function SuratDocument({ data }: { data: SuratPdfData }) {
     data.surat.tanggalTerbit?.slice(0, 4) ?? String(new Date().getFullYear());
   const nomor =
     data.surat.nomor ?? "....../SMK-IT/AS-SYIFA/........../2026";
-  const dateRange = `${data.application.tanggalMulai ? formatSuratDate(data.application.tanggalMulai) : "................"} s/d ${data.application.tanggalSelesai ? formatSuratDate(data.application.tanggalSelesai) : "................"}`;
+  const dateRange = `${formatSuratDate(data.application.tanggalMulai)} s/d ${formatSuratDate(data.application.tanggalSelesai)}`;
   const schoolUnit = /subang$/i.test(data.school.nama.trim())
     ? data.school.nama
     : `${data.school.nama} Subang`;
@@ -433,7 +417,7 @@ export function SuratDocument({ data }: { data: SuratPdfData }) {
                 <PlacementFields
                   data={data}
                   labelWidths={[88, 98, 120]}
-                  splitDateRange
+                  showDateRange
                 />
                 <View style={styles.sectionGap} />
                 <Text style={styles.paragraph}>{body.paragraphs[1]}</Text>
