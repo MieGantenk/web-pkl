@@ -1,10 +1,20 @@
 import { renderAccountListPdf } from "@/lib/letters/render-account-list";
+import { getAccountExportRole } from "@/lib/account-export";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-const includedRoles = ["siswa", "instruktur", "guru", "ortu"] as const;
+export async function GET(request: Request) {
+  const roleOption = getAccountExportRole(
+    new URL(request.url).searchParams.get("role"),
+  );
 
-export async function GET() {
+  if (!roleOption) {
+    return Response.json(
+      { message: "Pilih role akun yang valid." },
+      { status: 400 },
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -35,7 +45,7 @@ export async function GET() {
   const { data: accounts, error: accountsError } = await admin
     .from("pengguna")
     .select("email, nama_lengkap, peran, username")
-    .in("peran", [...includedRoles])
+    .eq("peran", roleOption.role)
     .order("nama_lengkap", { ascending: true });
 
   if (accountsError) {
@@ -47,7 +57,7 @@ export async function GET() {
 
   if (!accounts.length) {
     return Response.json(
-      { message: "Belum ada akun pada role yang dipilih." },
+      { message: `Belum ada akun ${roleOption.label.toLowerCase()}.` },
       { status: 404 },
     );
   }
@@ -59,7 +69,11 @@ export async function GET() {
 
   let pdf: Buffer;
   try {
-    pdf = await renderAccountListPdf(accounts, generatedAt);
+    pdf = await renderAccountListPdf(
+      accounts,
+      roleOption.label,
+      generatedAt,
+    );
   } catch {
     return Response.json(
       { message: "PDF akun belum dapat dibuat. Coba lagi." },
@@ -72,7 +86,7 @@ export async function GET() {
     aksi: "ekspor_akun_pdf",
     entitas: "pengguna",
     detail: {
-      peran: [...includedRoles],
+      peran: roleOption.role,
       jumlah_pengguna: accounts.length,
     },
   });
@@ -87,7 +101,7 @@ export async function GET() {
   return new Response(new Uint8Array(pdf), {
     headers: {
       "Cache-Control": "private, no-store",
-      "Content-Disposition": 'attachment; filename="akun-pengguna.pdf"',
+      "Content-Disposition": `attachment; filename="akun-${roleOption.role}.pdf"`,
       "Content-Type": "application/pdf",
       "X-Content-Type-Options": "nosniff",
     },

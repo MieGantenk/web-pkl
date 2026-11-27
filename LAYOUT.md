@@ -336,8 +336,8 @@ Kelola data siswa, kelas, dan status PKL.
 #### Akun pengguna — `/admin/akun`
 
 - Gunakan header halaman standar dan satu card ringkas.
-- Sediakan tombol **Unduh PDF akun**.
-- PDF mengelompokkan siswa, instruktur, guru, dan orang tua; kolomnya nama lengkap, username, dan email.
+- Sediakan tombol **Unduh PDF** terpisah untuk siswa, instruktur, guru, dan orang tua.
+- Setiap PDF hanya berisi satu role dengan kolom nama lengkap, username, dan email.
 - Jangan sertakan kata sandi di PDF.
 
 ### 3.6 Detail — contoh `/admin/siswa/[id]`

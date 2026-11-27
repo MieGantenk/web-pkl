@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AccountPdfDownloadButton } from "@/components/pkl/AccountPdfDownloadButton";
+import { accountExportRoles } from "@/lib/account-export";
 import { requireRole } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -36,8 +37,22 @@ export default async function AdminAccountPage() {
           disertakan. Dokumen memuat data pribadi; simpan dan bagikan dengan
           aman.
         </p>
-        <div className="mt-5">
-          <AccountPdfDownloadButton />
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {accountExportRoles.map(({ role, label }) => (
+            <section
+              key={role}
+              aria-labelledby={`account-export-${role}`}
+              className="flex flex-col items-start gap-3 rounded-sm border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <h3
+                id={`account-export-${role}`}
+                className="text-sm font-semibold text-ink"
+              >
+                {label}
+              </h3>
+              <AccountPdfDownloadButton role={role} label={label} />
+            </section>
+          ))}
         </div>
       </section>
     </div>
