@@ -255,10 +255,11 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 |---|---|---|
 | AUTH-01 | Login dengan email atau username + password | Berhasil masuk; redirect sesuai role |
 | AUTH-02 | Admin mengundang instruktur & orang tua | Email undangan terkirim; akun aktif setelah set password |
-| AUTH-03 | Reset password | Tautan reset berfungsi; password lama tidak berlaku |
+| AUTH-03 | Admin mengatur ulang kata sandi akun target | Kata sandi baru berlaku; kata sandi tidak disertakan dalam ekspor akun |
 | AUTH-04 | Akun nonaktif tidak bisa login | Pesan umum, tidak membocorkan status akun |
 | AUTH-05 | Logout | Sesi berakhir; halaman terproteksi tidak bisa dibuka |
 | AUTH-06 | Role guard di server | Akses lintas role ditolak 403 |
+| AUTH-07 | Admin mengunduh daftar akun PDF | Memuat nama, username, dan email siswa, instruktur, guru, serta orang tua; tidak memuat kata sandi |
 
 ### 9.2 Master data
 

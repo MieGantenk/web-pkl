@@ -55,6 +55,7 @@ export const navigation: Record<Role, NavItem[]> = {
         { label: "Perusahaan", href: "/admin/perusahaan", icon: Building2 },
         { label: "Instruktur", href: "/admin/instruktur", icon: UserCog },
         { label: "Orang Tua", href: "/admin/orang-tua", icon: HeartHandshake },
+        { label: "Akun", href: "/admin/akun", icon: Users },
       ],
     },
     {

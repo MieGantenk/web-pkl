@@ -33,11 +33,11 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/403` | Tidak punya akses | Auth | MVP |
 | `/404` | Tidak ditemukan | Publik | MVP |
 | `/error` | Error tak terduga | Publik | MVP |
-| `/auth/callback` | Tukar kode Supabase (reset password/OAuth) | Publik | MVP |
+| `/auth/callback` | Tukar kode Supabase menjadi sesi | Publik | MVP |
 
 ---
 
-## 3. Admin — 21 halaman
+## 3. Admin — 22 halaman
 
 | Route | Halaman | Isi utama |
 |---|---|---|
@@ -45,6 +45,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/siswa` | Data siswa | Tabel, filter kelas/periode (periode mengikuti kelas), pagination, tambah, naik kelas, nonaktifkan |
 | `/admin/siswa/baru` | Tambah siswa | Form data siswa + akun login + kata sandi |
 | `/admin/siswa/[id]` | Detail siswa | Profil, akun, kata sandi, penempatan, jurnal terakhir |
+| `/admin/akun` | Akun pengguna | Unduh PDF daftar akun siswa, instruktur, guru, dan orang tua |
 | `/admin/guru` | Data guru | CRUD, jurusan, akun |
 | `/admin/perusahaan` | Perusahaan | CRUD DUDI, instruktur |
 | `/admin/instruktur` | Instruktur | Akun, perusahaan, peran |
@@ -133,6 +134,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `GET` | `/api/health` | Internal | Health check deployment |
 | `GET` | `/api/notifikasi` | Auth | Daftar notifikasi dan jumlah belum dibaca |
 | `GET` | `/api/admin/laporan/export` | Admin | Unduh CSV rekap PKL sesuai filter |
+| `GET` | `/api/admin/akun/export` | Admin | Unduh PDF nama, username, dan email akun siswa, instruktur, guru, dan orang tua |
 | `GET` | `/api/surat/[id]/pdf` | Role berhak | Generate/unduh PDF surat (Node runtime) |
 | `GET` | `/api/verifikasi/surat/[kode]` | Publik | Halaman verifikasi QR (v1.1) |
 | `GET` | `/api/sertifikat/[id]/pdf` | Role berhak | Generate/unduh sertifikat (v1.1) |
@@ -143,7 +145,7 @@ Catatan:
 - Supabase REST (`/rest/v1/...`) **tidak** dipakai langsung oleh client. Semua baca/tulis lewat Server Component, Server Action, atau Route Handler + RLS.
 - Semua route `(app)` wajib cek sesi + role di server.
 - API mutasi (`POST`/`PUT`/`PATCH`/`DELETE`) wajib memakai `verifyCsrfAndOrigin`; client memakai `fetchWithCsrf`. Detail di `SECURITY.md`. Route `GET` tidak perlu token.
-- PDF memakai `@react-pdf/renderer` dan `export const runtime = "nodejs"`.
+- PDF memakai `@react-pdf/renderer` di runtime Node.js bawaan. Dengan Cache Components aktif, jangan mengekspor konfigurasi `runtime` segmen route.
 - Login dengan username: cari email lewat service role di server, lalu `signInWithPassword`. Jangan ekspos email ke client.
 
 ---
@@ -154,7 +156,7 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 
 | Modul | Action | Role |
 |---|---|---|
-| Auth | `loginAction`, `logoutAction`, `requestPasswordResetAction`, `setPasswordAction` | Publik/auth |
+| Auth | `loginAction`, `logoutAction` | Publik/auth |
 | Profil | `updateProfileAction`, `changePasswordAction` | Semua |
 | Master siswa | `createSiswaAction`, `updateSiswaAction`, `resetSiswaPasswordAction`, `setSiswaAktifAction`, `promoteSiswaKelasAction` | Admin |
 | Akun | `resetAccountPasswordAction` (siswa, guru, instruktur, orang tua) | Admin |

@@ -172,7 +172,6 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 │   bukan stok)                │  [                  👁]  │
 │                              │                          │
 │                              │  [ Masuk ]               │
-│                              │  Lupa kata sandi?        │
 │                              │                          │
 │                              │  Butuh bantuan?          │
 │                              │  Hubungi admin sekolah.  │
@@ -185,7 +184,7 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 - Di < 900 px: panel kiri menjadi header kecil (logo + nama), form full width.
 - Tidak ada marketing 3 fitur, tidak ada quote, tidak ada emoji.
 - Field masuk 12 px, stagger 40 ms, sekali.
-- Tombol "Lupa kata sandi?" membuka halaman/instruksi nyata, bukan alert.
+- Pengguna yang memerlukan bantuan akun menghubungi admin sekolah.
 
 ### 1.5 Print layout
 
@@ -203,7 +202,7 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 
 | Role | Menu utama | Menu sekunder |
 |---|---|---|
-| **Admin** | Ringkasan | Data Master (Siswa, Guru, Perusahaan, Instruktur, Orang Tua), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
+| **Admin** | Ringkasan | Data Master (Siswa, Guru, Perusahaan, Instruktur, Orang Tua, Akun), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
 | **Guru** | Ringkasan | Siswa Bimbingan, Mutaba'ah, Surat Tugas, Penarikan, Profil |
 | **Siswa** | Beranda | Pengajuan PKL, Jurnal Harian, Mutaba'ah, Surat, Profil |
 | **Instruktur** | Ringkasan | Siswa PKL, Penilaian, Profil |
@@ -233,7 +232,6 @@ Nama sistem                       Deskripsi 1 baris
 1 kalimat                          Label + input ID
 Foto kampus + overlay teal         Label + input kata sandi
                                    [ Masuk ]
-                                   Lupa kata sandi?
                                    Bantuan
 ```
 
@@ -334,6 +332,13 @@ Kelola data siswa, kelas, dan status PKL.
 - Aksi baris di dropdown `⋯` (Edit, Lihat, Hapus).
 - Hapus memakai dialog konfirmasi, bukan `confirm()`.
 - Pagination server-side; jangan memuat 1.853 baris sekaligus.
+
+#### Akun pengguna — `/admin/akun`
+
+- Gunakan header halaman standar dan satu card ringkas.
+- Sediakan tombol **Unduh PDF akun**.
+- PDF mengelompokkan siswa, instruktur, guru, dan orang tua; kolomnya nama lengkap, username, dan email.
+- Jangan sertakan kata sandi di PDF.
 
 ### 3.6 Detail — contoh `/admin/siswa/[id]`
 

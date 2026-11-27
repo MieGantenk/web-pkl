@@ -2,6 +2,7 @@ import {
   Archive,
   Building2,
   Check,
+  Download,
   FileCheck,
   FileText,
   GraduationCap,
@@ -87,6 +88,11 @@ const actions: Record<string, AuditActionMeta> = {
     label: "Atur ulang kata sandi",
     tone: "warning",
     icon: KeyRound,
+  },
+  ekspor_akun_pdf: {
+    label: "Mengunduh PDF akun",
+    tone: "info",
+    icon: Download,
   },
   reset_sandi_mandiri: {
     label: "Reset sandi mandiri",
