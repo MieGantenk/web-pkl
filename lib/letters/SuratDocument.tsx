@@ -16,14 +16,18 @@ import { formatSuratDate, getSuratContent } from "./content";
 const styles = StyleSheet.create({
   page: {
     fontFamily: "Times-Roman",
-    fontSize: 10.5,
-    lineHeight: 1.45,
+    fontSize: 12,
+    lineHeight: 1.25,
     paddingTop: 166,
     paddingBottom: 88,
-    paddingHorizontal: 48,
+    paddingHorizontal: 72,
     backgroundColor: "#ffffff",
     color: "#111111",
   },
+  izinPage: { paddingTop: 184 },
+  pengajuanPage: { paddingTop: 158 },
+  keberangkatanPage: { paddingTop: 142 },
+  tugasPage: { paddingTop: 147 },
   kop: {
     position: "absolute",
     top: 0,
@@ -40,23 +44,13 @@ const styles = StyleSheet.create({
     height: 74,
     objectFit: "contain",
   },
-  npsnLine: {
-    position: "absolute",
-    top: 121,
-    left: 0,
-    right: 0,
-    textAlign: "center",
-    fontFamily: "Times-Bold",
-    fontSize: 8,
-    color: "#0f766e",
-  },
   fallbackHeader: {
     position: "absolute",
     top: 20,
-    left: 48,
-    right: 48,
+    left: 72,
+    right: 72,
     borderBottomWidth: 2,
-    borderBottomColor: "#0f766e",
+    borderBottomColor: "#000000",
     paddingBottom: 8,
     textAlign: "center",
   },
@@ -84,33 +78,42 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: "Times-Bold",
-    fontSize: 12.5,
+    fontSize: 12,
     textAlign: "center",
-    marginBottom: 4,
+    marginBottom: 8,
   },
   number: {
     textAlign: "center",
     marginBottom: 15,
   },
+  numberLeft: {
+    marginBottom: 14,
+  },
   paragraph: {
     textAlign: "justify",
     marginBottom: 8,
   },
+  indented: {
+    marginLeft: 36,
+  },
   fieldRow: {
     flexDirection: "row",
-    marginBottom: 3,
-    minHeight: 15,
+    marginBottom: 2,
+    minHeight: 16,
   },
   fieldLabel: {
-    width: 120,
+    width: 64,
   },
   fieldColon: {
     width: 12,
   },
+  bold: {
+    fontFamily: "Times-Bold",
+  },
   fieldValue: {
     flex: 1,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#9ca3af",
+    borderBottomWidth: 0.6,
+    borderBottomColor: "#111111",
     borderStyle: "dotted",
     paddingBottom: 1,
   },
@@ -119,8 +122,14 @@ const styles = StyleSheet.create({
   },
   signatureRight: {
     marginTop: 22,
-    marginLeft: "48%",
-    width: "48%",
+    marginLeft: "65%",
+    width: "35%",
+    textAlign: "center",
+  },
+  signatureTask: {
+    marginTop: 22,
+    marginLeft: "50%",
+    width: "50%",
     textAlign: "center",
   },
   signatureLeft: {
@@ -134,9 +143,14 @@ const styles = StyleSheet.create({
   signatureName: {
     fontFamily: "Times-Bold",
   },
+  referenceSignatureName: {
+    fontFamily: "Times-Bold",
+    fontSize: 11,
+    textDecoration: "underline",
+  },
   signatureBox: {
-    width: 92,
-    height: 48,
+    width: 72,
+    height: 40,
     borderWidth: 0.5,
     borderColor: "#111111",
     marginTop: 8,
@@ -162,19 +176,53 @@ const styles = StyleSheet.create({
   colName: { flex: 2 },
   colNis: { width: 65 },
   colClass: { flex: 1.2 },
+  dudiTable: {
+    marginTop: 16,
+    borderWidth: 0.7,
+    borderColor: "#111111",
+  },
+  dudiTableRow: {
+    flexDirection: "row",
+  },
+  dudiHeaderCell: {
+    borderRightWidth: 0.7,
+    borderBottomWidth: 0.7,
+    borderColor: "#111111",
+    paddingVertical: 5,
+    textAlign: "center",
+    fontFamily: "Times-Bold",
+    fontSize: 10,
+  },
+  dudiBodyCell: {
+    height: 68,
+    borderRightWidth: 0.7,
+    borderColor: "#111111",
+  },
+  dudiCellLast: {
+    borderRightWidth: 0,
+  },
+  dudiDateColumn: { width: "25%" },
+  dudiCompanyColumn: { width: "42%" },
+  dudiSignatureColumn: { width: "33%" },
 });
 
 function Field({
   label,
   value,
+  labelWidth = 64,
+  indent = 0,
+  showColon = true,
 }: {
   label: string;
   value: string | null | undefined;
+  labelWidth?: number;
+  indent?: number;
+  showColon?: boolean;
 }) {
   return (
-    <View style={styles.fieldRow}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <Text style={styles.fieldColon}>:</Text>
+    <View style={[styles.fieldRow, indent ? { marginLeft: indent } : undefined]}>
+      <Text style={[styles.fieldLabel, { width: labelWidth }]}>{label}</Text>
+      {showColon ? <Text style={styles.fieldColon}>:</Text> : null}
       <View style={styles.fieldValue}>
         <Text>{value || " "}</Text>
       </View>
@@ -184,8 +232,14 @@ function Field({
 
 function StudentFields({
   data,
+  labelWidth = 64,
+  indent = 0,
+  order = "kelas-first",
 }: {
   data: SuratPdfData;
+  labelWidth?: number;
+  indent?: number;
+  order?: "kelas-first" | "jurusan-first";
 }) {
   const student = data.students[0];
 
@@ -193,27 +247,72 @@ function StudentFields({
     return <Text>Data siswa belum tersedia.</Text>;
   }
 
+  const fields = [
+    { label: "Nama", value: student.nama },
+    { label: "NIS", value: student.nis },
+    { label: "Kelas", value: student.kelas },
+    { label: "Jurusan", value: student.jurusan?.nama },
+  ];
+  const orderedFields =
+    order === "jurusan-first"
+      ? [fields[0], fields[1], fields[3], fields[2]]
+      : fields;
+
   return (
     <>
-      <Field label="Nama" value={student.nama} />
-      <Field label="NIS" value={student.nis} />
-      <Field label="Kelas" value={student.kelas} />
-      <Field label="Jurusan" value={student.jurusan?.nama} />
+      {orderedFields.map((field) => (
+        <Field
+          key={field.label}
+          label={field.label}
+          value={field.value}
+          labelWidth={labelWidth}
+          indent={indent}
+        />
+      ))}
     </>
   );
 }
 
-function PlacementFields({ data }: { data: SuratPdfData }) {
+function PlacementFields({
+  data,
+  labelWidths = [76, 96, 108],
+  splitDateRange = false,
+}: {
+  data: SuratPdfData;
+  labelWidths?: [number, number, number];
+  splitDateRange?: boolean;
+}) {
   const company = data.application.perusahaan;
+  const start = data.application.tanggalMulai
+    ? formatSuratDate(data.application.tanggalMulai)
+    : "................";
+  const end = data.application.tanggalSelesai
+    ? formatSuratDate(data.application.tanggalSelesai)
+    : "................";
 
   return (
     <>
-      <Field label="Tempat PKL" value={company?.nama} />
-      <Field label="Alamat Perusahaan" value={company?.alamat} />
+      <Field label="Tempat PKL" value={company?.nama} labelWidth={labelWidths[0]} />
       <Field
-        label="Waktu Pelaksanaan"
-        value={`${formatSuratDate(data.application.tanggalMulai)} s/d ${formatSuratDate(data.application.tanggalSelesai)}`}
+        label="Alamat Perusahaan"
+        value={company?.alamat}
+        labelWidth={labelWidths[1]}
       />
+      {splitDateRange ? (
+        <>
+          <Field
+            label="Waktu Pelaksanaan"
+            value={`${start} s/d`}
+            labelWidth={labelWidths[2]}
+          />
+          <Field
+            label=""
+            value={end}
+            labelWidth={0}
+            showColon={false}
+          />
+        </>
+      ) : null}
     </>
   );
 }
@@ -226,18 +325,31 @@ export function SuratDocument({ data }: { data: SuratPdfData }) {
   const isPengajuan = jenis === "pengajuan";
   const isKeberangkatan = jenis === "keberangkatan";
   const isTugas = jenis === "tugas_monitoring";
+  const isReferenceTemplate = isIzin || isPengajuan || isKeberangkatan || isTugas;
   const akreditasi = (data.school.akreditasi ?? "A").split(/[\s(]/)[0];
+  const year =
+    data.surat.tanggalTerbit?.slice(0, 4) ?? String(new Date().getFullYear());
+  const nomor =
+    data.surat.nomor ?? "....../SMK-IT/AS-SYIFA/........../2026";
+  const dateRange = `${data.application.tanggalMulai ? formatSuratDate(data.application.tanggalMulai) : "................"} s/d ${data.application.tanggalSelesai ? formatSuratDate(data.application.tanggalSelesai) : "................"}`;
+  const schoolUnit = /subang$/i.test(data.school.nama.trim())
+    ? data.school.nama
+    : `${data.school.nama} Subang`;
+  const pageStyle = isIzin
+    ? styles.izinPage
+    : isPengajuan
+      ? styles.pengajuanPage
+      : isKeberangkatan
+        ? styles.keberangkatanPage
+        : isTugas
+          ? styles.tugasPage
+          : undefined;
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, pageStyle]}>
         {data.school.kopDataUrl ? (
-          <>
-            <Image src={data.school.kopDataUrl} style={styles.kop} fixed />
-            <Text style={styles.npsnLine} fixed>
-              NPSN : 70044614 | TERAKREDITASI “{akreditasi}”
-            </Text>
-          </>
+          <Image src={data.school.kopDataUrl} style={styles.kop} fixed />
         ) : (
           <View style={styles.fallbackHeader} fixed>
             <Text style={styles.schoolName}>{data.school.nama}</Text>
@@ -247,11 +359,9 @@ export function SuratDocument({ data }: { data: SuratPdfData }) {
                 .filter(Boolean)
                 .join(" · ")}
             </Text>
-            {data.school.akreditasi ? (
-              <Text style={styles.schoolMeta}>
-                Akreditasi {data.school.akreditasi}
-              </Text>
-            ) : null}
+            <Text style={styles.schoolMeta}>
+              NPSN : 70044614 | TERAKREDITASI “{akreditasi}”
+            </Text>
           </View>
         )}
 
@@ -263,127 +373,300 @@ export function SuratDocument({ data }: { data: SuratPdfData }) {
           </Text>
         )}
 
-        <Text style={styles.title}>{body.title}</Text>
-        <Text style={styles.number}>
-          Nomor: {data.surat.nomor ?? "—"}
-        </Text>
-
-        {isPengajuan ? (
+        {isReferenceTemplate ? (
           <>
-            <Text>Kepada Yth.</Text>
-            <Text>
-              Bapak/Ibu Pimpinan {data.application.perusahaan?.nama ?? "Perusahaan"}
-            </Text>
-            <Text>Di tempat</Text>
-            <View style={styles.sectionGap} />
-            <Text>Dengan Hormat,</Text>
-            <View style={styles.sectionGap} />
-            <Text>Yang bertanda tangan di bawah ini:</Text>
-            <StudentFields data={data} />
-            <View style={styles.sectionGap} />
-            <Text>Tempat PKL yang dituju:</Text>
-            <PlacementFields data={data} />
-            <View style={styles.sectionGap} />
-          </>
-        ) : null}
+            <Text style={styles.title}>{body.title}</Text>
 
-        {isIzin ? (
-          <>
-            <Text>Yang bertanda tangan di bawah ini:</Text>
-            <Field label="Nama Orang Tua/Wali" value="" />
-            <Field label="Alamat" value="" />
-            <Field label="No. HP" value="" />
-            <Text>adalah orang tua/wali dari:</Text>
-            <StudentFields data={data} />
-            <View style={styles.sectionGap} />
-            <Text>Dengan ini memberikan izin kepada putra kami untuk mengikuti Praktik Kerja Lapangan (PKL) pada:</Text>
-            <PlacementFields data={data} />
-            <View style={styles.sectionGap} />
-          </>
-        ) : null}
-
-        {isKeberangkatan ? (
-          <>
-            <Text>Yang bertanda tangan di bawah ini:</Text>
-            <Field label="Nama" value={data.school.kepala} />
-            <Field label="Jabatan" value="Kepala Sekolah" />
-            <Field label="Sekolah" value={data.school.nama} />
-            <Text>Dengan ini menerangkan bahwa:</Text>
-            <StudentFields data={data} />
-            <View style={styles.sectionGap} />
-            <Text>
-              adalah benar siswa SMK-IT As-Syifa Boarding School yang akan
-              melaksanakan Praktik Kerja Lapangan (PKL) di:
-            </Text>
-            <PlacementFields data={data} />
-            <View style={styles.sectionGap} />
-          </>
-        ) : null}
-
-        {isTugas ? (
-          <>
-            <Text>Yang bertanda tangan di bawah ini:</Text>
-            <Field label="Nama" value={data.school.kepala} />
-            <Field label="Jabatan" value="Kepala Sekolah" />
-            <Field label="Unit Kerja" value={data.school.nama} />
-            <Text>Dengan ini menugaskan kepada:</Text>
-            <Field label="Nama" value={data.application.guru} />
-            <Field label="Jabatan" value="Guru Pembimbing" />
-            <Field label="Unit Kerja" value={data.school.nama} />
-            <View style={styles.sectionGap} />
-          </>
-        ) : null}
-
-        {!isPengajuan && !isIzin && !isKeberangkatan && !isTugas ? (
-          <>
-            <StudentFields data={data} />
-            <View style={styles.sectionGap} />
-          </>
-        ) : null}
-
-        {body.paragraphs.map((paragraph) => (
-          <Text key={paragraph} style={styles.paragraph}>
-            {paragraph}
-          </Text>
-        ))}
-
-        {data.students.length > 1 ? (
-          <>
-            <View style={styles.tableHeader}>
-              <Text style={styles.colNo}>No</Text>
-              <Text style={styles.colName}>Nama</Text>
-              <Text style={styles.colNis}>NIS</Text>
-              <Text style={styles.colClass}>Kelas / Jurusan</Text>
-            </View>
-            {data.students.map((student, index) => (
-              <View key={student.id} style={styles.tableRow}>
-                <Text style={styles.colNo}>{index + 1}</Text>
-                <Text style={styles.colName}>{student.nama}</Text>
-                <Text style={styles.colNis}>{student.nis}</Text>
-                <Text style={styles.colClass}>
-                  {[student.kelas, student.jurusan?.nama]
-                    .filter(Boolean)
-                    .join(" / ") || "—"}
+            {isPengajuan ? (
+              <>
+                <View style={styles.numberLeft}>
+                  <Text>Nomor : {data.surat.nomor ?? ""}</Text>
+                  <Text>Lamp  : -</Text>
+                  <Text>Perihal : Pengajuan Tempat PKL</Text>
+                </View>
+                <Text>Kepada Yth :</Text>
+                <Text>
+                  Bapak/Ibu Pimpinan{" "}
+                  {data.application.perusahaan?.nama ?? "Perusahaan/instansi"}
                 </Text>
-              </View>
-            ))}
-          </>
-        ) : null}
+                <Text>Di tempat</Text>
+                <View style={styles.sectionGap} />
+                <Text>Dengan Hormat,</Text>
+                <View style={styles.sectionGap} />
+                <Text style={styles.paragraph}>{body.paragraphs[0]}</Text>
+                <Text style={[styles.paragraph, styles.indented]}>
+                  Saya yang bertandatangan di bawah ini :
+                </Text>
+                <StudentFields
+                  data={data}
+                  labelWidth={40}
+                  indent={36}
+                  order="jurusan-first"
+                />
+                <View style={styles.sectionGap} />
+                <Text style={styles.paragraph}>{body.paragraphs[1]}</Text>
+              </>
+            ) : null}
 
-        <View style={isIzin ? styles.signatureLeft : styles.signatureRight}>
-          <Text>
-            Subang, {tanggal}
-          </Text>
-          <Text>{body.signature},</Text>
-          {isIzin ? <View style={styles.signatureBox} /> : <Text style={styles.signatureSpace}> </Text>}
-          <Text style={styles.signatureName}>
-            {body.signer || "................................"}
-          </Text>
-          {body.signature === "Kepala Sekolah" && data.school.nip ? (
-            <Text>NIP. {data.school.nip}</Text>
-          ) : null}
-          {isIzin ? <Text>(tanda tangan dan nama jelas)</Text> : null}
-        </View>
+            {isIzin ? (
+              <>
+                <Text>Yang bertanda tangan di bawah ini:</Text>
+                <Field label="Nama Orang Tua/Wali" value="" labelWidth={108} />
+                <Field label="Alamat" value="" labelWidth={108} />
+                <Field label="No. HP" value="" labelWidth={108} />
+                <View style={styles.sectionGap} />
+                <Text>{body.paragraphs[0]}</Text>
+                <StudentFields data={data} labelWidth={102} />
+                <View style={styles.sectionGap} />
+                <Text style={styles.paragraph}>
+                  Dengan ini memberikan <Text style={styles.bold}>izin</Text>{" "}
+                  kepada putra kami untuk mengikuti{" "}
+                  <Text style={styles.bold}>
+                    Praktik Kerja Lapangan (PKL)
+                  </Text>{" "}
+                  yang diselenggarakan oleh{" "}
+                  <Text style={styles.bold}>
+                    SMK-IT As-Syifa Boarding School
+                  </Text>{" "}
+                  pada:
+                </Text>
+                <PlacementFields
+                  data={data}
+                  labelWidths={[88, 98, 120]}
+                  splitDateRange
+                />
+                <View style={styles.sectionGap} />
+                <Text style={styles.paragraph}>{body.paragraphs[1]}</Text>
+                <Text style={styles.paragraph}>{body.paragraphs[2]}</Text>
+              </>
+            ) : null}
+
+            {isKeberangkatan ? (
+              <>
+                <Text style={styles.number}>
+                  Nomor: {data.surat.nomor ?? "....../SMK-IT/AS-SYIFA/........../2026"}
+                </Text>
+                <Text>Yang bertanda tangan di bawah ini:</Text>
+                <Field label="Nama" value={data.school.kepala} />
+                <Field label="Jabatan" value="Kepala Sekolah" />
+                <Field
+                  label="Sekolah"
+                  value="SMK-IT As-Syifa Boarding School"
+                />
+                <View style={styles.sectionGap} />
+                <Text>Dengan ini menerangkan bahwa:</Text>
+                <StudentFields data={data} />
+                <View style={styles.sectionGap} />
+                <Text style={styles.paragraph}>{body.paragraphs[0]}</Text>
+                <PlacementFields
+                  data={data}
+                  labelWidths={[76, 96, 108]}
+                />
+                <View style={styles.sectionGap} />
+                <Text style={styles.paragraph}>
+                  {body.paragraphs[1]} {dateRange}.
+                </Text>
+                <Text style={styles.paragraph}>{body.paragraphs[2]}</Text>
+                <Text style={styles.paragraph}>{body.paragraphs[3]}</Text>
+              </>
+            ) : null}
+
+            {isTugas ? (
+              <>
+                <Text style={styles.number}>Nomor : {nomor}</Text>
+                <Text>Yang bertanda tangan di bawah ini :</Text>
+                <Field
+                  label="Nama"
+                  value={data.school.kepala}
+                  labelWidth={96}
+                  indent={36}
+                />
+                <Field
+                  label="NIY"
+                  value={data.school.niy}
+                  labelWidth={96}
+                  indent={36}
+                />
+                <Field
+                  label="Jabatan"
+                  value="Kepala Sekolah"
+                  labelWidth={96}
+                  indent={36}
+                />
+                <Field
+                  label="Unit Kerja"
+                  value={schoolUnit}
+                  labelWidth={96}
+                  indent={36}
+                />
+                <Text>Dengan ini menugaskan kepada :</Text>
+                <Field
+                  label="Nama"
+                  value={data.application.guru}
+                  labelWidth={96}
+                  indent={36}
+                />
+                <Field
+                  label="NIY"
+                  value=""
+                  labelWidth={96}
+                  indent={36}
+                />
+                <Field
+                  label="Jabatan"
+                  value="Guru"
+                  labelWidth={96}
+                  indent={36}
+                />
+                <Field
+                  label="Unit Kerja"
+                  value={schoolUnit}
+                  labelWidth={96}
+                  indent={36}
+                />
+                <Text style={styles.paragraph}>{body.paragraphs[0]}</Text>
+                <Text style={styles.paragraph}>{body.paragraphs[1]}</Text>
+              </>
+            ) : null}
+
+            <View
+              style={
+                isIzin
+                  ? styles.signatureLeft
+                  : isTugas
+                    ? styles.signatureTask
+                    : styles.signatureRight
+              }
+            >
+              {isIzin ? (
+                <>
+                  <Text>
+                    .................................., ................. {year}
+                  </Text>
+                  <Text>{body.signature}</Text>
+                  <View style={styles.signatureBox} />
+                  <Text>(tanda tangan dan nama jelas)</Text>
+                </>
+              ) : (
+                <>
+                  <Text>Subang, {tanggal}</Text>
+                  <Text>{body.signature}</Text>
+                  <Text style={styles.signatureSpace}> </Text>
+                  <Text style={styles.referenceSignatureName}>
+                    {body.signer}
+                  </Text>
+                  <Text>NIY. {data.school.niy}</Text>
+                </>
+              )}
+            </View>
+
+            {isTugas ? (
+              <View style={styles.dudiTable}>
+                <View style={styles.dudiTableRow}>
+                  <Text style={[styles.dudiHeaderCell, styles.dudiDateColumn]}>
+                    Hari/Tanggal
+                  </Text>
+                  <Text
+                    style={[
+                      styles.dudiHeaderCell,
+                      styles.dudiCompanyColumn,
+                    ]}
+                  >
+                    Pihak DUDI
+                  </Text>
+                  <Text
+                    style={[
+                      styles.dudiHeaderCell,
+                      styles.dudiSignatureColumn,
+                      styles.dudiCellLast,
+                    ]}
+                  >
+                    Tanda Tangan dan Cap
+                  </Text>
+                </View>
+                <View style={styles.dudiTableRow}>
+                  <View
+                    style={[
+                      styles.dudiBodyCell,
+                      styles.dudiDateColumn,
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.dudiBodyCell,
+                      styles.dudiCompanyColumn,
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.dudiBodyCell,
+                      styles.dudiSignatureColumn,
+                      styles.dudiCellLast,
+                    ]}
+                  />
+                </View>
+              </View>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <Text style={styles.title}>{body.title}</Text>
+            <Text style={styles.number}>Nomor: {data.surat.nomor ?? "—"}</Text>
+
+            <StudentFields data={data} />
+            <View style={styles.sectionGap} />
+
+            {body.paragraphs.map((paragraph) => (
+              <Text key={paragraph} style={styles.paragraph}>
+                {paragraph}
+              </Text>
+            ))}
+
+            {data.students.length > 1 ? (
+              <>
+                <View style={styles.tableHeader}>
+                  <Text style={styles.colNo}>No</Text>
+                  <Text style={styles.colName}>Nama</Text>
+                  <Text style={styles.colNis}>NIS</Text>
+                  <Text style={styles.colClass}>Kelas / Jurusan</Text>
+                </View>
+                {data.students.map((student, index) => (
+                  <View key={student.id} style={styles.tableRow}>
+                    <Text style={styles.colNo}>{index + 1}</Text>
+                    <Text style={styles.colName}>{student.nama}</Text>
+                    <Text style={styles.colNis}>{student.nis}</Text>
+                    <Text style={styles.colClass}>
+                      {[student.kelas, student.jurusan?.nama]
+                        .filter(Boolean)
+                        .join(" / ") || "—"}
+                    </Text>
+                  </View>
+                ))}
+              </>
+            ) : null}
+
+            <View
+              style={isIzin ? styles.signatureLeft : styles.signatureRight}
+            >
+              <Text>Subang, {tanggal}</Text>
+              <Text>{body.signature}</Text>
+              {isIzin ? (
+                <View style={styles.signatureBox} />
+              ) : (
+                <Text style={styles.signatureSpace}> </Text>
+              )}
+              <Text style={styles.signatureName}>
+                {body.signer || "................................"}
+              </Text>
+              {body.signature.includes("Kepala Sekolah") ? (
+                <Text>NIY. {data.school.niy}</Text>
+              ) : null}
+              {isIzin ? (
+                <Text>(tanda tangan dan nama jelas)</Text>
+              ) : null}
+            </View>
+          </>
+        )}
       </Page>
     </Document>
   );

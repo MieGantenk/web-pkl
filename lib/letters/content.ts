@@ -21,42 +21,43 @@ export function getSuratContent(data: SuratPdfData) {
       return {
         title: "SURAT IZIN ORANG TUA/WALI",
         paragraphs: [
+          "adalah orang tua/wali dari:",
           "Saya selaku orang tua/wali memahami bahwa kegiatan PKL ini merupakan bagian dari program pendidikan sekolah, serta menyetujui putra kami untuk mengikuti kegiatan tersebut dengan penuh tanggung jawab.",
           "Demikian surat izin ini dibuat dengan sebenarnya, untuk digunakan sebagaimana mestinya.",
         ],
-        signature: "Orang Tua/Wali",
+        signature: "Orang Tua/Wali,",
         signer: "",
       };
     case "pengajuan":
       return {
         title: "SURAT PENGAJUAN TEMPAT PKL",
         paragraphs: [
-          "Sesuai dengan Permendikbud No. 50 Tahun 2020 tentang Praktik Kerja Lapangan (PKL) bagi peserta didik, bahwa proses pembelajaran di SMK harus melibatkan Dunia Industri dalam pembimbingan PKL.",
-          "Dengan ini kami bermaksud mengajukan permohonan Praktik Kerja Lapangan di perusahaan/instansi/industri yang Bapak/Ibu pimpin. Demikian surat ini disampaikan dan besar harapan kami agar siswa kami dapat diterima di industri yang Bapak/Ibu pimpin.",
+          "Sesuai dengan Permendikbud No. 50 Tahun 2020 Tentang tentang Praktik Kerja Lapangan (PKL) bagi peserta didik, bahwa proses pembelajaran di SMK harus melibatkan Dunia Industri dalam pembimbingan PKL.",
+          "Dengan ini bermaksud mengajukan pemohonan Praktik Kerja Lapangan di Perusahaan/instansi/industri yang bapa / ibu pimpin. Demikian surat ini disampaikan dan besar harapan agar kami bisa diterima di Industri yang Bapak/Ibu pimpin.",
         ],
-        signature: "Kepala Sekolah",
+        signature: "Mengetahui,\nKepala SMK-IT As-Syifa\nBoarding School,",
         signer: data.school.kepala ?? "",
       };
     case "keberangkatan":
       return {
-        title: "SURAT PENGANTAR KEBERANGKATAN PKL",
+        title: "SURAT PENGANTAR KEBERANGKATAN",
         paragraphs: [
-          `Dengan hormat, kami memberitahukan bahwa siswa yang tercantum pada surat ini akan melaksanakan Praktik Kerja Lapangan (PKL) di ${company}.`,
-          `Kegiatan berlangsung pada ${dates}. Kami mohon kesediaan perusahaan untuk menerima dan membimbing siswa tersebut sesuai ketentuan yang berlaku.`,
-          "Demikian surat pemberitahuan ini dibuat. Atas perhatian dan kerja samanya, kami ucapkan terima kasih.",
+          "adalah benar siswa SMK-IT As-Syifa Boarding School yang akan melaksanakan Praktik Kerja Lapangan (PKL) di:",
+          "Adapun pelaksanaan PKL akan dilaksanakan mulai tanggal:",
+          "Sehubungan dengan itu, Besar harapan kami agar Bapak/Ibu berkenan memberikan kesempatan kepada siswa kami untuk menimba ilmu dan pengalaman melalui program PKL di perusahaan yang Bapak/Ibu pimpin. Demikian permohonan ini kami sampaikan. Atas perhatian serta kesempatan yang diberikan, kami ucapkan terima kasih.",
+          "Wassalamu’alaikum Wr. Wb.",
         ],
-        signature: "Kepala Sekolah",
+        signature: "Kepala SMK-IT\nAs-Syifa Boarding School",
         signer: data.school.kepala ?? "",
       };
     case "tugas_monitoring":
       return {
-        title: "SURAT TUGAS MONITORING PKL",
+        title: "SURAT TUGAS",
         paragraphs: [
-          `Untuk melakukan monitoring pelaksanaan PKL siswa di ${company} pada ${dates}.`,
-          "Kami mohon Bapak/Ibu memantau kegiatan siswa, memeriksa jurnal, dan memberikan bimbingan selama masa PKL.",
-          "Demikian surat tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab.",
+          `Untuk mengantarkan siswa ke tempat PKL di ${company} pada tanggal${data.application.tanggalMulai ? ` ${formatSuratDate(data.application.tanggalMulai)}` : " ................"}.`,
+          "Demikian surat pengantar tugas ini dibuat untuk dilaksanakan dengan penuh rasa tanggung jawab.",
         ],
-        signature: "Kepala Sekolah",
+        signature: "Kepala Sekolah\nSMK-IT As-Syifa Boarding School",
         signer: data.school.kepala ?? "",
       };
     case "pernyataan":

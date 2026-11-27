@@ -129,8 +129,8 @@ export type SuratPdfData = {
     telepon: string | null;
     email: string | null;
     website: string | null;
-    kepala: string | null;
-    nip: string | null;
+    kepala: string;
+    niy: string;
     akreditasi: string | null;
     kopDataUrl: string | null;
     footerDataUrl: string | null;
@@ -139,6 +139,17 @@ export type SuratPdfData = {
 
 function cleanSearch(value: string) {
   return value.replace(/[%_,()]/g, " ").trim();
+}
+
+function formatPrincipalName(value: string | null | undefined) {
+  const name = value?.trim() || "H. Agus Nur Purwanto, S.T., Gr.";
+  const degree = name.replace(/\s*,?\s*Gr\.?$/i, "");
+
+  if (/^H\.\s*Agus Nur Purwanto,\s*S\.T\.?$/i.test(degree)) {
+    return `${degree}, Gr.`;
+  }
+
+  return name;
 }
 
 function unique(values: string[]) {
@@ -796,8 +807,8 @@ export async function getSuratPdfData(
         telepon: settings?.telepon ?? null,
         email: settings?.email ?? null,
         website: settings?.website ?? null,
-        kepala: settings?.kepala_sekolah ?? null,
-        nip: settings?.nip_kepala ?? null,
+        kepala: formatPrincipalName(settings?.kepala_sekolah),
+        niy: settings?.nip_kepala?.trim() || "200907840809056",
         akreditasi: settings?.akreditasi ?? null,
         kopDataUrl,
         footerDataUrl,

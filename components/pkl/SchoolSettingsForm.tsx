@@ -377,9 +377,9 @@ export function SchoolSettingsForm({
           />
 
           <TextField
-            label="NIP kepala sekolah"
+            label="NIY kepala sekolah"
             maxLength={30}
-            placeholder="NIP/NIY"
+            placeholder="Nomor NIY"
             error={errors.nip_kepala?.message}
             {...register("nip_kepala")}
           />
