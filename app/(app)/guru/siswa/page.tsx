@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
-  ClipboardCheck,
   Search,
   Users,
 } from "lucide-react";
@@ -66,10 +65,6 @@ export default async function GuruStudentsPage({
     return matchesQuery && matchesJurusan;
   });
 
-  const pendingJournals = students.reduce(
-    (total, student) => total + student.jurnal.menunggu,
-    0,
-  );
   const hasFilter = Boolean(query || selectedJurusan);
 
   return (
@@ -93,28 +88,6 @@ export default async function GuruStudentsPage({
           </p>
         </div>
 
-        {students.length ? (
-          <Link
-            href="/guru/verifikasi"
-            prefetch={false}
-            className={cn(
-              buttonVariants({
-                variant: pendingJournals > 0 ? "primary" : "secondary",
-                size: "md",
-              }),
-              "w-full sm:w-auto",
-            )}
-          >
-            <ClipboardCheck
-              className="size-4"
-              strokeWidth={1.75}
-              aria-hidden
-            />
-            {pendingJournals > 0
-              ? `Verifikasi jurnal (${pendingJournals})`
-              : "Buka verifikasi"}
-          </Link>
-        ) : null}
       </header>
 
       <FilterForm className="grid gap-3 rounded-md border border-border bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_190px_auto] sm:items-end"

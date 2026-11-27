@@ -6,7 +6,6 @@ import {
   ArrowRight,
   BookOpen,
   Building2,
-  ClipboardCheck,
   Users,
 } from "lucide-react";
 
@@ -57,13 +56,6 @@ export default async function InstrukturHomePage() {
 
   const queueCards = [
     {
-      label: "Perlu diverifikasi",
-      count: data.pending,
-      href: "/instruktur/verifikasi",
-      action: "Buka antrean",
-      icon: ClipboardCheck,
-    },
-    {
       label: "Siswa PKL",
       count: data.studentCount,
       href: "/instruktur/siswa",
@@ -92,7 +84,7 @@ export default async function InstrukturHomePage() {
             Assalamu&apos;alaikum, {firstName}.
           </h1>
           <p className="mt-2 max-w-[60ch] text-base leading-[26px] text-ink-soft">
-            Verifikasi jurnal dan pantau siswa PKL dari perusahaan yang Anda
+            Pantau siswa PKL dan progres jurnal dari perusahaan yang Anda
             dampingi.
           </p>
         </div>
@@ -235,11 +227,11 @@ export default async function InstrukturHomePage() {
                 </p>
               </div>
               <Link
-                href="/instruktur/verifikasi"
+                href="/instruktur/siswa"
                 prefetch={false}
                 className="text-sm font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
               >
-                Buka verifikasi
+                Lihat siswa
               </Link>
             </div>
 
@@ -249,7 +241,7 @@ export default async function InstrukturHomePage() {
                   {data.journals.map((journal) => (
                     <li key={journal.id}>
                       <Link
-                        href={`/instruktur/verifikasi?jurnal=${journal.id}`}
+                        href={`/instruktur/siswa/${journal.siswaId}`}
                         prefetch={false}
                         className="flex flex-col gap-2 px-4 py-4 transition-colors hover:bg-surface-muted sm:flex-row sm:items-center sm:justify-between sm:px-6"
                       >

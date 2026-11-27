@@ -19,8 +19,6 @@ function variantForPath(pathname: string) {
   if (
     pathname.startsWith("/admin/pengajuan") ||
     pathname.startsWith("/admin/jurnal") ||
-    pathname.startsWith("/guru/verifikasi") ||
-    pathname.startsWith("/instruktur/verifikasi") ||
     pathname.startsWith("/siswa/jurnal")
   ) {
     return "split" as const;

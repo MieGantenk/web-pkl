@@ -328,6 +328,8 @@ Table pengajuan_pkl [note: 'Satu baris = satu pengajuan/penempatan PKL (bisa ber
     (guru_pembimbing_id)
     (instruktur_id)
     status
+    (created_at) [name: 'pengajuan_pkl_created_at_desc_idx']
+    (status, created_at) [name: 'pengajuan_pkl_status_created_at_desc_idx']
   }
 }
 
@@ -361,6 +363,7 @@ Table surat [note: 'Surat yang DITERBITKAN sistem (PDF). File disimpan di Supaba
     (pengajuan_id, jenis)
     status
     nomor
+    (tanggal_terbit, created_at) [name: 'surat_tanggal_terbit_created_at_desc_idx']
   }
 }
 
@@ -383,6 +386,7 @@ Table dokumen [note: 'File yang DIUNGGAH user (scan TTD, balasan perusahaan, dll
   indexes {
     (pengajuan_id, jenis)
     status
+    (diunggah_pada) [name: 'dokumen_diunggah_pada_desc_idx']
   }
 }
 
@@ -408,6 +412,8 @@ Table jurnal [note: 'Jurnal kegiatan harian siswa. Maksimal 1 entri per siswa pe
     (siswa_id, tanggal) [unique]
     status
     pengajuan_id
+    (tanggal, created_at) [name: 'jurnal_tanggal_created_at_desc_idx']
+    (status, tanggal, created_at) [name: 'jurnal_status_tanggal_created_at_desc_idx']
   }
 }
 
@@ -531,6 +537,7 @@ Table mutabaah_harian [note: 'Satu entri per siswa per form per tanggal.'] {
   indexes {
     (siswa_id, form_id, tanggal) [unique]
     form_id
+    (tanggal, created_at) [name: 'mutabaah_harian_tanggal_created_at_desc_idx']
   }
 }
 
@@ -637,6 +644,7 @@ Table log_aktivitas {
   indexes {
     (entitas, entitas_id)
     (pengguna_id, created_at)
+    (created_at) [name: 'log_aktivitas_created_at_desc_idx']
   }
 }
 
@@ -651,6 +659,7 @@ Table notifikasi {
 
   indexes {
     (pengguna_id, dibaca)
+    (pengguna_id, created_at) [name: 'notifikasi_pengguna_created_at_desc_idx']
   }
 }
 

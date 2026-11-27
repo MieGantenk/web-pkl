@@ -186,7 +186,7 @@ export async function verifyInstrukturJurnalAction(
         {
           siswa: "/siswa/jurnal",
           ortu: "/ortu/jurnal",
-          guru: "/guru/verifikasi",
+          guru: "/guru/siswa",
         },
         {
           judul: "Jurnal terverifikasi instruktur",
@@ -215,10 +215,10 @@ export async function verifyInstrukturJurnalAction(
     }
   }
 
-  revalidatePath("/instruktur/verifikasi");
+  revalidatePath("/instruktur/siswa");
   revalidatePath("/instruktur");
   revalidatePath("/instruktur/siswa");
-  revalidatePath("/guru/verifikasi");
+  revalidatePath("/guru/siswa");
   revalidatePath("/guru/siswa");
   revalidatePath(`/guru/siswa/${journal.siswa_id}`);
   revalidatePath("/guru");

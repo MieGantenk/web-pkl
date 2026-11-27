@@ -745,7 +745,9 @@ export async function getSuratPdfData(
         .maybeSingle(),
       admin
         .from("pengaturan_sekolah")
-        .select("*")
+        .select(
+          "nama_sekolah, alamat, telepon, email, website, kepala_sekolah, nip_kepala, akreditasi, kop_path, footer_path",
+        )
         .eq("id", 1)
         .maybeSingle(),
     ]);

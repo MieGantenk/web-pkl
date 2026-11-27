@@ -4,7 +4,6 @@ import { format, parseISO } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import {
   ArrowLeft,
-  ArrowRight,
   BookOpen,
   Building2,
   CalendarDays,
@@ -280,13 +279,6 @@ export default async function GuruStudentDetailPage({
                 >
                   Ekspor CSV
                 </a>
-                <Link
-                  href="/guru/verifikasi"
-                  prefetch={false}
-                  className="inline-flex h-11 items-center text-sm font-semibold text-brand-700 hover:text-brand-800"
-                >
-                  Verifikasi
-                </Link>
               </div>
             </div>
 
@@ -400,17 +392,6 @@ export default async function GuruStudentDetailPage({
               </div>
             </div>
 
-            <Link
-              href="/guru/verifikasi"
-              prefetch={false}
-              className={cn(
-                buttonVariants({ variant: "secondary", size: "md" }),
-                "mt-5 w-full",
-              )}
-            >
-              Buka verifikasi jurnal
-              <ArrowRight className="size-4" strokeWidth={1.75} aria-hidden />
-            </Link>
           </section>
 
           <section className={cn(card, "text-sm")}>

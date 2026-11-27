@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
-import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { ThemeToggle } from "@/components/app/ThemeToggle";
 import { getCurrentProfile } from "@/lib/auth";
@@ -111,8 +110,6 @@ export default async function LoginPage() {
           </header>
 
           <LoginForm />
-
-          <ForgotPasswordForm />
         </div>
       </section>
     </main>

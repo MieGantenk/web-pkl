@@ -65,7 +65,9 @@ export const getSchoolSettings = cache(
     const [settingsRes, countersRes, periodRes] = await Promise.all([
       supabase
         .from("pengaturan_sekolah")
-        .select("*")
+        .select(
+          "id, nama_sekolah, alamat, telepon, email, website, kepala_sekolah, nip_kepala, akreditasi, logo_path, kop_path, footer_path, format_nomor_surat, updated_at",
+        )
         .eq("id", 1)
         .maybeSingle(),
       supabase

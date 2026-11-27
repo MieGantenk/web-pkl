@@ -59,9 +59,9 @@ function revalidateJurnal() {
   revalidatePath("/siswa/jurnal");
   revalidatePath("/siswa/jurnal/baru");
   revalidatePath("/siswa");
-  revalidatePath("/guru/verifikasi");
   revalidatePath("/guru/siswa");
-  revalidatePath("/instruktur/verifikasi");
+  revalidatePath("/guru/siswa");
+  revalidatePath("/instruktur/siswa");
   revalidatePath("/instruktur/siswa");
   revalidatePath("/admin/jurnal");
 }
@@ -231,8 +231,8 @@ export async function createJurnalAction(
   await notifyPengajuan(
     placement.id,
     {
-      guru: "/guru/verifikasi",
-      instruktur: "/instruktur/verifikasi",
+      guru: "/guru/siswa",
+      instruktur: "/instruktur/siswa",
     },
     {
       judul: "Jurnal baru menunggu verifikasi",

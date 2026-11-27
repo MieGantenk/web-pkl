@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  ArrowRight,
   Building2,
-  ClipboardCheck,
   Search,
   Users,
 } from "lucide-react";
@@ -77,12 +75,6 @@ function journalStatus(student: InstrukturStudent) {
       : "text-muted";
 
   return { label: parts.join(" · "), className };
-}
-
-function verifikasiHref(student: InstrukturStudent) {
-  return student.pendingJournalId
-    ? `/instruktur/verifikasi?jurnal=${student.pendingJournalId}`
-    : "/instruktur/verifikasi";
 }
 
 export default async function InstrukturStudentsPage({
@@ -165,28 +157,6 @@ export default async function InstrukturStudentsPage({
           </p>
         </div>
 
-        {students.length ? (
-          <Link
-            href="/instruktur/verifikasi"
-            prefetch={false}
-            className={cn(
-              buttonVariants({
-                variant: pendingVerification > 0 ? "primary" : "secondary",
-                size: "md",
-              }),
-              "w-full sm:w-auto",
-            )}
-          >
-            <ClipboardCheck
-              className="size-4"
-              strokeWidth={1.75}
-              aria-hidden
-            />
-            {pendingVerification > 0
-              ? `Verifikasi jurnal (${pendingVerification})`
-              : "Buka verifikasi"}
-          </Link>
-        ) : null}
       </header>
 
       {!context.companies.length ? (
@@ -438,27 +408,6 @@ export default async function InstrukturStudentsPage({
                         </div>
                       </div>
 
-                      <div className="mt-3 flex items-center justify-end border-t border-border pt-3">
-                        <Link
-                          href={verifikasiHref(student)}
-                          prefetch={false}
-                          className="inline-flex h-11 items-center gap-1.5 text-[13px] font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-100"
-                        >
-                          <ClipboardCheck
-                            className="size-4"
-                            strokeWidth={1.75}
-                            aria-hidden
-                          />
-                          {student.pendingJournalId
-                            ? "Verifikasi jurnal"
-                            : "Buka antrean verifikasi"}
-                          <ArrowRight
-                            className="size-4"
-                            strokeWidth={1.75}
-                            aria-hidden
-                          />
-                        </Link>
-                      </div>
                     </li>
                   );
                 })}
@@ -576,22 +525,6 @@ export default async function InstrukturStudentsPage({
                                   />
                                 </div>
                               </div>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <Link
-                                href={verifikasiHref(student)}
-                                prefetch={false}
-                                className="inline-flex h-11 items-center justify-end gap-1.5 px-2 text-sm font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-100"
-                              >
-                                <ClipboardCheck
-                                  className="size-4"
-                                  strokeWidth={1.75}
-                                  aria-hidden
-                                />
-                                {student.pendingJournalId
-                                  ? "Verifikasi"
-                                  : "Buka antrean"}
-                              </Link>
                             </td>
                           </tr>
                         );

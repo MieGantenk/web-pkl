@@ -52,7 +52,6 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/pengajuan` | Pengajuan PKL | Semua pengajuan, tinjau dokumen, setujui/tolak, timeline |
 | `/admin/penempatan` | Penempatan | PKL aktif, guru/instruktur, tanggal, mulai |
 | `/admin/jurnal` | Jurnal | Monitoring semua jurnal, filter, foto |
-| `/admin/verifikasi` | Verifikasi dokumen | Scan izin ortu, surat balasan, revisi |
 | `/admin/mutabaah` | Mutaba'ah | Riwayat semua siswa, filter tanggal/kelas/kelengkapan, rekap |
 | `/admin/mutabaah/pertanyaan` | Form builder | Form, versi, pertanyaan, opsi, publish/arsip |
 | `/admin/surat` | Surat sekolah | 7 jenis, terbitkan, nomor, pratinjau, unduh, unggah berkas surat |
@@ -73,7 +72,6 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 |---|---|---|
 | `/guru` | Ringkasan | Antrean verifikasi, siswa bimbingan, jurnal terbaru |
 | `/guru/siswa` | Siswa bimbingan | Daftar, progres jurnal, mutaba'ah, penempatan |
-| `/guru/verifikasi` | Verifikasi jurnal | Split view, langkah 1, setujui/revisi, cap |
 | `/guru/mutabaah` | Mutaba'ah | Lihat jawaban mutaba'ah siswa bimbingan |
 | `/guru/surat-tugas` | Surat tugas | Lihat/unduh surat tugas monitoring |
 | `/guru/penarikan` | Penarikan | Lihat/unduh surat penarikan |
@@ -101,7 +99,6 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 |---|---|---|---|
 | `/instruktur` | Ringkasan | MVP | Antrean verifikasi langkah 2, siswa perusahaan |
 | `/instruktur/siswa` | Siswa PKL | MVP | Daftar siswa, progres jurnal, mutaba'ah |
-| `/instruktur/verifikasi` | Verifikasi jurnal | MVP | Langkah 2, catatan revisi, cap |
 | `/instruktur/penilaian` | Penilaian | v1.1 | Nilai 0–100, catatan |
 | `/instruktur/profil` | Profil | MVP | Data, perusahaan, kata sandi |
 
@@ -157,7 +154,7 @@ Server Actions adalah fungsi `"use server"` di `lib/actions/*`. Tidak punya URL 
 
 | Modul | Action | Role |
 |---|---|---|
-| Auth | `loginAction`, `logoutAction`, `resetPasswordFromLoginAction`, `requestPasswordResetAction`, `setPasswordAction` | Publik/auth |
+| Auth | `loginAction`, `logoutAction`, `requestPasswordResetAction`, `setPasswordAction` | Publik/auth |
 | Profil | `updateProfileAction`, `changePasswordAction` | Semua |
 | Master siswa | `createSiswaAction`, `updateSiswaAction`, `resetSiswaPasswordAction`, `setSiswaAktifAction`, `promoteSiswaKelasAction` | Admin |
 | Akun | `resetAccountPasswordAction` (siswa, guru, instruktur, orang tua) | Admin |

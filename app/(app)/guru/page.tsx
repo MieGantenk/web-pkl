@@ -5,7 +5,6 @@ import { id as localeId } from "date-fns/locale";
 import {
   ArrowRight,
   BookOpen,
-  ClipboardCheck,
   ScrollText,
   Users,
 } from "lucide-react";
@@ -53,13 +52,6 @@ export default async function GuruHomePage() {
     : null;
 
   const queueCards = [
-    {
-      label: "Perlu diverifikasi",
-      count: data.pending,
-      href: "/guru/verifikasi",
-      action: "Buka antrean",
-      icon: ClipboardCheck,
-    },
     {
       label: "Siswa bimbingan",
       count: data.studentCount,
@@ -282,11 +274,11 @@ export default async function GuruHomePage() {
                 </p>
               </div>
               <Link
-                href="/guru/verifikasi"
+                href="/guru/siswa"
                 prefetch={false}
                 className="text-sm font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline"
               >
-                Buka verifikasi
+                Lihat siswa
               </Link>
             </div>
 
@@ -296,7 +288,7 @@ export default async function GuruHomePage() {
                   {data.journals.map((journal) => (
                     <li key={journal.id}>
                       <Link
-                        href={`/guru/verifikasi?jurnal=${journal.id}`}
+                        href={`/guru/siswa/${journal.siswaId}`}
                         prefetch={false}
                         className="flex flex-col gap-2 px-4 py-4 transition-colors hover:bg-surface-muted sm:flex-row sm:items-center sm:justify-between sm:px-6"
                       >

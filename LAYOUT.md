@@ -204,9 +204,9 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 | Role | Menu utama | Menu sekunder |
 |---|---|---|
 | **Admin** | Ringkasan | Data Master (Siswa, Guru, Perusahaan, Instruktur, Orang Tua), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
-| **Guru** | Ringkasan | Siswa Bimbingan, Verifikasi Jurnal, Mutaba'ah, Surat Tugas, Penarikan, Profil |
+| **Guru** | Ringkasan | Siswa Bimbingan, Mutaba'ah, Surat Tugas, Penarikan, Profil |
 | **Siswa** | Beranda | Pengajuan PKL, Jurnal Harian, Mutaba'ah, Surat, Profil |
-| **Instruktur** | Ringkasan | Siswa PKL, Verifikasi Jurnal, Penilaian, Profil |
+| **Instruktur** | Ringkasan | Siswa PKL, Penilaian, Profil |
 | **Orang tua** | Beranda | Jurnal Anak, Mutaba'ah, Surat, Profil |
 
 Aturan:
@@ -391,27 +391,6 @@ Catat kegiatan hari ini. Jurnal diverifikasi pembimbing.
 - Di HP: tombol simpan sticky di atas bottom nav.
 - Setelah simpan: toast + redirect ke daftar jurnal.
 - Jangan memakai modal untuk form ini.
-
-### 3.8 Verifikasi — `/guru/verifikasi` dan `/instruktur/verifikasi`
-
-```
-Verifikasi Jurnal                                  12 menunggu
-┌──────────────────────────┬──────────────────────────────────────────────┐
-│ Antrean                  │ Detail jurnal                                │
-│ ● Ahmad — 15 Nov         │ Ahmad Fairuz · XI RPL · PT MitraComm         │
-│ ● Hisyam — 15 Nov        │ 15 Nov 2026 · 07:30–16:00                    │
-│ ○ Isa — 14 Nov           │ Scan dokumen                                 │
-│ …                        │ [Foto]                                       │
-│                          │ [Setujui]  [Minta revisi]                    │
-└──────────────────────────┴──────────────────────────────────────────────┘
-```
-
-- Desktop: split 360 + detail.
-- HP: daftar → detail (route terpisah), tombol back.
-- Instruktur hanya melihat jurnal siswa di perusahaannya; aksi verifikasi aktif setelah guru pembimbing menyetujui.
-- Setujui: dialog konfirmasi singkat → cap verifikasi 260 ms → badge berubah → toast.
-- Minta revisi: textarea catatan wajib.
-- Aksi massal hanya jika ada checkbox dan konfirmasi.
 
 ### 3.9 Surat — `/admin/surat`
 
@@ -805,7 +784,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
 | `daily.blade.php` | `/admin/jurnal` | `JournalTable` |
 | `admin/surat/*` | `/admin/surat` | `LetterTable`, `LetterPreview` |
 | `guru/dashboard` | `/guru` | `TeacherOverview` |
-| `guru/siswa/*` | `/guru/siswa`, `/guru/verifikasi` | `MenteeList`, `VerificationSplit` |
+| `guru/siswa/*` | `/guru/siswa` | `MenteeList` |
 | `siswa/dashboard` | `/siswa` | `StudentHome` |
 | `siswa/activity/*` | `/siswa/jurnal` | `JournalForm`, `JournalList` |
 | `siswa/mutabaah` | `/siswa/mutabaah` | `MutabaahChecklist`, `MutabaahRing` |

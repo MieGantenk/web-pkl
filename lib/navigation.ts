@@ -65,7 +65,6 @@ export const navigation: Record<Role, NavItem[]> = {
         { label: "Pengajuan", href: "/admin/pengajuan", icon: FileText },
         { label: "Penempatan", href: "/admin/penempatan", icon: Building2 },
         { label: "Jurnal", href: "/admin/jurnal", icon: BookOpen },
-        { label: "Verifikasi", href: "/admin/verifikasi", icon: ClipboardCheck },
         { label: "Mutaba'ah", href: "/admin/mutabaah", icon: HeartHandshake },
       ],
     },
@@ -77,7 +76,6 @@ export const navigation: Record<Role, NavItem[]> = {
   guru: [
     { label: "Ringkasan", href: "/guru", icon: LayoutDashboard },
     { label: "Siswa Bimbingan", href: "/guru/siswa", icon: Users },
-    { label: "Verifikasi Jurnal", href: "/guru/verifikasi", icon: ClipboardCheck },
     { label: "Mutaba'ah", href: "/guru/mutabaah", icon: HeartHandshake },
     { label: "Surat Tugas", href: "/guru/surat-tugas", icon: ScrollText },
     { label: "Penarikan", href: "/guru/penarikan", icon: FileText },
@@ -94,7 +92,6 @@ export const navigation: Record<Role, NavItem[]> = {
   instruktur: [
     { label: "Ringkasan", href: "/instruktur", icon: LayoutDashboard },
     { label: "Siswa PKL", href: "/instruktur/siswa", icon: Users },
-    { label: "Verifikasi Jurnal", href: "/instruktur/verifikasi", icon: ClipboardCheck },
     { label: "Penilaian", href: "/instruktur/penilaian", icon: Award },
     { label: "Profil", href: "/instruktur/profil", icon: UserRound },
   ],
@@ -110,7 +107,6 @@ export const navigation: Record<Role, NavItem[]> = {
 export const bottomNavigation: Partial<Record<Role, NavItem[]>> = {
   guru: [
     { label: "Ringkasan", href: "/guru", icon: LayoutDashboard },
-    { label: "Verifikasi", href: "/guru/verifikasi", icon: ClipboardCheck },
     { label: "Siswa", href: "/guru/siswa", icon: Users },
     { label: "Profil", href: "/guru/profil", icon: UserRound },
   ],
@@ -123,7 +119,6 @@ export const bottomNavigation: Partial<Record<Role, NavItem[]>> = {
   ],
   instruktur: [
     { label: "Ringkasan", href: "/instruktur", icon: LayoutDashboard },
-    { label: "Verifikasi", href: "/instruktur/verifikasi", icon: ClipboardCheck },
     { label: "Siswa", href: "/instruktur/siswa", icon: Users },
     { label: "Profil", href: "/instruktur/profil", icon: UserRound },
   ],
