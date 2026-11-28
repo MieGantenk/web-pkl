@@ -102,6 +102,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | Route | Halaman | Status | Isi utama |
 |---|---|---|---|
 | `/instruktur` | Ringkasan | MVP | Antrean verifikasi langkah 2, siswa perusahaan |
+| `/instruktur/verifikasi` | Verifikasi jurnal | MVP | Antrean jurnal, filter, foto, verifikasi langkah 2 setelah guru |
 | `/instruktur/siswa` | Siswa PKL | MVP | Daftar siswa, progres jurnal, mutaba'ah |
 | `/instruktur/penilaian` | Penilaian | v1.1 | Nilai 0–100, catatan |
 | `/instruktur/profil` | Profil | MVP | Data, perusahaan, kata sandi |

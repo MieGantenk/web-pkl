@@ -9,6 +9,7 @@ Versi 1.1 · 16 November 2026
 - `motion` untuk animasi (kebutuhan baru, diatur di `ANIMATION.md`),
 - `@hookform/resolvers` sebagai penghubung resmi React Hook Form + Zod,
 - `browser-image-compression` untuk kompresi gambar sebelum upload (jurnal, dokumen pengajuan, surat, aset sekolah).
+- `tesseract.js` dan model `@tesseract.js-data/eng` untuk validasi timestamp foto jurnal di server.
 
 Tidak ada teknologi di luar pembicaraan proyek yang dimasukkan.
 
@@ -59,12 +60,14 @@ Jangan membuat database, autentikasi, atau penyimpanan file kedua jika Supabase 
 | QR Code | `qrcode` | Verifikasi surat (opsional) |
 | Animasi | `motion` | Hanya 5 kasus di `ANIMATION.md` |
 | Kompresi gambar | `browser-image-compression` | Sebelum upload gambar ke Storage |
+| OCR foto jurnal | `tesseract.js` + `@tesseract.js-data/eng` | Memeriksa timestamp visual di server; foto tidak dikirim ke layanan OCR luar |
 | CLI | `supabase` (dev) | Migrasi & generate tipe |
 
 Catatan:
 
 - `shadcn/ui` bukan library runtime; komponennya disalin ke `components/ui` dan menjadi milik proyek.
 - `motion` adalah paket penerus `framer-motion`. Import dari `motion/react`. Jangan memasang keduanya.
+- OCR memakai model bahasa Inggris lokal (sekitar 13,9 MB); foto jurnal diproses di server sendiri dan tidak dikirim ke layanan OCR luar.
 - Versi paket **tidak ditulis di dokumen ini**. Gunakan versi stabil terbaru saat scaffold, lalu kunci di `package.json` + lockfile.
 
 ---
@@ -178,6 +181,7 @@ Role:
 | Toast | Sonner |
 | Animasi | CSS transition + `motion` |
 | Kompresi gambar | `browser-image-compression` |
+| Validasi timestamp foto jurnal | `tesseract.js` + model `eng` lokal |
 | Mutaba'ah | Form builder + `mutabaah_form` / `mutabaah_pertanyaan` / `mutabaah_opsi` + jawaban dinamis |
 
 Catatan: builder pertanyaan memakai tombol naik/turun, bukan library drag-and-drop. Tidak ada dependency baru untuk fitur ini.

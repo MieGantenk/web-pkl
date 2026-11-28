@@ -216,6 +216,7 @@ export async function verifyInstrukturJurnalAction(
   }
 
   revalidatePath("/instruktur/siswa");
+  revalidatePath("/instruktur/verifikasi");
   revalidatePath("/instruktur");
   revalidatePath("/instruktur/siswa");
   revalidatePath("/guru/siswa");

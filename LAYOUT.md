@@ -205,7 +205,7 @@ Target: Next.js App Router · Tailwind CSS v4 · shadcn/ui · `motion/react`
 | **Admin** | Ringkasan | Data Master (Siswa, Guru, Perusahaan, Instruktur, Orang Tua, Akun), PKL (Pengajuan, Penempatan, Jurnal, Verifikasi, Mutaba'ah), Surat (7 jenis), Laporan, Pengaturan, Audit |
 | **Guru** | Ringkasan | Siswa Bimbingan, Mutaba'ah, Surat Tugas, Penarikan, Profil |
 | **Siswa** | Beranda | Pengajuan PKL, Jurnal Harian, Mutaba'ah, Surat, Profil |
-| **Instruktur** | Ringkasan | Siswa PKL, Penilaian, Profil |
+| **Instruktur** | Ringkasan | Verifikasi Jurnal, Siswa PKL, Penilaian, Profil |
 | **Orang tua** | Beranda | Jurnal Anak, Mutaba'ah, Surat, Profil |
 
 Aturan:
@@ -215,6 +215,7 @@ Aturan:
 - Satu item aktif per halaman (`aria-current="page"`).
 - Jangan menampilkan menu yang tidak bisa diakses role.
 - **Penilaian** instruktur ada di sidebar; bukan bottom nav.
+- **Verifikasi Jurnal** instruktur tersedia di sidebar dan navigasi bawah.
 - **Audit** hanya admin.
 
 ---
@@ -515,6 +516,24 @@ Form Mutaba'ah                             [+ Form baru]
 - **Rekap**: tingkat pengisian, distribusi pilihan, rata-rata angka; ekspor v1.1.
 - **Guru**: halaman read-only `/guru/mutabaah` dengan filter siswa bimbingan.
 - **Di detail siswa**: cukup ringkasan + tautan "Lihat semua mutaba'ah".
+
+### 3.13 Verifikasi Jurnal Instruktur — `/instruktur/verifikasi`
+
+```
+Verifikasi Jurnal                         3 siap diverifikasi
+[Cari siswa atau kegiatan] [Status ▾] [Cari]
+┌──────────────────────┬─────────────────────────────────────┐
+│ Antrean jurnal       │ Detail jurnal                       │
+│ Siswa · tanggal      │ Foto, kegiatan, waktu, deskripsi     │
+│ Status verifikasi    │ Status guru dan catatannya           │
+│                      │ [Catatan] [Minta revisi] [Setujui]   │
+└──────────────────────┴─────────────────────────────────────┘
+```
+
+- Hanya jurnal siswa dari penempatan instruktur yang tampil; akses juga diperiksa di server.
+- Jurnal siap diverifikasi setelah disetujui guru. Status lain ditampilkan sebagai informasi.
+- Filter dan pilihan jurnal disimpan di URL; pada HP antrean dan detail tersusun vertikal.
+- Antrean kosong menampilkan petunjuk untuk menghubungi admin bila siswa belum ditetapkan.
 
 ### 3.14 Jurnal Anak — `/ortu/jurnal`
 

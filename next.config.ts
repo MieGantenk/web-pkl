@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  serverExternalPackages: ["tesseract.js", "@tesseract.js-data/eng"],
+  outputFileTracingIncludes: {
+    "/siswa/jurnal/baru": [
+      "./node_modules/@tesseract.js-data/eng/4.0.0/eng.traineddata.gz",
+    ],
+  },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

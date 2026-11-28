@@ -92,6 +92,11 @@ export const navigation: Record<Role, NavItem[]> = {
   ],
   instruktur: [
     { label: "Ringkasan", href: "/instruktur", icon: LayoutDashboard },
+    {
+      label: "Verifikasi Jurnal",
+      href: "/instruktur/verifikasi",
+      icon: ClipboardCheck,
+    },
     { label: "Siswa PKL", href: "/instruktur/siswa", icon: Users },
     { label: "Penilaian", href: "/instruktur/penilaian", icon: Award },
     { label: "Profil", href: "/instruktur/profil", icon: UserRound },
@@ -120,6 +125,11 @@ export const bottomNavigation: Partial<Record<Role, NavItem[]>> = {
   ],
   instruktur: [
     { label: "Ringkasan", href: "/instruktur", icon: LayoutDashboard },
+    {
+      label: "Verifikasi",
+      href: "/instruktur/verifikasi",
+      icon: ClipboardCheck,
+    },
     { label: "Siswa", href: "/instruktur/siswa", icon: Users },
     { label: "Profil", href: "/instruktur/profil", icon: UserRound },
   ],
