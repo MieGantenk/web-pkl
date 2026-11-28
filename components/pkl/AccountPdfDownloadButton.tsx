@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Download } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +32,7 @@ export function AccountPdfDownloadButton({
 }) {
   const [loading, setLoading] = useState(false);
   const downloadLabel = periodeLabel ? `${label} (${periodeLabel})` : label;
+  const accessibleLabel = `Unduh PDF ${downloadLabel}`;
 
   async function downloadPdf() {
     setLoading(true);
@@ -89,12 +89,14 @@ export function AccountPdfDownloadButton({
   return (
     <Button
       type="button"
-      size="lg"
+      variant="secondary"
+      size="md"
+      className="w-full sm:w-auto"
       loading={loading}
       onClick={downloadPdf}
+      aria-label={accessibleLabel}
     >
-      <Download className="size-4" strokeWidth={1.75} aria-hidden />
-      Unduh PDF {downloadLabel}
+      Unduh PDF {label}
     </Button>
   );
 }
