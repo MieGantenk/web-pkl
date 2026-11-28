@@ -302,7 +302,7 @@ export function AuditLogTable({
       <dialog
         ref={dialogRef}
         aria-label="Detail log audit"
-        className="audit-detail-dialog"
+        className="app-detail-drawer"
         onClick={(event) => {
           if (event.target === event.currentTarget) {
             closeDetail();

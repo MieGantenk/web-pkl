@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import {
@@ -14,6 +15,7 @@ import {
 
 import { EmptyState } from "@/components/pkl/EmptyState";
 import { FilterForm } from "@/components/pkl/FilterForm";
+import { MutabaahEntryDetailDrawer } from "@/components/pkl/MutabaahEntryDetailDrawer";
 import { MutabaahTabs } from "@/components/pkl/MutabaahTabs";
 import { StatusBadge } from "@/components/pkl/StatusBadge";
 import { buttonVariants } from "@/components/ui/button";
@@ -22,9 +24,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { requireRole } from "@/lib/auth";
 import {
+  getAdminMutabaahEntryDetail,
   getAdminMutabaahHistory,
   normalizeDateFilter,
 } from "@/lib/data/admin-mutabaah-history";
+import { postgresUuidPattern } from "@/lib/validators/common";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -48,6 +52,7 @@ type PageProps = {
     q?: string;
     form?: string;
     lengkap?: string;
+    entri?: string | string[];
   }>;
 };
 
@@ -69,18 +74,55 @@ export default async function AdminMutabaahPage({
     params.lengkap === "lengkap" || params.lengkap === "belum"
       ? params.lengkap
       : "semua";
+  const entryId =
+    typeof params.entri === "string" &&
+    postgresUuidPattern.test(params.entri)
+      ? params.entri
+      : null;
 
-  const data = await getAdminMutabaahHistory({
-    dari,
-    sampai,
-    kelas,
-    q,
-    form,
-    lengkap,
-  });
+  if (params.entri !== undefined && !entryId) {
+    notFound();
+  }
+
+  const [data, selectedEntry] = await Promise.all([
+    getAdminMutabaahHistory({
+      dari,
+      sampai,
+      kelas,
+      q,
+      form,
+      lengkap,
+    }),
+    entryId
+      ? getAdminMutabaahEntryDetail(entryId)
+      : Promise.resolve(null),
+  ]);
+
+  if (entryId && !selectedEntry) {
+    notFound();
+  }
+
   const dateFrom = data.range.dari;
   const dateTo = data.range.sampai;
   const rows = data.rows;
+  const historyParams = new URLSearchParams({
+    dari: dateFrom,
+    sampai: dateTo,
+  });
+
+  if (kelas) historyParams.set("kelas", kelas);
+  if (q) historyParams.set("q", q);
+  if (data.forms.some((item) => item.id === form)) {
+    historyParams.set("form", form);
+  }
+  if (lengkap !== "semua") historyParams.set("lengkap", lengkap);
+
+  const historyHref = `/admin/mutabaah?${historyParams.toString()}`;
+  const detailHref = (id: string) => {
+    const search = new URLSearchParams(historyParams);
+    search.set("entri", id);
+    return `/admin/mutabaah?${search.toString()}`;
+  };
 
   return (
     <div>
@@ -272,6 +314,13 @@ export default async function AdminMutabaahPage({
         </FilterForm>
       </section>
 
+      {selectedEntry ? (
+        <MutabaahEntryDetailDrawer
+          entry={selectedEntry}
+          closeHref={historyHref}
+        />
+      ) : null}
+
       <section className="mt-6 sm:mt-8" aria-labelledby="riwayat-title">
         <div className="mb-3">
           <h2
@@ -290,6 +339,9 @@ export default async function AdminMutabaahPage({
           <>
             <div className="hidden overflow-hidden rounded-md border border-border bg-surface shadow-xs md:block">
               <table className="w-full border-collapse text-sm">
+                <caption className="sr-only">
+                  Riwayat pengisian mutaba&apos;ah siswa
+                </caption>
                 <thead>
                   <tr className="border-b border-border bg-surface-muted text-left text-[12px] uppercase tracking-[0.08em] text-muted">
                     <th className="px-4 py-3 font-semibold">Tanggal</th>
@@ -298,6 +350,7 @@ export default async function AdminMutabaahPage({
                     <th className="px-4 py-3 font-semibold">Form</th>
                     <th className="px-4 py-3 font-semibold">Terisi</th>
                     <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="px-4 py-3 font-semibold">Rincian</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -335,6 +388,20 @@ export default async function AdminMutabaahPage({
                             tone={complete ? "success" : "warning"}
                             icon={complete ? Check : CircleDashed}
                           />
+                        </td>
+                        <td className="px-4 py-3">
+                          <Link
+                            href={detailHref(row.id)}
+                            prefetch={false}
+                            aria-haspopup="dialog"
+                            aria-label={`Lihat jawaban ${row.siswa.nama} tanggal ${formatDate(row.tanggal)}`}
+                            className={cn(
+                              buttonVariants({ variant: "link", size: "sm" }),
+                              "whitespace-nowrap",
+                            )}
+                          >
+                            Lihat jawaban
+                          </Link>
                         </td>
                       </tr>
                     );
@@ -377,6 +444,17 @@ export default async function AdminMutabaahPage({
                         {row.answered}/{row.total}
                       </span>
                     </div>
+                    <Link
+                      href={detailHref(row.id)}
+                      prefetch={false}
+                      aria-haspopup="dialog"
+                      className={cn(
+                        buttonVariants({ variant: "link", size: "sm" }),
+                        "mt-2",
+                      )}
+                    >
+                      Lihat jawaban
+                    </Link>
                   </li>
                 );
               })}

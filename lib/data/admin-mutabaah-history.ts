@@ -2,7 +2,12 @@ import { cache } from "react";
 import { connection } from "next/server";
 
 import { jakartaToday } from "@/lib/date";
+import type {
+  MutabaahAnswer,
+  MutabaahQuestion,
+} from "@/lib/data/siswa-mutabaah";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { postgresUuidPattern } from "@/lib/validators/common";
 
 export type AdminMutabaahHistoryFilters = {
   dari: string;
@@ -30,6 +35,24 @@ export type AdminMutabaahHistoryRow = {
   answered: number;
   total: number;
   catatan: string | null;
+};
+
+export type AdminMutabaahEntryDetail = {
+  id: string;
+  tanggal: string;
+  catatan: string | null;
+  siswa: {
+    nama: string;
+    nis: string;
+    kelas: string | null;
+  };
+  form: {
+    nama: string;
+    versi: number;
+    deskripsi: string | null;
+  };
+  questions: MutabaahQuestion[];
+  answers: MutabaahAnswer[];
 };
 
 export type AdminMutabaahHistoryData = {
@@ -325,6 +348,166 @@ export const getAdminMutabaahHistory = cache(
       rows,
       kelasOptions,
       forms,
+    };
+  },
+);
+
+export const getAdminMutabaahEntryDetail = cache(
+  async (entryId: string): Promise<AdminMutabaahEntryDetail | null> => {
+    await connection();
+
+    if (!postgresUuidPattern.test(entryId)) {
+      return null;
+    }
+
+    const admin = createAdminClient();
+    const { data: entry, error: entryError } = await admin
+      .from("mutabaah_harian")
+      .select(
+        "id, tanggal, catatan, siswa:siswa_id(nis, kelas, pengguna:pengguna_id(nama_lengkap)), form:form_id(id, nama, versi, deskripsi)",
+      )
+      .eq("id", entryId)
+      .maybeSingle();
+
+    if (entryError) {
+      throw new Error("Gagal memuat detail pengisian mutaba'ah.");
+    }
+
+    if (!entry?.siswa || !entry.form) {
+      return null;
+    }
+
+    const [questionsResult, answersResult] = await Promise.all([
+      admin
+        .from("mutabaah_pertanyaan")
+        .select(
+          "id, pertanyaan, deskripsi, tipe, wajib, urutan, min_angka, max_angka, satuan",
+        )
+        .eq("form_id", entry.form.id)
+        .order("urutan", { ascending: true }),
+      admin
+        .from("mutabaah_jawaban")
+        .select(
+          "id, pertanyaan_id, jawaban_teks, jawaban_angka, jawaban_boolean",
+        )
+        .eq("harian_id", entry.id),
+    ]);
+
+    if (questionsResult.error || answersResult.error) {
+      throw new Error("Gagal memuat pertanyaan dan jawaban mutaba'ah.");
+    }
+
+    const questionRows = questionsResult.data ?? [];
+    const answerRows = answersResult.data ?? [];
+    const questionIds = questionRows.map((question) => question.id);
+    const answerIds = answerRows.map((answer) => answer.id);
+
+    const [optionsResult, selectedOptionsResult] = await Promise.all([
+      questionIds.length
+        ? admin
+            .from("mutabaah_opsi")
+            .select("id, pertanyaan_id, label, urutan")
+            .in("pertanyaan_id", questionIds)
+            .order("urutan", { ascending: true })
+        : Promise.resolve({ data: [], error: null }),
+      answerIds.length
+        ? admin
+            .from("mutabaah_jawaban_opsi")
+            .select("jawaban_id, opsi_id, opsi:opsi_id(label, urutan)")
+            .in("jawaban_id", answerIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (optionsResult.error || selectedOptionsResult.error) {
+      throw new Error("Gagal memuat pilihan jawaban mutaba'ah.");
+    }
+
+    const optionsByQuestion = new Map<string, MutabaahQuestion["options"]>();
+
+    for (const option of optionsResult.data ?? []) {
+      const list = optionsByQuestion.get(option.pertanyaan_id) ?? [];
+      list.push({ id: option.id, label: option.label });
+      optionsByQuestion.set(option.pertanyaan_id, list);
+    }
+
+    const questions: MutabaahQuestion[] = questionRows.map((question) => ({
+      id: question.id,
+      pertanyaan: question.pertanyaan,
+      deskripsi: question.deskripsi,
+      tipe: question.tipe,
+      wajib: question.wajib,
+      urutan: question.urutan,
+      minAngka: question.min_angka,
+      maxAngka: question.max_angka,
+      satuan: question.satuan,
+      options: optionsByQuestion.get(question.id) ?? [],
+    }));
+    const questionsById = new Map(
+      questions.map((question) => [question.id, question]),
+    );
+    const selectedOptionsByAnswer = new Map<
+      string,
+      { ids: string[]; labels: string[] }
+    >();
+
+    const selectedOptionRows = [...(selectedOptionsResult.data ?? [])].sort(
+      (a, b) => (a.opsi?.urutan ?? 0) - (b.opsi?.urutan ?? 0),
+    );
+
+    for (const row of selectedOptionRows) {
+      const selected = selectedOptionsByAnswer.get(row.jawaban_id) ?? {
+        ids: [],
+        labels: [],
+      };
+      selected.ids.push(row.opsi_id);
+
+      if (row.opsi?.label) {
+        selected.labels.push(row.opsi.label);
+      }
+
+      selectedOptionsByAnswer.set(row.jawaban_id, selected);
+    }
+
+    const answers: MutabaahAnswer[] = answerRows.flatMap((answer) => {
+      const question = questionsById.get(answer.pertanyaan_id);
+
+      if (!question) {
+        return [];
+      }
+
+      const selected = selectedOptionsByAnswer.get(answer.id);
+
+      return [
+        {
+          pertanyaanId: answer.pertanyaan_id,
+          label: question.pertanyaan,
+          tipe: question.tipe,
+          satuan: question.satuan,
+          jawabanTeks: answer.jawaban_teks,
+          jawabanAngka: answer.jawaban_angka,
+          jawabanBoolean: answer.jawaban_boolean,
+          opsiIds: selected?.ids ?? [],
+          opsiLabels: selected?.labels ?? [],
+        },
+      ];
+    });
+
+    return {
+      id: entry.id,
+      tanggal: entry.tanggal,
+      catatan: entry.catatan,
+      siswa: {
+        nama: entry.siswa.pengguna?.nama_lengkap ?? "Siswa",
+        nis: entry.siswa.nis,
+        kelas: entry.siswa.kelas,
+      },
+      form: {
+        nama: entry.form.nama,
+        versi: entry.form.versi,
+        deskripsi: entry.form.deskripsi,
+      },
+      questions,
+      answers,
     };
   },
 );

@@ -321,9 +321,9 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 | MUT-05 | Publikasi/arsip form | Draft → aktif → arsip; versi lama tidak mengubah jawaban |
 | MUT-06 | Siswa mengisi form harian | Satu entri per hari; bisa diedit hari itu; terkunci setelahnya |
 | MUT-07 | Riwayat 7/30 hari + ring mingguan | Progres dan streak terlihat |
-| MUT-08 | Admin melihat semua riwayat siswa | Filter tanggal, kelas, siswa, form, kelengkapan |
+| MUT-08 | Admin melihat semua riwayat siswa | Filter tanggal, kelas, siswa, form, kelengkapan; detail menampilkan semua pertanyaan, opsi, pilihan siswa, jawaban isian, dan pertanyaan yang belum dijawab dalam drawer read-only |
 | MUT-09 | Admin melihat rekap | Tingkat pengisian, distribusi jawaban, rata-rata angka; ekspor v1.1 |
-| MUT-10 | Guru & ortu melihat siswa terkait | Hanya siswa bimbingan/anak |
+| MUT-10 | Guru & ortu melihat siswa terkait | Hanya siswa bimbingan/anak; ortu dapat membuka rincian pertanyaan dan jawaban anak pada riwayat form yang dipilih, termasuk seluruh opsi dan jawaban isian, secara read-only |
 | MUT-11 | Data masuk database | Tidak ada tautan Google Form |
 | MUT-12 | Template default | Admin bisa mulai dari template umum (shalat, tilawah, hafalan, olahraga, membantu orang tua) |
 

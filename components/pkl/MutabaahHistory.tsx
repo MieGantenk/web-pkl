@@ -6,7 +6,9 @@ import { StatusBadge } from "@/components/pkl/StatusBadge";
 import type {
   MutabaahAnswer,
   MutabaahHistoryDay,
+  MutabaahQuestion,
 } from "@/lib/data/siswa-mutabaah";
+import { MutabaahAnswerReview } from "@/components/pkl/MutabaahAnswerReview";
 
 function formatAnswer(answer: MutabaahAnswer) {
   if (answer.jawabanBoolean !== null) {
@@ -28,8 +30,10 @@ function formatAnswer(answer: MutabaahAnswer) {
 
 export function MutabaahHistory({
   history,
+  questions,
 }: {
   history: MutabaahHistoryDay[];
+  questions?: MutabaahQuestion[];
 }) {
   return (
     <div className="overflow-hidden rounded-md border border-border bg-surface shadow-xs">
@@ -61,7 +65,19 @@ export function MutabaahHistory({
                 />
               </div>
 
-              {entry?.answers.length ? (
+              {entry && questions?.length ? (
+                <details className="mt-3">
+                  <summary className="cursor-pointer text-sm font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline">
+                    Lihat rincian pertanyaan dan jawaban
+                  </summary>
+                  <div className="mt-3">
+                    <MutabaahAnswerReview
+                      questions={questions}
+                      answers={entry.answers}
+                    />
+                  </div>
+                </details>
+              ) : entry?.answers.length ? (
                 <details className="mt-3">
                   <summary className="cursor-pointer text-sm font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline">
                     Lihat jawaban

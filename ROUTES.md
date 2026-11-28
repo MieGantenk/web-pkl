@@ -53,7 +53,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/pengajuan` | Pengajuan PKL | Semua pengajuan, tinjau dokumen, setujui/tolak, timeline |
 | `/admin/penempatan` | Penempatan | PKL aktif, guru/instruktur, tanggal, mulai |
 | `/admin/jurnal` | Jurnal | Monitoring semua jurnal, filter, foto |
-| `/admin/mutabaah` | Mutaba'ah | Riwayat semua siswa, filter tanggal/kelas/kelengkapan, rekap |
+| `/admin/mutabaah` | Mutaba'ah | Riwayat semua siswa, filter tanggal/kelas/kelengkapan, rekap, dan detail pertanyaan serta jawaban lengkap dalam drawer read-only |
 | `/admin/mutabaah/pertanyaan` | Form builder | Form, versi, pertanyaan, opsi, publish/arsip |
 | `/admin/surat` | Surat sekolah | 7 jenis, terbitkan, nomor, pratinjau, unduh, unggah berkas surat |
 | `/admin/surat/kelengkapan` | Kelengkapan surat | Matriks surat per siswa, status terbit/siap/terkunci |
@@ -111,7 +111,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 |---|---|---|
 | `/ortu` | Beranda | Ringkasan anak, status, jurnal, mutaba'ah, surat |
 | `/ortu/jurnal` | Jurnal anak | Daftar, foto, status verifikasi (read-only) |
-| `/ortu/mutabaah` | Mutaba'ah | Riwayat, ring progres |
+| `/ortu/mutabaah` | Mutaba'ah | Riwayat 7 hari, ring progres, dan rincian pertanyaan serta jawaban anak secara read-only |
 | `/ortu/surat` | Surat | Surat anak, unduh |
 | `/ortu/profil` | Profil | Data, anak terkait, kata sandi |
 

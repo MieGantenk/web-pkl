@@ -280,7 +280,10 @@ export default async function OrtuMutabaahPage({
               </p>
             </div>
 
-            <MutabaahHistory history={data.history} />
+            <MutabaahHistory
+              history={data.history}
+              questions={data.questions}
+            />
           </section>
         </>
       )}
