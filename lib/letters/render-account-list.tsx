@@ -14,12 +14,14 @@ export function renderAccountListPdf(
   accounts: AccountListRow[],
   roleLabel: string,
   generatedAt: string,
+  periodLabel?: string,
 ) {
   return renderToBuffer(
     <AccountListDocument
       accounts={accounts}
       roleLabel={roleLabel}
       generatedAt={generatedAt}
+      periodLabel={periodLabel}
     />,
   );
 }

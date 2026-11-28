@@ -83,16 +83,21 @@ export function AccountListDocument({
   accounts,
   roleLabel,
   generatedAt,
+  periodLabel,
 }: {
   accounts: AccountListRow[];
   roleLabel: string;
   generatedAt: string;
+  periodLabel?: string;
 }) {
   return (
-    <Document title={`Daftar Akun ${roleLabel}`}>
+    <Document
+      title={`Daftar Akun ${roleLabel}${periodLabel ? ` - ${periodLabel}` : ""}`}
+    >
       <Page size="A4" orientation="landscape" style={styles.page}>
         <Text fixed style={styles.title}>
           Daftar Akun {roleLabel}
+          {periodLabel ? ` - ${periodLabel}` : ""}
         </Text>
         <Text fixed style={styles.subtitle}>
           Dibuat pada {generatedAt}

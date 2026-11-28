@@ -259,7 +259,7 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 | AUTH-04 | Akun nonaktif tidak bisa login | Pesan umum, tidak membocorkan status akun |
 | AUTH-05 | Logout | Sesi berakhir; halaman terproteksi tidak bisa dibuka |
 | AUTH-06 | Role guard di server | Akses lintas role ditolak 403 |
-| AUTH-07 | Admin mengunduh daftar akun PDF per role | Setiap unduhan hanya memuat nama, username, dan email satu role; tidak memuat kata sandi |
+| AUTH-07 | Admin mengunduh daftar akun PDF per role | Setiap unduhan hanya memuat nama, username, dan email satu role; akun siswa dan orang tua dipisahkan per periode PKL; tidak memuat kata sandi |
 
 ### 9.2 Master data
 

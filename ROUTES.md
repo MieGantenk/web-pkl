@@ -45,7 +45,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin/siswa` | Data siswa | Tabel, filter kelas/periode (periode mengikuti kelas), pagination, tambah, naik kelas, nonaktifkan |
 | `/admin/siswa/baru` | Tambah siswa | Form data siswa + akun login + kata sandi |
 | `/admin/siswa/[id]` | Detail siswa | Profil, akun, kata sandi, penempatan, jurnal terakhir |
-| `/admin/akun` | Akun pengguna | Unduh PDF terpisah untuk siswa, instruktur, guru, dan orang tua |
+| `/admin/akun` | Akun pengguna | Unduh PDF instruktur dan guru per role; PDF siswa dan orang tua tersedia per periode PKL |
 | `/admin/guru` | Data guru | CRUD, jurusan, akun |
 | `/admin/perusahaan` | Perusahaan | CRUD DUDI, instruktur |
 | `/admin/instruktur` | Instruktur | Akun, perusahaan, peran |
@@ -134,7 +134,7 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `GET` | `/api/health` | Internal | Health check deployment |
 | `GET` | `/api/notifikasi` | Auth | Daftar notifikasi dan jumlah belum dibaca |
 | `GET` | `/api/admin/laporan/export` | Admin | Unduh CSV rekap PKL sesuai filter |
-| `GET` | `/api/admin/akun/export?role=...` | Admin | Unduh satu PDF nama, username, dan email untuk role yang dipilih |
+| `GET` | `/api/admin/akun/export?role=...&periode=...` | Admin | Unduh PDF nama, username, dan email; siswa/orang tua wajib memilih periode PKL |
 | `GET` | `/api/surat/[id]/pdf` | Role berhak | Generate/unduh PDF surat (Node runtime) |
 | `GET` | `/api/verifikasi/surat/[kode]` | Publik | Halaman verifikasi QR (v1.1) |
 | `GET` | `/api/sertifikat/[id]/pdf` | Role berhak | Generate/unduh sertifikat (v1.1) |

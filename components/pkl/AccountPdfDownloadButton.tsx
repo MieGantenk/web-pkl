@@ -23,22 +23,29 @@ function getErrorMessage(value: unknown) {
 export function AccountPdfDownloadButton({
   role,
   label,
+  periodeId,
+  periodeLabel,
 }: {
   role: AccountExportRole;
   label: string;
+  periodeId?: string;
+  periodeLabel?: string;
 }) {
   const [loading, setLoading] = useState(false);
+  const downloadLabel = periodeLabel ? `${label} (${periodeLabel})` : label;
 
   async function downloadPdf() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `/api/admin/akun/export?role=${encodeURIComponent(role)}`,
-        {
-          cache: "no-store",
-        },
-      );
+      const searchParams = new URLSearchParams({ role });
+      if (periodeId) {
+        searchParams.set("periode", periodeId);
+      }
+
+      const response = await fetch(`/api/admin/akun/export?${searchParams}`, {
+        cache: "no-store",
+      });
 
       if (!response.ok) {
         const error = await response.json().catch(() => null);
@@ -47,28 +54,32 @@ export function AccountPdfDownloadButton({
       }
 
       if (response.headers.get("content-type") !== "application/pdf") {
-        toast.error(`PDF akun ${label} tidak valid. Coba lagi.`);
+        toast.error(`PDF akun ${downloadLabel} tidak valid. Coba lagi.`);
         return;
       }
 
       const pdf = await response.blob();
       if (!pdf.size) {
-        toast.error(`PDF akun ${label} kosong dan tidak dapat diunduh.`);
+        toast.error(`PDF akun ${downloadLabel} kosong dan tidak dapat diunduh.`);
         return;
       }
 
       const url = URL.createObjectURL(pdf);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `akun-${role}.pdf`;
+      const periodeSlug = periodeLabel
+        ?.toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      link.download = `akun-${role}${periodeSlug ? `-${periodeSlug}` : ""}.pdf`;
       document.body.append(link);
       link.click();
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      toast.success(`PDF akun ${label} berhasil diunduh.`);
+      toast.success(`PDF akun ${downloadLabel} berhasil diunduh.`);
     } catch {
       toast.error(
-        `Tidak dapat mengunduh PDF akun ${label}. Periksa koneksi lalu coba lagi.`,
+        `Tidak dapat mengunduh PDF akun ${downloadLabel}. Periksa koneksi lalu coba lagi.`,
       );
     } finally {
       setLoading(false);
@@ -83,7 +94,7 @@ export function AccountPdfDownloadButton({
       onClick={downloadPdf}
     >
       <Download className="size-4" strokeWidth={1.75} aria-hidden />
-      Unduh PDF {label}
+      Unduh PDF {downloadLabel}
     </Button>
   );
 }

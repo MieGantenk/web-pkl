@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { AccountPdfDownloadButton } from "@/components/pkl/AccountPdfDownloadButton";
 import { accountExportRoles } from "@/lib/account-export";
 import { requireRole } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata: Metadata = {
   title: "Akun pengguna",
@@ -10,6 +11,16 @@ export const metadata: Metadata = {
 
 export default async function AdminAccountPage() {
   await requireRole("admin");
+
+  const admin = createAdminClient();
+  const { data: periods, error } = await admin
+    .from("periode_pkl")
+    .select("id, nama")
+    .order("tanggal_mulai", { ascending: true });
+
+  if (error) {
+    throw new Error("Gagal memuat periode PKL.");
+  }
 
   return (
     <div className="mx-auto w-full max-w-[1120px]">
@@ -50,7 +61,27 @@ export default async function AdminAccountPage() {
               >
                 {label}
               </h3>
-              <AccountPdfDownloadButton role={role} label={label} />
+              {role === "siswa" || role === "ortu" ? (
+                periods.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {periods.map((period) => (
+                      <AccountPdfDownloadButton
+                        key={period.id}
+                        role={role}
+                        label={label}
+                        periodeId={period.id}
+                        periodeLabel={period.nama}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-ink-soft">
+                    Belum ada periode PKL.
+                  </p>
+                )
+              ) : (
+                <AccountPdfDownloadButton role={role} label={label} />
+              )}
             </section>
           ))}
         </div>
