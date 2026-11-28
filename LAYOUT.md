@@ -361,7 +361,7 @@ Kelola data siswa, kelas, dan status PKL.
 
 - Split 8/4; panel kanan sticky 24 px di bawah topbar.
 - Di < 1024: panel status pindah ke atas (ringkas), timeline di bawah.
-- Panel kanan memuat status akun, kata sandi (ketik manual atau buat otomatis), penempatan, dan jurnal terakhir.
+- Panel kanan memuat status akun, kata sandi (ketik manual atau buat otomatis), penempatan, dan jurnal terakhir. Detail akun siswa, guru, instruktur, dan orang tua menyediakan aksi hapus permanen terpisah dari nonaktifkan, dengan dialog konfirmasi.
 - Tabs hanya untuk konten, bukan navigasi halaman.
 
 ### 3.7 Form — contoh `/siswa/jurnal/baru`

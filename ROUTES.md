@@ -44,12 +44,15 @@ Halaman status: `403`, `404`, `error` (global, tidak dihitung).
 | `/admin` | Ringkasan | Antrean persetujuan, jurnal belum verifikasi, siswa belum dapat tempat, KPI, grafik |
 | `/admin/siswa` | Data siswa | Tabel, filter kelas/periode (periode mengikuti kelas), pagination, tambah, naik kelas, nonaktifkan |
 | `/admin/siswa/baru` | Tambah siswa | Form data siswa + akun login + kata sandi |
-| `/admin/siswa/[id]` | Detail siswa | Profil, akun, kata sandi, penempatan, jurnal terakhir |
+| `/admin/siswa/[id]` | Detail siswa | Profil, akun, kata sandi, penempatan, jurnal terakhir, nonaktifkan, hapus permanen |
 | `/admin/akun` | Akun pengguna | Unduh PDF instruktur dan guru per role; PDF siswa dan orang tua tersedia per periode PKL |
-| `/admin/guru` | Data guru | CRUD, jurusan, akun |
+| `/admin/guru` | Data guru | CRUD, jurusan, akun, status |
+| `/admin/guru/[id]` | Detail guru | Profil, akun, kata sandi, status, hapus permanen |
 | `/admin/perusahaan` | Perusahaan | CRUD DUDI, instruktur |
-| `/admin/instruktur` | Instruktur | Akun, perusahaan, peran |
-| `/admin/orang-tua` | Orang tua | Akun, relasi ke siswa |
+| `/admin/instruktur` | Instruktur | Akun, perusahaan, peran, status |
+| `/admin/instruktur/[id]` | Detail instruktur | Akun, penugasan perusahaan, kata sandi, status, hapus permanen |
+| `/admin/orang-tua` | Orang tua | Akun, relasi ke siswa, status |
+| `/admin/orang-tua/[id]` | Detail orang tua | Profil, relasi ke siswa, kata sandi, status, hapus permanen |
 | `/admin/pengajuan` | Pengajuan PKL | Semua pengajuan, tinjau dokumen, setujui/tolak, timeline |
 | `/admin/penempatan` | Penempatan | PKL aktif, guru/instruktur, tanggal, mulai |
 | `/admin/jurnal` | Jurnal | Monitoring semua jurnal, filter, foto |

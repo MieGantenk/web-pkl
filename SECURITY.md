@@ -95,6 +95,13 @@ Route `GET` yang sudah ada tidak terpengaruh dan tidak perlu token CSRF:
   Untuk aksi terkait kata sandi, admin dapat membuka panel reset akun target.
 - Reset dari panel audit memakai `resetAccountPasswordAction` yang sudah
   dibatasi role admin dan dicatat sebagai `atur_ulang_kata_sandi`.
+- Hapus permanen akun non-admin memakai `deleteAccountAction`, memerlukan
+  konfirmasi username, dan dicatat sebagai `hapus_akun`. Relasi `RESTRICT`
+  membatalkan penghapusan; berkas jurnal, tugas, dan sertifikat siswa dibersihkan
+  setelah penghapusan akun berhasil.
+- Kegagalan pembersihan berkas atau audit setelah akun terhapus harus ditampilkan
+  sebagai peringatan agar dapat ditindaklanjuti; jangan menyamarkannya sebagai
+  kegagalan penghapusan akun.
 - Field detail yang mengandung `password`, `sandi`, `token`, atau `secret`
   tidak ditampilkan di UI audit.
 

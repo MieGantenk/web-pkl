@@ -491,6 +491,7 @@ export function AuditLogTable({
                           penggunaId={selected.target.id}
                           nama={selected.target.nama}
                           username={selected.target.username}
+                          allowDelete={false}
                         />
                       </div>
                     ) : (

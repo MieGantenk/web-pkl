@@ -260,6 +260,7 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 | AUTH-05 | Logout | Sesi berakhir; halaman terproteksi tidak bisa dibuka |
 | AUTH-06 | Role guard di server | Akses lintas role ditolak 403 |
 | AUTH-07 | Admin mengunduh daftar akun PDF per role | Setiap unduhan hanya memuat nama, username, dan email satu role; akun siswa dan orang tua dipisahkan per periode PKL; tidak memuat kata sandi |
+| AUTH-08 | Admin menghapus permanen akun non-admin | Siswa, guru, instruktur, dan orang tua dapat dihapus setelah konfirmasi username; data mengikuti aturan cascade, relasi restrict membatalkan penghapusan, berkas siswa terkait dibersihkan, dan aksi dicatat di audit |
 
 ### 9.2 Master data
 
@@ -269,7 +270,7 @@ Keterangan: F = full, C = create/update, R = read, V = verify, self = data sendi
 | MST-02 | Hubungkan instruktur ke perusahaan | Satu instruktur bisa di beberapa perusahaan |
 | MST-03 | Hubungkan orang tua ke siswa | Satu ortu bisa punya beberapa anak |
 | MST-04 | Pencarian, filter, pagination server-side | 1.853 jurnal tidak dimuat sekaligus |
-| MST-05 | Nonaktifkan user tanpa menghapus data | Riwayat tetap utuh |
+| MST-05 | Nonaktifkan user tanpa menghapus data | Aksi dapat dibatalkan; riwayat tetap utuh dan berbeda dari hapus permanen |
 | MST-06 | Naik kelas massal | X menjadi XI, XI menjadi XII; konfirmasi global; kelas XII tidak diubah |
 
 ### 9.3 Pengajuan & surat

@@ -6,6 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { KeyRound } from "lucide-react";
 
+import { AccountDeleteButton } from "@/components/pkl/AccountDeleteButton";
 import { PasswordInput } from "@/components/pkl/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { resetAccountPasswordAction } from "@/lib/actions/account";
@@ -18,10 +19,12 @@ export function AccountPasswordPanel({
   penggunaId,
   nama,
   username,
+  allowDelete = true,
 }: {
   penggunaId: string;
   nama: string;
   username: string;
+  allowDelete?: boolean;
 }) {
   const [saved, setSaved] = useState(false);
   const {
@@ -171,6 +174,23 @@ export function AccountPasswordPanel({
           Simpan kata sandi
         </Button>
       </form>
+
+      {allowDelete ? (
+        <div className="mt-6 border-t border-border pt-5">
+          <h3 className="text-sm font-semibold text-ink">Hapus akun</h3>
+          <p className="mt-1 text-[13px] leading-[18px] text-muted">
+            Penghapusan permanen berbeda dari menonaktifkan akun dan tidak
+            dapat dibatalkan.
+          </p>
+          <div className="mt-3">
+            <AccountDeleteButton
+              penggunaId={penggunaId}
+              nama={nama}
+              username={username}
+            />
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

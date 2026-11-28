@@ -10,6 +10,7 @@ import {
   KeyRound,
   Play,
   Settings,
+  Trash2,
   Upload,
   X,
 } from "lucide-react";
@@ -88,6 +89,11 @@ const actions: Record<string, AuditActionMeta> = {
     label: "Atur ulang kata sandi",
     tone: "warning",
     icon: KeyRound,
+  },
+  hapus_akun: {
+    label: "Menghapus akun",
+    tone: "danger",
+    icon: Trash2,
   },
   ekspor_akun_pdf: {
     label: "Mengunduh PDF akun",
